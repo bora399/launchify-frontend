@@ -19,7 +19,7 @@ export default function CreateProject() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('https://localhost:5001/api/LandingPages/create', {
+      const response = await fetch('https://localhost:7022/api/LandingPages/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: "demo-user", photos: [], ...formData }),
@@ -31,8 +31,18 @@ export default function CreateProject() {
       try { result = JSON.parse(responseText); } 
       catch { result = { id: responseText.replace(/"/g, '').trim() }; }
 
-      if (response.ok && result.id) {
-        router.push(`/project/${result.id}`);
+      if (response.ok) {
+        // Ürün adını URL'ye uygun hale getir (Örn: "Landscape Uygulaması" -> "landscape-uygulamasi")
+        const generatedSlug = formData.productName
+          .toString()
+          .toLowerCase()
+          .trim()
+          .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's').replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ç/g, 'c')
+          .replace(/[\s\W-]+/g, '-') // Boşlukları ve özel karakterleri tireye çevir
+          .replace(/^-+|-+$/g, '');  // Baş ve sondaki fazla tireleri temizle
+
+        // Doğrudan isme (slug) yönlendir
+        router.push(`/${generatedSlug}`);
       } else {
         alert("Oluşturma başarısız. API bağlantısını kontrol edin.");
       }
@@ -42,7 +52,7 @@ export default function CreateProject() {
       setIsLoading(false);
     }
   };
-
+  
   return (
     // ÇÖZÜM BURADA: Bütün flex, justify ve items komutları silindi. 
     // pt-[120px] ile en üste zorunlu ve kesin bir boşluk eklendi.

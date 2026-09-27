@@ -6,7 +6,8 @@ import { usePathname } from "next/navigation";
 export default function Navbar() {
   const pathname = usePathname();
   
-  if (pathname?.startsWith("/project/")) return null;
+  // Sadece ana sayfa ve create sayfasında göster, diğer tüm dinamik sayfalarda gizle
+  if (pathname !== "/" && pathname !== "/create") return null;
 
   return (
     <header className="w-full bg-white/90 backdrop-blur-md border-b border-zinc-200 sticky top-0 z-50">
