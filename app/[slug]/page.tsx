@@ -13,6 +13,8 @@ interface ProjectData {
   slug?: string;
 }
 
+const DEFAULT_ACCENT_COLOR = "#3B82F6";
+
 export default function ProjectView() {
   const params = useParams();
   const slug = params.slug as string; 
@@ -21,48 +23,59 @@ export default function ProjectView() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`https://localhost:7022/api/LandingPages/${slug}`)
-      .then(res => {
-        if (!res.ok) throw new Error("Not found");
-        return res.json();
-      })
-      .then((fetchedData) => {
+    const fetchProjectData = async () => {
+      try {
+        const res = await fetch(`https://localhost:7022/api/LandingPages/${slug}`);
+        if (!res.ok) throw new Error("Project not found");
+        
+        const fetchedData = await res.json();
+        
         setData({
           productName: fetchedData.productName || fetchedData.ProductName || "Platform",
           aiGeneratedHeroTitle: fetchedData.aiGeneratedHeroTitle || fetchedData.AiGeneratedHeroTitle || "Vizyonunuzu Hayata Geçirin.",
-          aiGeneratedMarketingCopy: fetchedData.aiGeneratedMarketingCopy || fetchedData.AiGeneratedMarketingCopy || "Yapay zeka tarafından üretilen açıklama.",
-          accentColor: fetchedData.accentColor || fetchedData.AccentColor || '#3B82F6',
+          aiGeneratedMarketingCopy: fetchedData.aiGeneratedMarketingCopy || fetchedData.AiGeneratedMarketingCopy || "Yeni nesil altyapı çözümleri.",
+          accentColor: fetchedData.accentColor || fetchedData.AccentColor || DEFAULT_ACCENT_COLOR,
           demoLink: fetchedData.demoLink || fetchedData.DemoLink,
         });
-      })
-      .catch(() => setData(null))
-      .finally(() => setLoading(false));
+      } catch (error) {
+        setData(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (slug) {
+      fetchProjectData();
+    }
   }, [slug]);
 
-  if (loading) return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#050505] text-white/50 font-mono text-sm tracking-widest uppercase">
-      <div className="w-32 h-[1px] bg-white/10 mb-6 relative overflow-hidden">
-        <div className="absolute top-0 left-0 h-full w-1/3 bg-white/80 animate-[ping_1.5s_cubic-bezier(0,0,0.2,1)_infinite]"></div>
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#050505] text-white/50 font-mono text-sm tracking-widest uppercase">
+        <div className="w-32 h-[1px] bg-white/10 mb-6 relative overflow-hidden">
+          <div className="absolute top-0 left-0 h-full w-1/3 bg-white/80 animate-[ping_1.5s_cubic-bezier(0,0,0.2,1)_infinite]"></div>
+        </div>
+        Loading Architecture
       </div>
-      Sistem Yükleniyor
-    </div>
-  );
+    );
+  }
   
-  if (!data) return (
-    <div className="min-h-screen flex items-center justify-center bg-[#050505] text-white p-6">
-      <div className="border border-white/10 bg-white/5 p-8 max-w-lg text-center rounded-2xl backdrop-blur-md">
-        <h1 className="text-2xl font-bold mb-3 tracking-tight">Bağlantı Hatası</h1>
-        <p className="text-white/50 text-sm">Aradığınız platform bulunamadı veya henüz yayına alınmadı.</p>
+  if (!data) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#050505] text-white p-6">
+        <div className="border border-white/10 bg-white/5 p-8 max-w-lg text-center rounded-2xl backdrop-blur-md">
+          <h1 className="text-2xl font-bold mb-3 tracking-tight">404 - Not Found</h1>
+          <p className="text-white/50 text-sm">Platform bulunamadı veya yapılandırma henüz tamamlanmadı.</p>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 
-  const btnColor = data.accentColor || '#3B82F6';
+  const btnColor = data.accentColor || DEFAULT_ACCENT_COLOR;
 
   return (
     <div className="min-h-screen bg-[#050505] text-[#FAFAFA] font-sans selection:bg-white/20 selection:text-white relative overflow-x-hidden">
       
-      {/* Özel Fontlar ve Hassas Grid Efekti */}
       <style dangerouslySetInnerHTML={{__html: `
         @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600&family=Outfit:wght@400;500;700;800&display=swap');
         
@@ -77,14 +90,10 @@ export default function ProjectView() {
           mask-image: linear-gradient(to bottom, black 30%, transparent 100%);
           -webkit-mask-image: linear-gradient(to bottom, black 30%, transparent 100%);
         }
-        
-        .glow-text { text-shadow: 0 0 40px ${btnColor}80; }
       `}} />
 
-      {/* Arka Plan Elementleri */}
       <div className="absolute inset-0 dark-grid-pattern pointer-events-none z-0 h-screen"></div>
       
-      {/* 1. NAVBAR - Minimal Lüks */}
       <nav className="fixed w-full top-0 z-50 bg-[#050505]/70 backdrop-blur-xl border-b border-white/5">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3 text-xl font-bold tracking-tight text-white font-heading">
@@ -97,16 +106,16 @@ export default function ProjectView() {
           <div className="flex items-center gap-6">
             <div className="hidden md:flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-white/40 mr-2 border border-white/10 px-3 py-1.5 rounded-full bg-white/5">
               <span className="w-1.5 h-1.5 rounded-full animate-pulse shadow-[0_0_8px_currentColor]" style={{ backgroundColor: btnColor, color: btnColor }}></span>
-              Sistem Aktif
+              Live
             </div>
             <button className="hidden md:block text-sm font-medium text-white/60 hover:text-white transition-colors">
-              Giriş Yap
+              Login
             </button>
             <button 
               className="px-5 py-2.5 text-white text-sm font-medium rounded-lg transition-all hover:scale-105" 
               style={{ backgroundColor: btnColor, boxShadow: `0 0 20px -5px ${btnColor}` }}
             >
-              Hemen Başla
+              Get Started
             </button>
           </div>
         </div>
@@ -114,14 +123,12 @@ export default function ProjectView() {
 
       <main className="pt-32 pb-20 md:pt-40 relative z-10">
         
-        {/* 2. HERO BÖLÜMÜ - Asimetrik ve Çarpıcı */}
         <section className="max-w-7xl mx-auto px-6 lg:px-8 mb-32">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
             
-            {/* Sol: Devasa Tipografi */}
             <div className="lg:col-span-7 flex flex-col items-start relative z-20">
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-white/5 text-white/70 text-sm font-medium mb-8 backdrop-blur-md">
-                Yeni Nesil Altyapı
+                Infrastructure Ready
               </div>
               
               <h1 className="font-heading text-5xl md:text-7xl lg:text-[5.5rem] font-extrabold tracking-tighter leading-[1.05] text-white mb-8">
@@ -137,7 +144,7 @@ export default function ProjectView() {
                   className="w-full sm:w-auto px-8 py-4 text-white rounded-xl font-semibold text-lg transition-all hover:shadow-[0_0_30px_-5px_rgba(0,0,0,0.5)] hover:-translate-y-1"
                   style={{ backgroundColor: btnColor, boxShadow: `0 0 20px -10px ${btnColor}` }}
                 >
-                  Ücretsiz Başlayın
+                  Start Free Trial
                 </button>
                 
                 {data.demoLink && (
@@ -148,21 +155,18 @@ export default function ProjectView() {
                     className="w-full sm:w-auto px-8 py-4 bg-white/5 border border-white/10 text-white rounded-xl font-medium text-lg hover:bg-white/10 transition-colors flex items-center justify-center gap-2"
                   >
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                    Sistemi İncele
+                    View Demo
                   </a>
                 )}
               </div>
             </div>
             
-            {/* Sağ: Ambient Glow ve Abstract Görsel */}
             <div className="lg:col-span-5 relative hidden lg:block h-[500px]">
-              {/* Ortam Işığı (Glassmorphism Glow) */}
               <div 
                 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] opacity-20 blur-[100px] rounded-full pointer-events-none" 
                 style={{ backgroundColor: btnColor }}
-              ></div>
+              />
               
-              {/* Premium Arayüz Temsili Kutu */}
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] h-[80%] rounded-2xl border border-white/10 bg-[#111111]/80 backdrop-blur-2xl shadow-2xl p-6 flex flex-col gap-4 transform rotate-y-[-15deg] perspective-[1000px] hover:rotate-y-0 transition-transform duration-700">
                 <div className="w-full flex justify-between items-center border-b border-white/10 pb-4">
                   <div className="flex gap-2">
@@ -174,7 +178,6 @@ export default function ProjectView() {
                 <div className="w-3/4 h-8 rounded-lg bg-white/5 mt-4"></div>
                 <div className="w-1/2 h-4 rounded-lg bg-white/5"></div>
                 <div className="mt-auto w-full h-32 rounded-xl border border-white/5 bg-gradient-to-t from-white/5 to-transparent relative overflow-hidden">
-                  {/* Sahte Grafik */}
                   <div className="absolute bottom-0 left-0 w-full h-1/2 opacity-30" style={{ background: `linear-gradient(to top, ${btnColor}, transparent)` }}></div>
                 </div>
               </div>
@@ -183,7 +186,6 @@ export default function ProjectView() {
           </div>
         </section>
 
-        {/* 3. BENTO GRID (Standart Kartları Yıkan Düzen) */}
         <section className="max-w-7xl mx-auto px-6 lg:px-8 py-20 border-t border-white/5">
           <div className="mb-16">
             <h2 className="font-heading text-3xl md:text-5xl font-bold tracking-tight text-white mb-4">
@@ -196,7 +198,6 @@ export default function ProjectView() {
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             
-            {/* Büyük Ana Kart */}
             <div className="md:col-span-2 bg-[#0A0A0A] border border-white/10 rounded-3xl p-10 flex flex-col justify-between overflow-hidden relative group hover:border-white/20 transition-colors">
               <div className="relative z-10">
                 <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-6 border border-white/10 bg-white/5" style={{ color: btnColor }}>
@@ -210,10 +211,11 @@ export default function ProjectView() {
               <div className="absolute -bottom-20 -right-20 w-64 h-64 blur-[80px] opacity-20 transition-opacity duration-500 group-hover:opacity-40" style={{ backgroundColor: btnColor }}></div>
             </div>
 
-            {/* İkincil Kart */}
             <div className="bg-[#0A0A0A] border border-white/10 rounded-3xl p-10 flex flex-col justify-center relative group hover:border-white/20 transition-colors">
               <div className="relative z-10">
-                <h3 className="text-5xl font-bold font-heading mb-2 text-white glow-text">{new Date().getFullYear()}</h3>
+                <h3 className="text-5xl font-bold font-heading mb-2 text-white" style={{ textShadow: `0 0 40px ${btnColor}80` }}>
+                  {new Date().getFullYear()}
+                </h3>
                 <p className="text-white/50 font-body text-sm uppercase tracking-widest">Modern Standartlar</p>
                 <div className="mt-8 border-t border-white/10 pt-6">
                   <p className="text-white/70 font-body text-base">Güvenli, hızlı ve sürekli güncel kalan altyapı mimarisi.</p>
@@ -221,16 +223,13 @@ export default function ProjectView() {
               </div>
             </div>
 
-            {/* CTA Geniş Kart */}
             <div className="md:col-span-3 bg-white/5 border border-white/10 rounded-3xl p-10 md:p-16 flex flex-col md:flex-row items-center justify-between gap-10 relative overflow-hidden">
               <div className="absolute inset-0 opacity-10" style={{ background: `radial-gradient(circle at 100% 50%, ${btnColor}, transparent)` }}></div>
               <div className="relative z-10 max-w-xl">
                 <h3 className="text-3xl font-bold text-white font-heading mb-4">{data.productName} ile tanışın.</h3>
                 <p className="text-white/50 font-body text-lg">Hemen şimdi yerinizi alın ve sektörünüzdeki dijital dönüşüme liderlik edin.</p>
               </div>
-              <button 
-                className="relative z-10 px-8 py-4 bg-white text-black rounded-xl font-bold text-lg hover:scale-105 transition-transform shrink-0 w-full md:w-auto"
-              >
+              <button className="relative z-10 px-8 py-4 bg-white text-black rounded-xl font-bold text-lg hover:scale-105 transition-transform shrink-0 w-full md:w-auto">
                 Hesap Oluştur
               </button>
             </div>
@@ -240,7 +239,6 @@ export default function ProjectView() {
 
       </main>
 
-      {/* 4. FOOTER - Temiz ve Kurumsal */}
       <footer className="border-t border-white/10 bg-[#000000] pt-16 pb-8 relative z-10">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col md:flex-row justify-between items-start gap-10 mb-16">
@@ -259,14 +257,14 @@ export default function ProjectView() {
 
             <div className="flex gap-16 text-sm font-medium">
               <div className="flex flex-col gap-4 text-white/40 font-body">
-                <a href="#" className="hover:text-white transition-colors">Özellikler</a>
-                <a href="#" className="hover:text-white transition-colors">Dokümantasyon</a>
-                <a href="#" className="hover:text-white transition-colors">Fiyatlandırma</a>
+                <a href="#" className="hover:text-white transition-colors">Features</a>
+                <a href="#" className="hover:text-white transition-colors">Documentation</a>
+                <a href="#" className="hover:text-white transition-colors">Pricing</a>
               </div>
               <div className="flex flex-col gap-4 text-white/40 font-body">
-                <a href="#" className="hover:text-white transition-colors">Hakkımızda</a>
-                <a href="#" className="hover:text-white transition-colors">Gizlilik Sözleşmesi</a>
-                <a href="#" className="hover:text-white transition-colors">Destek</a>
+                <a href="#" className="hover:text-white transition-colors">About Us</a>
+                <a href="#" className="hover:text-white transition-colors">Privacy</a>
+                <a href="#" className="hover:text-white transition-colors">Support</a>
               </div>
             </div>
             
@@ -281,7 +279,6 @@ export default function ProjectView() {
           </div>
         </div>
       </footer>
-
     </div>
   );
 }

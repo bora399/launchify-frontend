@@ -9,6 +9,8 @@ export default function CreateProject() {
   const [formData, setFormData] = useState({
     productName: "", themeType: "modern", contactEmail: "", adminPin: "", demoLink: "", productDescription: ""
   });
+  
+  const brandColor = "#6366F1";
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -32,16 +34,14 @@ export default function CreateProject() {
       catch { result = { id: responseText.replace(/"/g, '').trim() }; }
 
       if (response.ok) {
-        // Ürün adını URL'ye uygun hale getir (Örn: "Landscape Uygulaması" -> "landscape-uygulamasi")
         const generatedSlug = formData.productName
           .toString()
           .toLowerCase()
           .trim()
           .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's').replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ç/g, 'c')
-          .replace(/[\s\W-]+/g, '-') // Boşlukları ve özel karakterleri tireye çevir
-          .replace(/^-+|-+$/g, '');  // Baş ve sondaki fazla tireleri temizle
+          .replace(/[\s\W-]+/g, '-') 
+          .replace(/^-+|-+$/g, ''); 
 
-        // Doğrudan isme (slug) yönlendir
         router.push(`/${generatedSlug}`);
       } else {
         alert("Oluşturma başarısız. API bağlantısını kontrol edin.");
@@ -52,73 +52,109 @@ export default function CreateProject() {
       setIsLoading(false);
     }
   };
-  
   return (
-    // ÇÖZÜM BURADA: Bütün flex, justify ve items komutları silindi. 
-    // pt-[120px] ile en üste zorunlu ve kesin bir boşluk eklendi.
-    <div className="block w-full max-w-3xl mx-auto px-6 pt-[120px] pb-24">
+    <div className="min-h-screen bg-[#050505] text-[#FAFAFA] font-sans selection:bg-[#6366F1]/30 selection:text-white relative overflow-x-hidden">
+      
+      <style dangerouslySetInnerHTML={{__html: `
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600&family=Outfit:wght@400;500;700;800&display=swap');
+        .font-heading { font-family: 'Outfit', sans-serif; }
+        .font-body { font-family: 'Manrope', sans-serif; }
+        .dark-grid-pattern {
+          background-size: 50px 50px;
+          background-image:
+            linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        }
+      `}} />
+
+      <div className="fixed inset-0 dark-grid-pattern pointer-events-none z-0"></div>
+      <div className="fixed top-[10%] left-1/2 -translate-x-1/2 w-[600px] h-[500px] opacity-20 blur-[120px] rounded-full pointer-events-none" style={{ backgroundColor: brandColor }}></div>
+
+      <div className="relative z-10 w-full max-w-3xl mx-auto px-6 pt-32 pb-24">
         
-      <div className="mb-10">
-        <h1 className="text-3xl font-semibold text-zinc-900 tracking-tight mb-2">Yeni Proje Oluştur</h1>
-        <p className="text-zinc-500">Ürününüzün detaylarını girin, mimariyi AI yönetsin.</p>
-      </div>
+        <div className="mb-10 text-center">
+          <h1 className="text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-4 font-heading">
+            Sistemi Başlat
+          </h1>
+          <p className="text-white/50 font-body text-lg">
+            Ürününüzün temel parametrelerini girin, mimariyi ve metinleri yapay zekaya bırakın.
+          </p>
+        </div>
 
-      <div className="bg-white rounded-xl border border-zinc-200 p-8 shadow-sm">
-        <form onSubmit={handleSubmit} className="space-y-8">
-          <div className="grid md:grid-cols-2 gap-8">
-            <div>
-              <label className="block text-sm font-medium text-zinc-900 mb-2">Ürün Adı</label>
-              <input required type="text" name="productName" onChange={handleChange}
-                className="w-full bg-zinc-50 border border-zinc-200 text-zinc-900 rounded-md focus:bg-white focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 block p-3 outline-none transition-colors"
-                placeholder="Örn: Launchify SaaS" />
+        <div className="bg-[#111111]/80 backdrop-blur-xl rounded-3xl border border-white/10 p-8 md:p-12 shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#6366F1] to-transparent opacity-50"></div>
+          
+          <form onSubmit={handleSubmit} className="space-y-8 font-body relative z-10">
+            
+            <div className="grid md:grid-cols-2 gap-8">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-widest text-white/60 mb-3">Ürün Adı</label>
+                <input required type="text" name="productName" onChange={handleChange}
+                  className="w-full bg-white/5 border border-white/10 text-white rounded-xl focus:bg-white/10 focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1] block p-4 outline-none transition-all placeholder:text-white/20"
+                  placeholder="Örn: Launchify SaaS" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-widest text-white/60 mb-3">Tasarım Karakteri</label>
+                <select name="themeType" onChange={handleChange} 
+                  className="w-full bg-white/5 border border-white/10 text-white rounded-xl focus:bg-white/10 focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1] block p-4 outline-none appearance-none cursor-pointer transition-all [&>option]:bg-[#111111]">
+                  <option value="modern">Modern & Startup</option>
+                  <option value="classic">Kurumsal & Ciddi</option>
+                </select>
+              </div>
             </div>
+
             <div>
-              <label className="block text-sm font-medium text-zinc-900 mb-2">Tasarım Karakteri</label>
-              <select name="themeType" onChange={handleChange} className="w-full bg-zinc-50 border border-zinc-200 text-zinc-900 rounded-md focus:bg-white focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 block p-3 outline-none appearance-none cursor-pointer">
-                <option value="modern">Modern & Startup</option>
-                <option value="classic">Kurumsal & Ciddi</option>
-              </select>
+              <label className="block text-xs font-bold uppercase tracking-widest text-white/60 mb-3">Ürün Özellikleri (AI Briefi)</label>
+              <textarea required name="productDescription" rows={5} onChange={handleChange}
+                className="w-full bg-white/5 border border-white/10 text-white rounded-xl focus:bg-white/10 focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1] block p-4 outline-none resize-none transition-all placeholder:text-white/20 leading-relaxed"
+                placeholder="Platformunuz hangi problemi çözüyor? Temel özellikleri ve hedef kitlesi nelerdir?" />
             </div>
-          </div>
 
-          <div>
-            <label className="block text-sm font-medium text-zinc-900 mb-2">Ürün Özellikleri (AI Briefi)</label>
-            <textarea required name="productDescription" rows={5} onChange={handleChange}
-              className="w-full bg-zinc-50 border border-zinc-200 text-zinc-900 rounded-md focus:bg-white focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 block p-3 outline-none resize-none transition-colors"
-              placeholder="Platformunuz hangi problemi çözüyor? Temel özellikleri neler?" />
-          </div>
+            <div className="grid md:grid-cols-2 gap-8">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-widest text-white/60 mb-3">Kurumsal E-Posta</label>
+                <input required type="email" name="contactEmail" onChange={handleChange}
+                  className="w-full bg-white/5 border border-white/10 text-white rounded-xl focus:bg-white/10 focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1] block p-4 outline-none transition-all placeholder:text-white/20"
+                  placeholder="ornek@sirket.com" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-widest text-white/60 mb-3">Yönetici PIN</label>
+                <input required type="password" name="adminPin" onChange={handleChange}
+                  className="w-full bg-white/5 border border-white/10 text-white rounded-xl focus:bg-white/10 focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1] block p-4 outline-none transition-all placeholder:text-white/20 tracking-[0.3em]"
+                  placeholder="••••••••" />
+              </div>
+            </div>
 
-          <div className="grid md:grid-cols-2 gap-8">
             <div>
-              <label className="block text-sm font-medium text-zinc-900 mb-2">Kurumsal E-Posta</label>
-              <input required type="text" name="contactEmail" onChange={handleChange}
-                className="w-full bg-zinc-50 border border-zinc-200 text-zinc-900 rounded-md focus:bg-white focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 block p-3 outline-none transition-colors"
-                placeholder="ornek@sirket.com" />
+              <label className="block text-xs font-bold uppercase tracking-widest text-white/60 mb-3 flex items-center justify-between">
+                <span>Demo Linki</span>
+                <span className="text-[10px] text-white/30 border border-white/10 px-2 py-0.5 rounded-full">Opsiyonel</span>
+              </label>
+              <input type="url" name="demoLink" onChange={handleChange}
+                className="w-full bg-white/5 border border-white/10 text-white rounded-xl focus:bg-white/10 focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1] block p-4 outline-none transition-all placeholder:text-white/20"
+                placeholder="https://..." />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-zinc-900 mb-2">Yönetici PIN</label>
-              <input required type="password" name="adminPin" onChange={handleChange}
-                className="w-full bg-zinc-50 border border-zinc-200 text-zinc-900 rounded-md focus:bg-white focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 block p-3 outline-none transition-colors"
-                placeholder="••••••••" />
+
+            <div className="pt-6 border-t border-white/10">
+              <button type="submit" disabled={isLoading}
+                className="w-full text-white font-bold text-lg py-5 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 hover:scale-[1.02] flex justify-center items-center gap-3 shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]"
+                style={{ backgroundColor: brandColor }}
+              >
+                {isLoading ? (
+                  <>
+                    <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                    Altyapı Kuruluyor...
+                  </>
+                ) : (
+                  <>
+                    Platformu İnşa Et
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                  </>
+                )}
+              </button>
             </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-zinc-900 mb-2">Demo Linki (Opsiyonel)</label>
-            <input type="url" name="demoLink" onChange={handleChange}
-              className="w-full bg-zinc-50 border border-zinc-200 text-zinc-900 rounded-md focus:bg-white focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 block p-3 outline-none transition-colors"
-              placeholder="https://..." />
-          </div>
-
-          <div className="pt-4">
-            <button type="submit" disabled={isLoading}
-              className="w-full bg-zinc-900 text-white font-medium text-sm py-4 rounded-md hover:bg-zinc-800 transition-colors disabled:opacity-50 flex justify-center items-center gap-2"
-            >
-              {isLoading ? 'Sistem Derleniyor, Lütfen Bekleyin...' : 'Sistemi Başlat'}
-            </button>
-          </div>
-        </form>
-        
+          </form>
+        </div>
       </div>
     </div>
   );
