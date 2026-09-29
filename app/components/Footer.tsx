@@ -1,9 +1,17 @@
 "use client";
 
 import Link from "next/link";
+import Logo from './Logo';
+import { usePathname } from 'next/navigation';
 
 export default function Footer() {
-  const brandColor = "#6366F1";
+  const pathname = usePathname();
+
+  // Platforma ait sayfalar. URL bu listede yoksa (yani slug sayfasıysa) Footer'ı render etme
+  const platformPages = ['/', '/create', '/about'];
+  if (!platformPages.includes(pathname)) {
+    return null;
+  }
 
   return (
     <footer className="border-t border-white/5 bg-[#000000] pt-16 pb-8 relative z-10 text-[#FAFAFA]">
@@ -12,15 +20,10 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row justify-between items-start gap-10 mb-16">
           
           <div className="max-w-sm">
-            <Link href="/" className="flex items-center gap-3 text-2xl font-bold text-white mb-6" style={{ fontFamily: "'Outfit', sans-serif" }}>
-              <div 
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm" 
-                style={{ backgroundColor: brandColor }}
-              >
-                L
-              </div>
-              Launchify.
-            </Link>
+            <div className="mb-6">
+              <Logo />
+            </div>
+            
             <p className="text-sm text-white/40 leading-relaxed mb-6" style={{ fontFamily: "'Manrope', sans-serif" }}>
               Fikirlerinizi saniyeler içinde dönüşüm odaklı, profesyonel web sayfalarına dönüştüren B2B Landing Page motoru.
             </p>
@@ -34,14 +37,23 @@ export default function Footer() {
             <div className="flex flex-col gap-4 text-white/40">
               <h4 className="text-white font-semibold mb-2">Ürün</h4>
               <Link href="/create" className="hover:text-white transition-colors">Hemen Başla</Link>
-              <Link href="/#ozellikler" className="hover:text-white transition-colors">CQRS Mimarisi</Link>
-              <Link href="#" className="hover:text-white transition-colors">Fiyatlandırma</Link>
+              <Link 
+                href="/#ozellikler" 
+                onClick={(e) => {  
+                  if (window.location.pathname === '/') {    
+                    e.preventDefault();    
+                    document.getElementById('ozellikler')?.scrollIntoView({ behavior: 'smooth' });    
+                    window.history.pushState(null, '', '/#ozellikler');  
+                  }
+                }}
+                className="hover:text-white transition-colors"
+              >
+                Özellikler
+              </Link>            
             </div>
             <div className="flex flex-col gap-4 text-white/40">
               <h4 className="text-white font-semibold mb-2">Kurumsal</h4>
-              <Link href="#" className="hover:text-white transition-colors">Hakkımızda</Link>
-              <Link href="#" className="hover:text-white transition-colors">Gizlilik Politikası</Link>
-              <Link href="#" className="hover:text-white transition-colors">Kullanım Koşulları</Link>
+              <Link href="/about" className="hover:text-white transition-colors">Hakkımızda</Link>
             </div>
           </div>
           

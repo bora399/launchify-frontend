@@ -29,7 +29,7 @@ export default function CreateProject() {
     setErrorMessage("");
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://localhost:7022";
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://launchify-backend-3a7w.onrender.com";
       const response = await fetch(`${apiUrl}/api/LandingPages/create`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -82,7 +82,7 @@ export default function CreateProject() {
             Sistemi Başlat
           </h1>
           <p className="text-white/50 font-body text-lg">
-            Ürününüzün temel parametrelerini girin, mimariyi ve metinleri yapay zekaya bırakın.
+            Ürününüzün temel parametrelerini girin, mimariyi ve metinleri bize bırakın.
           </p>
         </div>
 

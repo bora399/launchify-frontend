@@ -2,16 +2,25 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import Logo from './Logo'; 
+import { usePathname } from 'next/navigation';
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const brandColor = "#6366F1"; 
+  const pathname = usePathname();
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Platforma ait sayfalar. URL bu listede yoksa (yani slug sayfasıysa) Navbar'ı render etme
+  const platformPages = ['/', '/create', '/about'];
+  if (!platformPages.includes(pathname)) {
+    return null;
+  }
 
   return (
     <nav 
@@ -23,20 +32,39 @@ export default function Navbar() {
     >
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
         
-        <Link href="/" className="flex items-center gap-3 text-2xl font-bold tracking-tight text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>
-          <div 
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm shadow-[0_0_15px_rgba(99,102,241,0.3)]" 
-            style={{ backgroundColor: brandColor }}
-          >
-            L
-          </div>
-          Launchify.
-        </Link>
+        <Logo />
         
         <div className="hidden md:flex items-center gap-8 text-sm font-medium text-white/50" style={{ fontFamily: "'Manrope', sans-serif" }}>
-          <Link href="/" className="hover:text-white transition-colors">Ana Sayfa</Link>
-          <Link href="/#ozellikler" className="hover:text-white transition-colors">Özellikler</Link>
+          <Link 
+            href="/" 
+            onClick={(e) => {
+              if (window.location.pathname === '/') {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                window.history.pushState(null, '', '/');
+              }
+            }}
+            className="hover:text-white transition-colors"
+          >
+            Ana Sayfa
+          </Link>
+          
+          <Link 
+            href="/#ozellikler" 
+            onClick={(e) => {
+              if (window.location.pathname === '/') {
+                e.preventDefault();
+                document.getElementById('ozellikler')?.scrollIntoView({ behavior: 'smooth' });
+                window.history.pushState(null, '', '/#ozellikler');
+              }
+            }}
+            className="hover:text-white transition-colors"
+          >
+            Özellikler
+          </Link>
+          
           <Link href="/create" className="hover:text-white transition-colors">Platform Üret</Link>
+          <Link href="/about" className="hover:text-white transition-colors">Hakkımızda</Link>
         </div>
         
         <div className="flex items-center gap-6">
