@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { Metadata } from 'next';
 
 interface ProjectData {
   productName: string;
@@ -14,6 +15,33 @@ interface ProjectData {
 }
 
 const DEFAULT_ACCENT_COLOR = "#3B82F6";
+
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  try {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://localhost:7022";
+    const res = await fetch(`${apiUrl}/api/LandingPages/${params.slug}`);
+    
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    
+    const productName = data.productName || data.ProductName;
+    const heroTitle = data.aiGeneratedHeroTitle || data.AiGeneratedHeroTitle;
+
+    return {
+      title: `${productName} | Launchify Generated`,
+      description: heroTitle,
+      openGraph: {
+        title: productName,
+        description: heroTitle,
+        type: 'website',
+      },
+    };
+  } catch (error) {
+    return {
+      title: 'Platform Bulunamadı | Launchify',
+    };
+  }
+}
 
 export default function ProjectView() {
   const params = useParams();

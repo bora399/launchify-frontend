@@ -3,55 +3,60 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+const BRAND_COLOR = "#6366F1";
+
 export default function CreateProject() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    productName: "", themeType: "modern", contactEmail: "", adminPin: "", demoLink: "", productDescription: ""
-  });
+  const [errorMessage, setErrorMessage] = useState("");
   
-  const brandColor = "#6366F1";
+  const [formData, setFormData] = useState({
+    productName: "", 
+    themeType: "modern", 
+    contactEmail: "", 
+    demoLink: "", 
+    productDescription: ""
+  });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    setErrorMessage(""); 
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setErrorMessage("");
 
     try {
-      const response = await fetch('https://localhost:7022/api/LandingPages/create', {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://localhost:7022";
+      const response = await fetch(`${apiUrl}/api/LandingPages/create`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: "demo-user", photos: [], ...formData }),
+        body: JSON.stringify({ ...formData }),
       });
-
-      const responseText = await response.text();
-      let result: any = {};
-      
-      try { result = JSON.parse(responseText); } 
-      catch { result = { id: responseText.replace(/"/g, '').trim() }; }
 
       if (response.ok) {
         const generatedSlug = formData.productName
           .toString()
           .toLowerCase()
           .trim()
-          .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's').replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ç/g, 'c')
+          .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's')
+          .replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ç/g, 'c')
           .replace(/[\s\W-]+/g, '-') 
           .replace(/^-+|-+$/g, ''); 
 
         router.push(`/${generatedSlug}`);
       } else {
-        alert("Oluşturma başarısız. API bağlantısını kontrol edin.");
+        setErrorMessage("Sistem şu anda yoğun veya altyapı yanıt vermiyor. Lütfen daha sonra tekrar deneyin.");
       }
     } catch (error) {
-      alert("Sunucu hatası. .NET Backend'in çalıştığından emin olun.");
+      setErrorMessage("Sunucu ile bağlantı kurulamadı. Ağ bağlantınızı veya güvenlik duvarınızı kontrol edin.");
     } finally {
       setIsLoading(false);
     }
   };
+
   return (
     <div className="min-h-screen bg-[#050505] text-[#FAFAFA] font-sans selection:bg-[#6366F1]/30 selection:text-white relative overflow-x-hidden">
       
@@ -68,7 +73,7 @@ export default function CreateProject() {
       `}} />
 
       <div className="fixed inset-0 dark-grid-pattern pointer-events-none z-0"></div>
-      <div className="fixed top-[10%] left-1/2 -translate-x-1/2 w-[600px] h-[500px] opacity-20 blur-[120px] rounded-full pointer-events-none" style={{ backgroundColor: brandColor }}></div>
+      <div className="fixed top-[10%] left-1/2 -translate-x-1/2 w-[600px] h-[500px] opacity-20 blur-[120px] rounded-full pointer-events-none" style={{ backgroundColor: BRAND_COLOR }}></div>
 
       <div className="relative z-10 w-full max-w-3xl mx-auto px-6 pt-32 pb-24">
         
@@ -84,18 +89,25 @@ export default function CreateProject() {
         <div className="bg-[#111111]/80 backdrop-blur-xl rounded-3xl border border-white/10 p-8 md:p-12 shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#6366F1] to-transparent opacity-50"></div>
           
+          {errorMessage && (
+            <div className="mb-8 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm font-medium flex items-center gap-3">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              {errorMessage}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-8 font-body relative z-10">
             
             <div className="grid md:grid-cols-2 gap-8">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-widest text-white/60 mb-3">Ürün Adı</label>
-                <input required type="text" name="productName" onChange={handleChange}
+                <label htmlFor="productName" className="block text-xs font-bold uppercase tracking-widest text-white/60 mb-3 cursor-pointer">Ürün Adı</label>
+                <input id="productName" required type="text" name="productName" onChange={handleChange} maxLength={60}
                   className="w-full bg-white/5 border border-white/10 text-white rounded-xl focus:bg-white/10 focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1] block p-4 outline-none transition-all placeholder:text-white/20"
                   placeholder="Örn: Launchify SaaS" />
               </div>
               <div>
-                <label className="block text-xs font-bold uppercase tracking-widest text-white/60 mb-3">Tasarım Karakteri</label>
-                <select name="themeType" onChange={handleChange} 
+                <label htmlFor="themeType" className="block text-xs font-bold uppercase tracking-widest text-white/60 mb-3 cursor-pointer">Tasarım Karakteri</label>
+                <select id="themeType" name="themeType" onChange={handleChange} 
                   className="w-full bg-white/5 border border-white/10 text-white rounded-xl focus:bg-white/10 focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1] block p-4 outline-none appearance-none cursor-pointer transition-all [&>option]:bg-[#111111]">
                   <option value="modern">Modern & Startup</option>
                   <option value="classic">Kurumsal & Ciddi</option>
@@ -104,41 +116,37 @@ export default function CreateProject() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-widest text-white/60 mb-3">Ürün Özellikleri (AI Briefi)</label>
-              <textarea required name="productDescription" rows={5} onChange={handleChange}
+              <label htmlFor="productDescription" className="block text-xs font-bold uppercase tracking-widest text-white/60 mb-3 flex items-center justify-between cursor-pointer">
+                <span>Ürün Özellikleri (AI Briefi)</span>
+                <span className="text-[10px] text-white/30">{formData.productDescription.length}/1000</span>
+              </label>
+              <textarea id="productDescription" required name="productDescription" rows={5} onChange={handleChange} maxLength={1000}
                 className="w-full bg-white/5 border border-white/10 text-white rounded-xl focus:bg-white/10 focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1] block p-4 outline-none resize-none transition-all placeholder:text-white/20 leading-relaxed"
                 placeholder="Platformunuz hangi problemi çözüyor? Temel özellikleri ve hedef kitlesi nelerdir?" />
             </div>
 
             <div className="grid md:grid-cols-2 gap-8">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-widest text-white/60 mb-3">Kurumsal E-Posta</label>
-                <input required type="email" name="contactEmail" onChange={handleChange}
+                <label htmlFor="contactEmail" className="block text-xs font-bold uppercase tracking-widest text-white/60 mb-3 cursor-pointer">Kurumsal E-Posta</label>
+                <input id="contactEmail" required type="email" name="contactEmail" onChange={handleChange} maxLength={100}
                   className="w-full bg-white/5 border border-white/10 text-white rounded-xl focus:bg-white/10 focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1] block p-4 outline-none transition-all placeholder:text-white/20"
                   placeholder="ornek@sirket.com" />
               </div>
               <div>
-                <label className="block text-xs font-bold uppercase tracking-widest text-white/60 mb-3">Yönetici PIN</label>
-                <input required type="password" name="adminPin" onChange={handleChange}
-                  className="w-full bg-white/5 border border-white/10 text-white rounded-xl focus:bg-white/10 focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1] block p-4 outline-none transition-all placeholder:text-white/20 tracking-[0.3em]"
-                  placeholder="••••••••" />
+                <label htmlFor="demoLink" className="block text-xs font-bold uppercase tracking-widest text-white/60 mb-3 flex items-center justify-between cursor-pointer">
+                  <span>Demo Linki</span>
+                  <span className="text-[10px] text-white/30 border border-white/10 px-2 py-0.5 rounded-full">Opsiyonel</span>
+                </label>
+                <input id="demoLink" type="url" name="demoLink" onChange={handleChange} maxLength={255}
+                  className="w-full bg-white/5 border border-white/10 text-white rounded-xl focus:bg-white/10 focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1] block p-4 outline-none transition-all placeholder:text-white/20"
+                  placeholder="https://..." />
               </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-widest text-white/60 mb-3 flex items-center justify-between">
-                <span>Demo Linki</span>
-                <span className="text-[10px] text-white/30 border border-white/10 px-2 py-0.5 rounded-full">Opsiyonel</span>
-              </label>
-              <input type="url" name="demoLink" onChange={handleChange}
-                className="w-full bg-white/5 border border-white/10 text-white rounded-xl focus:bg-white/10 focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1] block p-4 outline-none transition-all placeholder:text-white/20"
-                placeholder="https://..." />
             </div>
 
             <div className="pt-6 border-t border-white/10">
               <button type="submit" disabled={isLoading}
                 className="w-full text-white font-bold text-lg py-5 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 hover:scale-[1.02] flex justify-center items-center gap-3 shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]"
-                style={{ backgroundColor: brandColor }}
+                style={{ backgroundColor: BRAND_COLOR }}
               >
                 {isLoading ? (
                   <>
