@@ -7,14 +7,13 @@ interface ProjectData {
   aiGeneratedHeroTitle: string;
   aiGeneratedMarketingCopy: string;
   accentColor: string;
-  demoLink?: string | null; // TypeScript'in null değerine kızmasını engelledik
+  demoLink?: string | null; 
 }
 
 const DEFAULT_ACCENT_COLOR = "#3B82F6";
 
 export default function LandingPageClient({ data }: { data: ProjectData }) {
   const btnColor = data.accentColor || DEFAULT_ACCENT_COLOR;
-  // Eğer ürün adı veritabanından kazara boş gelirse sayfanın çökmesini önleyen güvenlik ağı
   const safeProductName = data.productName || "Platform"; 
 
   return (
