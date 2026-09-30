@@ -7,13 +7,15 @@ interface ProjectData {
   aiGeneratedHeroTitle: string;
   aiGeneratedMarketingCopy: string;
   accentColor: string;
-  demoLink?: string;
+  demoLink?: string | null; // TypeScript'in null değerine kızmasını engelledik
 }
 
 const DEFAULT_ACCENT_COLOR = "#3B82F6";
 
 export default function LandingPageClient({ data }: { data: ProjectData }) {
   const btnColor = data.accentColor || DEFAULT_ACCENT_COLOR;
+  // Eğer ürün adı veritabanından kazara boş gelirse sayfanın çökmesini önleyen güvenlik ağı
+  const safeProductName = data.productName || "Platform"; 
 
   return (
     <div className="min-h-screen bg-[#050505] text-[#FAFAFA] font-sans selection:bg-white/20 selection:text-white relative overflow-x-hidden">
@@ -40,9 +42,9 @@ export default function LandingPageClient({ data }: { data: ProjectData }) {
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3 text-xl font-bold tracking-tight text-white font-heading">
             <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm shadow-[0_0_15px_rgba(0,0,0,0.5)]" style={{ backgroundColor: btnColor }}>
-              {data.productName.charAt(0).toUpperCase()}
+              {safeProductName.charAt(0).toUpperCase()}
             </div>
-            {data.productName}
+            {safeProductName}
           </div>
           
           <div className="flex items-center gap-6">
@@ -131,7 +133,7 @@ export default function LandingPageClient({ data }: { data: ProjectData }) {
         <section className="max-w-7xl mx-auto px-6 lg:px-8 py-20 border-t border-white/5">
           <div className="mb-16">
             <h2 className="font-heading text-3xl md:text-5xl font-bold tracking-tight text-white mb-4">
-              Neden {data.productName}?
+              Neden {safeProductName}?
             </h2>
             <p className="text-white/50 text-lg font-body max-w-xl">
               Alışılmış standartların ötesinde, doğrudan büyümenize odaklanan yenilikçi çözüm mimarisi.
@@ -168,7 +170,7 @@ export default function LandingPageClient({ data }: { data: ProjectData }) {
             <div className="md:col-span-3 bg-white/5 border border-white/10 rounded-3xl p-10 md:p-16 flex flex-col md:flex-row items-center justify-between gap-10 relative overflow-hidden">
               <div className="absolute inset-0 opacity-10" style={{ background: `radial-gradient(circle at 100% 50%, ${btnColor}, transparent)` }}></div>
               <div className="relative z-10 max-w-xl">
-                <h3 className="text-3xl font-bold text-white font-heading mb-4">{data.productName} ile tanışın.</h3>
+                <h3 className="text-3xl font-bold text-white font-heading mb-4">{safeProductName} ile tanışın.</h3>
                 <p className="text-white/50 font-body text-lg">Hemen şimdi yerinizi alın ve sektörünüzdeki dijital dönüşüme liderlik edin.</p>
               </div>
               <button className="relative z-10 px-8 py-4 bg-white text-black rounded-xl font-bold text-lg hover:scale-105 transition-transform shrink-0 w-full md:w-auto">
@@ -188,9 +190,9 @@ export default function LandingPageClient({ data }: { data: ProjectData }) {
             <div>
               <div className="flex items-center gap-2 text-2xl font-bold text-white mb-4 font-heading">
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm" style={{ backgroundColor: btnColor }}>
-                  {data.productName.charAt(0).toUpperCase()}
+                  {safeProductName.charAt(0).toUpperCase()}
                 </div>
-                {data.productName}
+                {safeProductName}
               </div>
               <p className="text-sm text-white/40 max-w-xs font-body leading-relaxed">
                 İşletmeler için yüksek performanslı dijital altyapı çözümleri.
@@ -213,7 +215,7 @@ export default function LandingPageClient({ data }: { data: ProjectData }) {
           </div>
           
           <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs font-medium text-white/30 font-body">
-            <p>© {new Date().getFullYear()} {data.productName}. Tüm hakları saklıdır.</p>
+            <p>© {new Date().getFullYear()} {safeProductName}. Tüm hakları saklıdır.</p>
             <Link href="/" className="hover:text-white transition-colors flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full border border-white/10">
               <span className="w-2 h-2 rounded-full bg-white/40"></span>
               Powered by Launchify

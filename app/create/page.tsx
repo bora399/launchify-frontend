@@ -33,7 +33,13 @@ export default function CreateProject() {
       const response = await fetch(`${apiUrl}/api/LandingPages/create`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData }),
+        body: JSON.stringify({
+          ProductName: formData.productName,
+          ThemeType: formData.themeType,
+          ContactEmail: formData.contactEmail,
+          DemoLink: formData.demoLink === "" ? null : formData.demoLink,
+          ProductDescription: formData.productDescription
+        }),
       });
 
       if (response.ok) {

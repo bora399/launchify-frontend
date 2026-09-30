@@ -58,7 +58,8 @@ export default async function SlugPage({ params }: { params: Promise<{ slug: str
         aiGeneratedHeroTitle: fetchedData.aiGeneratedHeroTitle || fetchedData.AiGeneratedHeroTitle || "Vizyonunuzu Hayata Geçirin.",
         aiGeneratedMarketingCopy: fetchedData.aiGeneratedMarketingCopy || fetchedData.AiGeneratedMarketingCopy || "Yeni nesil altyapı çözümleri.",
         accentColor: fetchedData.accentColor || fetchedData.AccentColor || DEFAULT_ACCENT_COLOR,
-        demoLink: fetchedData.demoLink || fetchedData.DemoLink,
+        // null gelirse undefined'a çeviriyoruz ki TypeScript kızmasın
+        demoLink: fetchedData.demoLink ?? fetchedData.DemoLink ?? undefined,
       };
     }
   } catch (error) {
