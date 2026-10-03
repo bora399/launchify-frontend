@@ -1,11 +1,15 @@
 import { Metadata } from 'next';
-import LandingPageClient from './LandingPageClient';
-
+import TemplateBrutal from '../components/templates/Brutal';
+import TemplateMinimal from '../components/templates/Minimal';
+import TemplateCorporate from '../components/templates/Corporate';
+import TemplateAurora from '../components/templates/Aurora';
+// Şablon bileşenlerini import ediyoruz
 interface ProjectData {
   productName: string;
   aiGeneratedHeroTitle: string;
   aiGeneratedMarketingCopy: string;
   accentColor: string;
+  templateType: string;
   demoLink?: string;
 }
 
@@ -58,7 +62,7 @@ export default async function SlugPage({ params }: { params: Promise<{ slug: str
         aiGeneratedHeroTitle: fetchedData.aiGeneratedHeroTitle || fetchedData.AiGeneratedHeroTitle || "Vizyonunuzu Hayata Geçirin.",
         aiGeneratedMarketingCopy: fetchedData.aiGeneratedMarketingCopy || fetchedData.AiGeneratedMarketingCopy || "Yeni nesil altyapı çözümleri.",
         accentColor: fetchedData.accentColor || fetchedData.AccentColor || DEFAULT_ACCENT_COLOR,
-        // null gelirse undefined'a çeviriyoruz ki TypeScript kızmasın
+        templateType: fetchedData.templateType || fetchedData.TemplateType || "aurora", // DEFAULT OLARAK AURORA
         demoLink: fetchedData.demoLink ?? fetchedData.DemoLink ?? undefined,
       };
     }
@@ -77,5 +81,15 @@ export default async function SlugPage({ params }: { params: Promise<{ slug: str
     );
   }
 
-  return <LandingPageClient data={projectData} />;
+  switch (projectData.templateType.toLowerCase()) {
+    case 'brutal':
+      return <TemplateBrutal data={projectData} />;
+    case 'minimal':
+      return <TemplateMinimal data={projectData} />;
+    case 'corporate':
+      return <TemplateCorporate data={projectData} />;
+    case 'aurora':
+    default:
+      return <TemplateAurora data={projectData} />;
+  }
 }

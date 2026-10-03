@@ -5,6 +5,65 @@ import { useRouter } from "next/navigation";
 
 const BRAND_COLOR = "#6366F1";
 
+// Şablonlarımızın görsel ve metin verileri
+const TEMPLATES = [
+  {
+    id: "aurora",
+    name: "Aurora Glass",
+    desc: "Bulanık ışıklar, cam efekti, koyu tema. Startup ve AI projeleri için kusursuz.",
+    previewClass: "bg-black relative overflow-hidden",
+    previewVibe: (
+      <>
+        <div className="absolute top-[-20%] left-[-20%] w-[100%] h-[100%] rounded-full bg-purple-600/50 blur-[20px]"></div>
+        <div className="absolute bottom-[-20%] right-[-20%] w-[100%] h-[100%] rounded-full bg-blue-600/50 blur-[20px]"></div>
+        <div className="absolute inset-2 border border-white/20 bg-white/10 backdrop-blur-md rounded-md"></div>
+      </>
+    )
+  },
+  {
+    id: "brutal",
+    name: "Neo-Brutal",
+    desc: "Sert sınırlar, asimetrik gölgeler, cesur renkler. Trend ve dikkat çekici projeler için.",
+    previewClass: "bg-[#FDE047] border-2 border-black",
+    previewVibe: (
+      <div className="w-full h-full p-2 flex flex-col justify-between">
+        <div className="w-3/4 h-2 bg-black"></div>
+        <div className="w-1/2 h-6 border-2 border-black bg-white shadow-[2px_2px_0px_rgba(0,0,0,1)]"></div>
+      </div>
+    )
+  },
+  {
+    id: "minimal",
+    name: "Zen Minimal",
+    desc: "Geniş boşluklar, zarif tipografi ve sadelik. Kreatif ajans ve portfolyolar için.",
+    previewClass: "bg-white",
+    previewVibe: (
+      <div className="w-full h-full p-3 flex flex-col items-center justify-center gap-2">
+        <div className="w-1/3 h-1 bg-gray-300"></div>
+        <div className="w-2/3 h-1 bg-gray-200"></div>
+        <div className="w-1/2 h-1 bg-gray-200"></div>
+      </div>
+    )
+  },
+  {
+    id: "corporate",
+    name: "Corporate Trust",
+    desc: "Güven veren açık tonlar, net yapılar. Kurumsal çözümler ve B2B platformlar için.",
+    previewClass: "bg-gray-100",
+    previewVibe: (
+      <div className="w-full h-full flex flex-col">
+        <div className="w-full h-3 bg-white shadow-sm flex items-center px-1">
+           <div className="w-2 h-2 rounded-sm bg-slate-800"></div>
+        </div>
+        <div className="flex-1 flex gap-1 p-1 items-center justify-center">
+          <div className="w-1/2 h-4/5 bg-white rounded-sm shadow-sm"></div>
+          <div className="w-1/2 h-4/5 bg-slate-200 rounded-sm"></div>
+        </div>
+      </div>
+    )
+  }
+];
+
 export default function CreateProject() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -12,15 +71,19 @@ export default function CreateProject() {
   
   const [formData, setFormData] = useState({
     productName: "", 
-    themeType: "modern", 
+    templateType: "aurora", // Varsayılan olarak ilk şablonu atadık
     contactEmail: "", 
     demoLink: "", 
     productDescription: ""
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setErrorMessage(""); 
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const selectTemplate = (id: string) => {
+    setFormData({ ...formData, templateType: id });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -35,7 +98,8 @@ export default function CreateProject() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ProductName: formData.productName,
-          ThemeType: formData.themeType,
+          ThemeType: formData.templateType, // Geriye dönük uyumluluk (AI promptu için)
+          TemplateType: formData.templateType, // Router yönlendirmesi için
           ContactEmail: formData.contactEmail,
           DemoLink: formData.demoLink === "" ? null : formData.demoLink,
           ProductDescription: formData.productDescription
@@ -81,14 +145,14 @@ export default function CreateProject() {
       <div className="fixed inset-0 dark-grid-pattern pointer-events-none z-0"></div>
       <div className="fixed top-[10%] left-1/2 -translate-x-1/2 w-[600px] h-[500px] opacity-20 blur-[120px] rounded-full pointer-events-none" style={{ backgroundColor: BRAND_COLOR }}></div>
 
-      <div className="relative z-10 w-full max-w-3xl mx-auto px-6 pt-32 pb-24">
+      <div className="relative z-10 w-full max-w-4xl mx-auto px-6 pt-24 pb-24">
         
-        <div className="mb-10 text-center">
+        <div className="mb-12 text-center">
           <h1 className="text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-4 font-heading">
             Sistemi Başlat
           </h1>
-          <p className="text-white/50 font-body text-lg">
-            Ürününüzün temel parametrelerini girin, mimariyi ve metinleri bize bırakın.
+          <p className="text-white/50 font-body text-lg max-w-2xl mx-auto">
+            Ürününüzün temel parametrelerini girin, görsel karakteri seçin; gerisini yapay zekaya bırakın.
           </p>
         </div>
 
@@ -102,33 +166,64 @@ export default function CreateProject() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-8 font-body relative z-10">
+          <form onSubmit={handleSubmit} className="space-y-10 font-body relative z-10">
             
-            <div className="grid md:grid-cols-2 gap-8">
-              <div>
-                <label htmlFor="productName" className="block text-xs font-bold uppercase tracking-widest text-white/60 mb-3 cursor-pointer">Ürün Adı</label>
-                <input id="productName" required type="text" name="productName" onChange={handleChange} maxLength={60}
-                  className="w-full bg-white/5 border border-white/10 text-white rounded-xl focus:bg-white/10 focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1] block p-4 outline-none transition-all placeholder:text-white/20"
-                  placeholder="Örn: Launchify SaaS" />
-              </div>
-              <div>
-                <label htmlFor="themeType" className="block text-xs font-bold uppercase tracking-widest text-white/60 mb-3 cursor-pointer">Tasarım Karakteri</label>
-                <select id="themeType" name="themeType" onChange={handleChange} 
-                  className="w-full bg-white/5 border border-white/10 text-white rounded-xl focus:bg-white/10 focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1] block p-4 outline-none appearance-none cursor-pointer transition-all [&>option]:bg-[#111111]">
-                  <option value="modern">Modern & Startup</option>
-                  <option value="classic">Kurumsal & Ciddi</option>
-                </select>
+            {/* Ürün Adı */}
+            <div>
+              <label htmlFor="productName" className="block text-xs font-bold uppercase tracking-widest text-white/60 mb-3 cursor-pointer">Ürün / Platform Adı</label>
+              <input id="productName" required type="text" name="productName" onChange={handleChange} maxLength={60}
+                className="w-full bg-white/5 border border-white/10 text-white rounded-xl focus:bg-white/10 focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1] block p-4 outline-none transition-all placeholder:text-white/20"
+                placeholder="Örn: Launchify SaaS" />
+            </div>
+
+            {/* Şablon Seçimi (Yenilikçi Tasarım) */}
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-widest text-white/60 mb-4">Tasarım Karakteri (Şablon)</label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {TEMPLATES.map((template) => (
+                  <div 
+                    key={template.id}
+                    onClick={() => selectTemplate(template.id)}
+                    className={`group cursor-pointer p-4 rounded-2xl border transition-all duration-300 flex items-start gap-4 ${
+                      formData.templateType === template.id 
+                        ? 'border-[#6366F1] bg-[#6366F1]/10 ring-1 ring-[#6366F1]' 
+                        : 'border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20'
+                    }`}
+                  >
+                    {/* Görsel Önizleme Kutusu */}
+                    <div className={`shrink-0 w-20 h-20 rounded-xl overflow-hidden ${template.previewClass} relative shadow-inner`}>
+                       {template.previewVibe}
+                    </div>
+                    {/* Metin Alanı */}
+                    <div className="flex flex-col justify-center h-full">
+                      <h3 className={`font-bold text-lg transition-colors ${formData.templateType === template.id ? 'text-[#6366F1]' : 'text-white group-hover:text-white/90'}`}>
+                        {template.name}
+                      </h3>
+                      <p className="text-white/40 text-xs mt-1 leading-relaxed">
+                        {template.desc}
+                      </p>
+                    </div>
+                    
+                    {/* Seçili İkonu */}
+                    {formData.templateType === template.id && (
+                      <div className="absolute top-4 right-4 text-[#6366F1]">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
 
+            {/* Ürün Açıklaması */}
             <div>
               <label htmlFor="productDescription" className="block text-xs font-bold uppercase tracking-widest text-white/60 mb-3 flex items-center justify-between cursor-pointer">
                 <span>Ürün Özellikleri (AI Briefi)</span>
                 <span className="text-[10px] text-white/30">{formData.productDescription.length}/1000</span>
               </label>
-              <textarea id="productDescription" required name="productDescription" rows={5} onChange={handleChange} maxLength={1000}
+              <textarea id="productDescription" required name="productDescription" rows={4} onChange={handleChange} maxLength={1000}
                 className="w-full bg-white/5 border border-white/10 text-white rounded-xl focus:bg-white/10 focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1] block p-4 outline-none resize-none transition-all placeholder:text-white/20 leading-relaxed"
-                placeholder="Platformunuz hangi problemi çözüyor? Temel özellikleri ve hedef kitlesi nelerdir?" />
+                placeholder="Platformunuz hangi problemi çözüyor? Hedef kitleye sağladığı temel fayda nedir?" />
             </div>
 
             <div className="grid md:grid-cols-2 gap-8">
@@ -157,7 +252,7 @@ export default function CreateProject() {
                 {isLoading ? (
                   <>
                     <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                    Altyapı Kuruluyor...
+                    Yapay Zeka İnşa Ediyor...
                   </>
                 ) : (
                   <>
