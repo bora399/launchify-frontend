@@ -3,7 +3,7 @@ import TemplateBrutal from '../components/templates/Brutal';
 import TemplateMinimal from '../components/templates/Minimal';
 import TemplateCorporate from '../components/templates/Corporate';
 import TemplateAurora from '../components/templates/Aurora';
-// Şablon bileşenlerini import ediyoruz
+
 interface ProjectData {
   productName: string;
   aiGeneratedHeroTitle: string;
@@ -26,22 +26,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     if (!res.ok) throw new Error();
     const data = await res.json();
     
-    const productName = data.productName || data.ProductName;
-    const heroTitle = data.aiGeneratedHeroTitle || data.AiGeneratedHeroTitle;
-
     return {
-      title: `${productName} | Launchify Generated`,
-      description: heroTitle,
-      openGraph: {
-        title: productName,
-        description: heroTitle,
-        type: 'website',
-      },
+      title: `${data.productName || data.ProductName} | Launchify Generated`,
     };
-  } catch (error) {
-    return {
-      title: 'Platform Bulunamadı | Launchify',
-    };
+  } catch {
+    return { title: 'Platform Bulunamadı | Launchify' };
   }
 }
 
@@ -62,7 +51,7 @@ export default async function SlugPage({ params }: { params: Promise<{ slug: str
         aiGeneratedHeroTitle: fetchedData.aiGeneratedHeroTitle || fetchedData.AiGeneratedHeroTitle || "Vizyonunuzu Hayata Geçirin.",
         aiGeneratedMarketingCopy: fetchedData.aiGeneratedMarketingCopy || fetchedData.AiGeneratedMarketingCopy || "Yeni nesil altyapı çözümleri.",
         accentColor: fetchedData.accentColor || fetchedData.AccentColor || DEFAULT_ACCENT_COLOR,
-        templateType: fetchedData.templateType || fetchedData.TemplateType || "aurora", // DEFAULT OLARAK AURORA
+        templateType: (fetchedData.templateType || fetchedData.TemplateType || "aurora").toLowerCase(),
         demoLink: fetchedData.demoLink ?? fetchedData.DemoLink ?? undefined,
       };
     }
@@ -72,16 +61,15 @@ export default async function SlugPage({ params }: { params: Promise<{ slug: str
   
   if (!projectData) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#050505] text-white p-6">
-        <div className="border border-white/10 bg-white/5 p-8 max-w-lg text-center rounded-2xl backdrop-blur-md">
-          <h1 className="text-2xl font-bold mb-3 tracking-tight">404 - Not Found</h1>
-          <p className="text-white/50 text-sm">Platform bulunamadı veya yapılandırma henüz tamamlanmadı.</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-black text-white">
+         <h1>404 - Proje Bulunamadı</h1>
       </div>
     );
   }
 
-  switch (projectData.templateType.toLowerCase()) {
+  // BURASI EN ÖNEMLİ KISIM: Gelen isme göre doğru bileşeni ekrana basar.
+  // Senin eski LandingPageClient'ı kullanmayı BIRAKIYORUZ.
+  switch (projectData.templateType) {
     case 'brutal':
       return <TemplateBrutal data={projectData} />;
     case 'minimal':
