@@ -47,13 +47,15 @@ export default async function SlugPage({ params }: { params: Promise<{ slug: str
     if (res.ok) {
       const fetchedData = await res.json();
       projectData = {
-        productName: fetchedData.productName || fetchedData.ProductName || "Platform",
-        aiGeneratedHeroTitle: fetchedData.aiGeneratedHeroTitle || fetchedData.AiGeneratedHeroTitle || "Vizyonunuzu Hayata Geçirin.",
-        aiGeneratedMarketingCopy: fetchedData.aiGeneratedMarketingCopy || fetchedData.AiGeneratedMarketingCopy || "Yeni nesil altyapı çözümleri.",
-        accentColor: fetchedData.accentColor || fetchedData.AccentColor || DEFAULT_ACCENT_COLOR,
-        templateType: (fetchedData.templateType || fetchedData.TemplateType || "aurora").toLowerCase(),
-        demoLink: fetchedData.demoLink ?? fetchedData.DemoLink ?? undefined,
-      };
+      productName: fetchedData.productName || fetchedData.ProductName || "Platform",
+      aiGeneratedHeroTitle: fetchedData.aiGeneratedHeroTitle || fetchedData.AiGeneratedHeroTitle || "Vizyonunuzu Hayata Geçirin.",
+      aiGeneratedMarketingCopy: fetchedData.aiGeneratedMarketingCopy || fetchedData.AiGeneratedMarketingCopy || "Yeni nesil altyapı çözümleri.",
+      accentColor: fetchedData.accentColor || fetchedData.AccentColor || DEFAULT_ACCENT_COLOR,
+          
+      templateType: (fetchedData.templateType || fetchedData.TemplateType || fetchedData.themeType || fetchedData.ThemeType || "aurora").toLowerCase(),
+          
+      demoLink: fetchedData.demoLink ?? fetchedData.DemoLink ?? undefined,
+    };
     }
   } catch (error) {
     console.error("Veri çekilirken hata oluştu:", error);
