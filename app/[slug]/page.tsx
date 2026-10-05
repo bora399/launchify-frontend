@@ -69,8 +69,6 @@ export default async function SlugPage({ params }: { params: Promise<{ slug: str
     );
   }
 
-  // BURASI EN ÖNEMLİ KISIM: Gelen isme göre doğru bileşeni ekrana basar.
-  // Senin eski LandingPageClient'ı kullanmayı BIRAKIYORUZ.
   switch (projectData.templateType) {
     case 'brutal':
       return <TemplateBrutal data={projectData} />;
