@@ -3,12 +3,22 @@
 import Link from "next/link";
 import Logo from './Logo';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from "react";
+import { auth } from "@/firebase";
+import { onAuthStateChanged, User } from "firebase/auth";
 
 export default function Footer() {
   const pathname = usePathname();
+  const [user, setUser] = useState<User | null>(null);
 
-  // Platforma ait sayfalar. URL bu listede yoksa (yani slug sayfasıysa) Footer'ı render etme
-  const platformPages = ['/', '/create', '/about'];
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const platformPages = ['/', '/create', '/about', '/dashboard'];
   if (!platformPages.includes(pathname)) {
     return null;
   }
@@ -34,6 +44,7 @@ export default function Footer() {
           </div>
 
           <div className="flex gap-16 text-sm font-medium" style={{ fontFamily: "'Manrope', sans-serif" }}>
+            
             <div className="flex flex-col gap-4 text-white/40">
               <h4 className="text-white font-semibold mb-2">Ürün</h4>
               <Link href="/create" className="hover:text-white transition-colors">Hemen Başla</Link>
@@ -51,10 +62,21 @@ export default function Footer() {
                 Özellikler
               </Link>            
             </div>
+            
             <div className="flex flex-col gap-4 text-white/40">
               <h4 className="text-white font-semibold mb-2">Kurumsal</h4>
               <Link href="/about" className="hover:text-white transition-colors">Hakkımızda</Link>
             </div>
+
+            <div className="flex flex-col gap-4 text-white/40">
+              <h4 className="text-white font-semibold mb-2">Hesap</h4>
+              {!user ? (
+                <Link href="/login" className="hover:text-white transition-colors">Giriş Yap</Link>
+              ) : (
+                <Link href="/dashboard" className="hover:text-white transition-colors">Panelim</Link>
+              )}
+            </div>
+
           </div>
           
         </div>

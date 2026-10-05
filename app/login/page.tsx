@@ -14,8 +14,12 @@ export default function LoginPage() {
   const [message, setMessage] = useState("");
   const router = useRouter();
 
+  // ... diğer importlar
+  
+  // KULLANICI MAİLDEKİ LİNKE TIKLAYIP GELDİ Mİ KONTROLÜ
   useEffect(() => {
     const checkEmailLink = async () => {
+      // isSignInWithEmailLink, URL'yi kontrol eder
       if (isSignInWithEmailLink(auth, window.location.href)) {
         setLoading(true);
         let savedEmail = window.localStorage.getItem("emailForSignIn");
@@ -28,7 +32,8 @@ export default function LoginPage() {
           try {
             await signInWithEmailLink(auth, savedEmail, window.location.href);
             window.localStorage.removeItem("emailForSignIn");
-            router.push("/dashboard");
+            // GİRİŞ BAŞARILIYSA OTOMATİK DASHBOARD'A ATAN KOD BURASI:
+            router.push("/dashboard"); 
           } catch (err: any) {
             setError("Giriş bağlantısı geçersiz veya süresi dolmuş. Lütfen yeni bir bağlantı isteyin.");
             setLoading(false);
