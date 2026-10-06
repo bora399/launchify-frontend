@@ -8,11 +8,11 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Launchify",
-  description: "Fikirlerinizi saniyeler içinde dönüşüm odaklı, profesyonel web sayfalarına dönüştüren B2B SaaS platformu.",
+  description: "Fikirlerinizi saniyeler içinde dönüşüm odaklı, profesyonel web sayfalarına dönüştüren platform.",
   keywords: ["saas", "landing page", "web builder", "ai", "launchify"],
   openGraph: {
     title: "Launchify | Fikirlerinizi Koda Dökün",
-    description: "Fikirlerinizi saniyeler içinde dönüşüm odaklı, profesyonel web sayfalarına dönüştüren B2B SaaS platformu.",
+    description: "Fikirlerinizi saniyeler içinde dönüşüm odaklı, profesyonel web sayfalarına dönüştüren platform.",
     url: "https://launchify-frontend-theta.vercel.app",
     siteName: "Launchify",
     locale: "tr_TR",
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Launchify | Fikirlerinizi Koda Dökün",
-    description: "Fikirlerinizi saniyeler içinde dönüşüm odaklı, profesyonel web sayfalarına dönüştüren B2B SaaS platformu.",
+    description: "Fikirlerinizi saniyeler içinde dönüşüm odaklı, profesyonel web sayfalarına dönüştüren platform.",
   },
 };
 
