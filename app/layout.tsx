@@ -10,6 +10,19 @@ export const metadata: Metadata = {
   title: "Launchify",
   description: "Fikirlerinizi saniyeler içinde dönüşüm odaklı, profesyonel web sayfalarına dönüştüren B2B SaaS platformu.",
   keywords: ["saas", "landing page", "web builder", "ai", "launchify"],
+  openGraph: {
+    title: "Launchify | Fikirlerinizi Koda Dökün",
+    description: "Fikirlerinizi saniyeler içinde dönüşüm odaklı, profesyonel web sayfalarına dönüştüren B2B SaaS platformu.",
+    url: "https://launchify-frontend-theta.vercel.app",
+    siteName: "Launchify",
+    locale: "tr_TR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Launchify | Fikirlerinizi Koda Dökün",
+    description: "Fikirlerinizi saniyeler içinde dönüşüm odaklı, profesyonel web sayfalarına dönüştüren B2B SaaS platformu.",
+  },
 };
 
 export default function RootLayout({
