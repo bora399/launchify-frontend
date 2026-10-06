@@ -32,7 +32,7 @@ export default function Navbar() {
 
   const navLinks = [
     { name: "Ana Sayfa", href: "/" },
-    { name: "Özellikler", href: "/features" },
+    { name: "Özellikler", href: "/#ozellikler" },
     { name: "Platform Üret", href: "/create" },
     { name: "Hakkımızda", href: "/about" },
   ];
