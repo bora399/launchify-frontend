@@ -12,7 +12,7 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const pathname = usePathname();
-  const router = useRouter(); // Yönlendirme için eklendi
+  const router = useRouter(); 
 
   const isActive = (path: string) => pathname === path;
 
@@ -31,7 +31,6 @@ export default function Navbar() {
     }
   }, [isMobileMenuOpen]);
 
-  // YENİ: Çıkış Yap Fonksiyonu
   const handleLogout = async () => {
     try {
       await signOut(auth);
@@ -41,6 +40,13 @@ export default function Navbar() {
       console.error("Çıkış yaparken hata:", error);
     }
   };
+
+  const systemPrefixes = ["/create", "/about", "/login", "/dashboard"];
+  const isSystemRoute = pathname === "/" || systemPrefixes.some(prefix => pathname.startsWith(prefix));
+
+  if (!isSystemRoute) {
+    return null;
+  }
 
   const navLinks = [
     { name: "Ana Sayfa", href: "/" },
