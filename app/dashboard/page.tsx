@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { auth } from "@/firebase";
 import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import { useRouter } from "next/navigation";
@@ -15,16 +15,27 @@ export default function DashboardPage() {
   
   const [remainingCredits, setRemainingCredits] = useState<number | null>(null);
   
+  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+  const [projectToDelete, setProjectToDelete] = useState<any | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  
   const router = useRouter();
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://launchify-backend-3a7w.onrender.com";
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (!currentUser) {
-        router.push("/login");
-      } else {
-        setUser(currentUser);
+    const handleClickOutside = (e: MouseEvent) => {
+      if (!(e.target as Element).closest('.dropdown-container')) {
+        setOpenDropdownId(null);
       }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (!currentUser) router.push("/login");
+      else setUser(currentUser);
       setAuthLoading(false);
     });
     return () => unsubscribe();
@@ -33,31 +44,46 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchData = async () => {
       if (!user?.uid) return;
-
       try {
         const projRes = await fetch(`${apiUrl}/api/LandingPages/user/${user.uid}`);
-        if (projRes.ok) {
-          const data = await projRes.json();
-          setProjects(data);
-        }
+        if (projRes.ok) setProjects(await projRes.json());
 
         const userRes = await fetch(`${apiUrl}/api/User/${user.uid}`);
         if (userRes.ok) {
           const userData = await userRes.json();
           setRemainingCredits(userData.remainingCredits);
         }
-
       } catch (error) {
         console.error("Bağlantı hatası:", error);
       } finally {
         setProjectsLoading(false);
       }
     };
-
-    if (user) {
-      fetchData();
-    }
+    if (user) fetchData();
   }, [user, apiUrl]);
+
+  const handleDeleteProject = async () => {
+    if (!projectToDelete || !user) return;
+    setIsDeleting(true);
+
+    try {
+      const res = await fetch(`${apiUrl}/api/LandingPages/${projectToDelete.id}?userId=${user.uid}`, {
+        method: 'DELETE',
+      });
+
+      if (res.ok) {
+        setProjects(projects.filter(p => p.id !== projectToDelete.id));
+        setRemainingCredits(prev => prev !== null ? prev + 1 : prev);
+        setProjectToDelete(null);
+      } else {
+        alert("Proje silinirken bir hata oluştu.");
+      }
+    } catch (error) {
+      console.error("Silme hatası:", error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   if (authLoading) return (
     <div className="min-h-screen bg-[#050505] flex items-center justify-center">
@@ -68,6 +94,40 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-[#050505] text-[#FAFAFA] font-sans selection:bg-white/20 relative overflow-hidden pt-32 pb-20">
       
+      {projectToDelete && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+          <div className="bg-[#111] border border-white/10 rounded-2xl p-6 md:p-8 max-w-md w-full shadow-2xl animate-in fade-in zoom-in duration-200">
+            <div className="w-12 h-12 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mb-5 border border-red-500/20">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+            </div>
+            <h3 className="text-xl font-bold mb-2 font-heading">Projeyi Kaldır</h3>
+            <p className="text-white/50 text-sm mb-6">
+              <strong className="text-white">{projectToDelete.productName || projectToDelete.slug}</strong> adlı projeyi kalıcı olarak silmek istediğinize emin misiniz? Bu işlem geri alınamaz ve <strong className="text-green-400">1 krediniz hesabınıza iade edilecektir.</strong>
+            </p>
+            <div className="flex items-center gap-3 w-full">
+              <button 
+                onClick={() => setProjectToDelete(null)}
+                disabled={isDeleting}
+                className="flex-1 py-3 px-4 bg-white/5 border border-white/10 rounded-xl text-white font-medium hover:bg-white/10 transition-colors disabled:opacity-50"
+              >
+                İptal Et
+              </button>
+              <button 
+                onClick={handleDeleteProject}
+                disabled={isDeleting}
+                className="flex-1 py-3 px-4 bg-red-500 text-white font-bold rounded-xl hover:bg-red-600 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {isDeleting ? (
+                  <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                ) : (
+                  "Evet, Kaldır"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <style dangerouslySetInnerHTML={{__html: `
         .dark-grid-pattern {
           background-size: 50px 50px;
@@ -158,9 +218,37 @@ export default function DashboardPage() {
                     <Link href={`/${project.slug}`} target="_blank" className="text-sm font-medium bg-white/5 hover:bg-white/10 px-4 py-2.5 rounded-xl transition-colors flex-1 text-center border border-white/5 group-hover:border-white/10">
                       Siteyi Görüntüle
                     </Link>
-                    <button className="p-2.5 text-white/40 hover:text-white hover:bg-white/10 transition-colors bg-white/5 rounded-xl border border-white/5" title="Ayarlar">
-                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-                    </button>
+                    
+                    <div className="relative dropdown-container">
+                      <button 
+                        onClick={() => setOpenDropdownId(openDropdownId === project.id ? null : project.id)}
+                        className={`p-2.5 hover:text-white transition-colors rounded-xl border border-white/5 ${openDropdownId === project.id ? 'bg-white/10 text-white' : 'bg-white/5 text-white/40 hover:bg-white/10'}`} 
+                        title="Ayarlar"
+                      >
+                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                      </button>
+
+                      {/* Dropdown Menü */}
+                      {openDropdownId === project.id && (
+                        <div className="absolute right-0 bottom-full mb-2 w-40 bg-[#1A1A1A] border border-white/10 rounded-xl shadow-xl overflow-hidden z-50 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                          <Link href={`/${project.slug}`} target="_blank" className="flex items-center gap-2 w-full px-4 py-3 text-sm text-white/80 hover:bg-white/5 hover:text-white transition-colors">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                            Siteyi İncele
+                          </Link>
+                          <div className="h-px bg-white/5 w-full"></div>
+                          <button 
+                            onClick={() => {
+                              setProjectToDelete(project);
+                              setOpenDropdownId(null);
+                            }}
+                            className="flex items-center gap-2 w-full px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors text-left"
+                          >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                            Kaldır
+                          </button>
+                        </div>
+                      )}
+                    </div>
                  </div>
               </div>
             ))}
