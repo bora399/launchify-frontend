@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { auth } from "@/firebase";
-import { onAuthStateChanged, User } from "firebase/auth";
+import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import Image from "next/image";
 import iconSvg from "@/app/icon.svg"; 
 
@@ -12,6 +12,7 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const pathname = usePathname();
+  const router = useRouter(); // Yönlendirme için eklendi
 
   const isActive = (path: string) => pathname === path;
 
@@ -29,6 +30,17 @@ export default function Navbar() {
       document.body.style.overflow = "unset";
     }
   }, [isMobileMenuOpen]);
+
+  // YENİ: Çıkış Yap Fonksiyonu
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      setIsMobileMenuOpen(false);
+      router.push("/login");
+    } catch (error) {
+      console.error("Çıkış yaparken hata:", error);
+    }
+  };
 
   const navLinks = [
     { name: "Ana Sayfa", href: "/" },
@@ -59,15 +71,21 @@ export default function Navbar() {
             ))}
           </nav>
 
-          <div className="hidden md:flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-5">
             {user ? (
               <>
                 <Link href="/dashboard" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
                   Panelim
                 </Link>
+                <button 
+                  onClick={handleLogout}
+                  className="text-sm font-medium text-red-400/70 hover:text-red-400 transition-colors"
+                >
+                  Çıkış Yap
+                </button>
                 <Link 
                   href="/create" 
-                  className="px-5 py-2.5 text-white text-sm font-semibold rounded-xl hover:scale-105 transition-all flex items-center gap-2"
+                  className="px-5 py-2.5 text-white text-sm font-semibold rounded-xl hover:scale-105 transition-all flex items-center gap-2 ml-2"
                   style={{ backgroundColor: "#6366F1", boxShadow: "0 0 20px -5px rgba(99,102,241,0.5)" }}
                 >
                   Projeyi Başlat <span className="text-lg leading-none">→</span>
@@ -135,6 +153,12 @@ export default function Navbar() {
               >
                 Projeyi Başlat <span className="text-xl leading-none">→</span>
               </Link>
+              <button 
+                onClick={handleLogout}
+                className="w-full py-4 mt-2 bg-red-500/10 border border-red-500/20 text-center text-red-400 font-bold rounded-xl active:bg-red-500/20 transition-colors"
+              >
+                Çıkış Yap
+              </button>
             </>
           ) : (
             <Link 
