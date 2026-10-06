@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { auth } from "@/firebase";
+import { onAuthStateChanged } from "firebase/auth";
+import Link from "next/link";
 
 const BRAND_COLOR = "#6366F1";
 
-// Şablonlarımızın görsel ve metin verileri
 const TEMPLATES = [
   {
     id: "aurora",
@@ -69,13 +71,45 @@ export default function CreateProject() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   
+  const [userId, setUserId] = useState<string | null>(null);
+  
+  // YENİ: Kredi Kontrol State'leri
+  const [remainingCredits, setRemainingCredits] = useState<number | null>(null);
+  const [isCreditChecking, setIsCreditChecking] = useState(true);
+  
   const [formData, setFormData] = useState({
     productName: "", 
-    templateType: "aurora", // Varsayılan olarak ilk şablonu atadık
+    templateType: "aurora", 
     contactEmail: "", 
     demoLink: "", 
     productDescription: ""
   });
+
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://launchify-backend-3a7w.onrender.com";
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        setUserId(user.uid);
+        
+        try {
+          const res = await fetch(`${apiUrl}/api/User/${user.uid}`);
+          if (res.ok) {
+            const data = await res.json();
+            setRemainingCredits(data.remainingCredits);
+          }
+        } catch (err) {
+          console.error("Kredi kontrol hatası:", err);
+        } finally {
+          setIsCreditChecking(false);
+        }
+      } else {
+        setUserId(null);
+        setIsCreditChecking(false);
+      }
+    });
+    return () => unsubscribe();
+  }, [apiUrl]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setErrorMessage(""); 
@@ -88,37 +122,41 @@ export default function CreateProject() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!userId) {
+      setErrorMessage("Proje oluşturabilmek için lütfen önce giriş yapın.");
+      return;
+    }
+    
+    if (remainingCredits !== null && remainingCredits <= 0) {
+      setErrorMessage("Proje oluşturma hakkınız (krediniz) bitmiştir.");
+      return;
+    }
+
     setIsLoading(true);
     setErrorMessage("");
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://launchify-backend-3a7w.onrender.com";
       const response = await fetch(`${apiUrl}/api/LandingPages/create`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ProductName: formData.productName,
-          ThemeType: formData.templateType, // Geriye dönük uyumluluk (AI promptu için)
-          TemplateType: formData.templateType, // Router yönlendirmesi için
+          ThemeType: formData.templateType, 
+          TemplateType: formData.templateType,
           ContactEmail: formData.contactEmail,
           DemoLink: formData.demoLink === "" ? null : formData.demoLink,
-          ProductDescription: formData.productDescription
+          ProductDescription: formData.productDescription,
+          UserId: userId 
         }),
       });
 
-      if (response.ok) {
-        const generatedSlug = formData.productName
-          .toString()
-          .toLowerCase()
-          .trim()
-          .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's')
-          .replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ç/g, 'c')
-          .replace(/[\s\W-]+/g, '-') 
-          .replace(/^-+|-+$/g, ''); 
+      const responseData = await response.json();
 
-        router.push(`/${generatedSlug}`);
+      if (response.ok) {
+        router.push(`/${responseData.slug}`);
       } else {
-        setErrorMessage("Sistem şu anda yoğun veya altyapı yanıt vermiyor. Lütfen daha sonra tekrar deneyin.");
+        setErrorMessage(responseData.message || "Sistem şu anda yoğun veya altyapı yanıt vermiyor. Lütfen daha sonra tekrar deneyin.");
       }
     } catch (error) {
       setErrorMessage("Sunucu ile bağlantı kurulamadı. Ağ bağlantınızı veya güvenlik duvarınızı kontrol edin.");
@@ -126,6 +164,8 @@ export default function CreateProject() {
       setIsLoading(false);
     }
   };
+
+  const isOutOfCredits = !isCreditChecking && remainingCredits !== null && remainingCredits <= 0;
 
   return (
     <div className="min-h-screen bg-[#050505] text-[#FAFAFA] font-sans selection:bg-[#6366F1]/30 selection:text-white relative overflow-x-hidden">
@@ -159,16 +199,30 @@ export default function CreateProject() {
         <div className="bg-[#111111]/80 backdrop-blur-xl rounded-3xl border border-white/10 p-8 md:p-12 shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#6366F1] to-transparent opacity-50"></div>
           
-          {errorMessage && (
+          {isOutOfCredits && (
+            <div className="absolute inset-0 z-50 bg-[#050505]/80 backdrop-blur-md flex flex-col items-center justify-center text-center p-8">
+              <div className="w-16 h-16 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mb-6 border border-red-500/20 shadow-[0_0_30px_-5px_rgba(239,68,68,0.3)]">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+              </div>
+              <h2 className="text-3xl font-bold font-heading mb-3">Krediniz Tükendi</h2>
+              <p className="text-white/50 max-w-md mb-8">
+                Tanımlanan ücretsiz proje oluşturma hakkınızı doldurdunuz. Daha fazla Landing Page üretmek için bizimle iletişime geçin veya paketinizi yükseltin.
+              </p>
+              <Link href="/dashboard" className="px-8 py-3 bg-white text-black font-bold rounded-xl hover:bg-gray-200 transition-colors">
+                Panele Dön
+              </Link>
+            </div>
+          )}
+
+          {errorMessage && !isOutOfCredits && (
             <div className="mb-8 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm font-medium flex items-center gap-3">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
               {errorMessage}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-10 font-body relative z-10">
+          <form onSubmit={handleSubmit} className={`space-y-10 font-body relative z-10 ${isOutOfCredits ? 'opacity-30 pointer-events-none blur-sm' : ''}`}>
             
-            {/* Ürün Adı */}
             <div>
               <label htmlFor="productName" className="block text-xs font-bold uppercase tracking-widest text-white/60 mb-3 cursor-pointer">Ürün / Platform Adı</label>
               <input id="productName" required type="text" name="productName" onChange={handleChange} maxLength={60}
@@ -176,7 +230,6 @@ export default function CreateProject() {
                 placeholder="Örn: Launchify SaaS" />
             </div>
 
-            {/* Şablon Seçimi (Yenilikçi Tasarım) */}
             <div>
               <label className="block text-xs font-bold uppercase tracking-widest text-white/60 mb-4">Tasarım Karakteri (Şablon)</label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -190,11 +243,9 @@ export default function CreateProject() {
                         : 'border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20'
                     }`}
                   >
-                    {/* Görsel Önizleme Kutusu */}
                     <div className={`shrink-0 w-20 h-20 rounded-xl overflow-hidden ${template.previewClass} relative shadow-inner`}>
                        {template.previewVibe}
                     </div>
-                    {/* Metin Alanı */}
                     <div className="flex flex-col justify-center h-full">
                       <h3 className={`font-bold text-lg transition-colors ${formData.templateType === template.id ? 'text-[#6366F1]' : 'text-white group-hover:text-white/90'}`}>
                         {template.name}
@@ -203,8 +254,6 @@ export default function CreateProject() {
                         {template.desc}
                       </p>
                     </div>
-                    
-                    {/* Seçili İkonu */}
                     {formData.templateType === template.id && (
                       <div className="absolute top-4 right-4 text-[#6366F1]">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
@@ -215,7 +264,6 @@ export default function CreateProject() {
               </div>
             </div>
 
-            {/* Ürün Açıklaması */}
             <div>
               <label htmlFor="productDescription" className="block text-xs font-bold uppercase tracking-widest text-white/60 mb-3 flex items-center justify-between cursor-pointer">
                 <span>Ürün Özellikleri (AI Briefi)</span>
@@ -245,11 +293,16 @@ export default function CreateProject() {
             </div>
 
             <div className="pt-6 border-t border-white/10">
-              <button type="submit" disabled={isLoading}
+              <button type="submit" disabled={isLoading || isCreditChecking || isOutOfCredits}
                 className="w-full text-white font-bold text-lg py-5 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 hover:scale-[1.02] flex justify-center items-center gap-3 shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]"
                 style={{ backgroundColor: BRAND_COLOR }}
               >
-                {isLoading ? (
+                {isCreditChecking ? (
+                  <>
+                    <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                    Sistem Kontrol Ediliyor...
+                  </>
+                ) : isLoading ? (
                   <>
                     <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
                     Yapay Zeka İnşa Ediyor...

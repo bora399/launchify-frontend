@@ -13,13 +13,23 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const router = useRouter();
-
-  // ... diğer importlar
   
-  // KULLANICI MAİLDEKİ LİNKE TIKLAYIP GELDİ Mİ KONTROLÜ
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://launchify-backend-3a7w.onrender.com";
+
+  const syncUserWithBackend = async (user: any) => {
+    try {
+      await fetch(`${apiUrl}/api/User/sync`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ uid: user.uid, email: user.email })
+      });
+    } catch (err) {
+      console.error("Backend senkronizasyon hatası:", err);
+    }
+  };
+
   useEffect(() => {
     const checkEmailLink = async () => {
-      // isSignInWithEmailLink, URL'yi kontrol eder
       if (isSignInWithEmailLink(auth, window.location.href)) {
         setLoading(true);
         let savedEmail = window.localStorage.getItem("emailForSignIn");
@@ -30,9 +40,11 @@ export default function LoginPage() {
 
         if (savedEmail) {
           try {
-            await signInWithEmailLink(auth, savedEmail, window.location.href);
+            const result = await signInWithEmailLink(auth, savedEmail, window.location.href);
             window.localStorage.removeItem("emailForSignIn");
-            // GİRİŞ BAŞARILIYSA OTOMATİK DASHBOARD'A ATAN KOD BURASI:
+            
+            await syncUserWithBackend(result.user);
+            
             router.push("/dashboard"); 
           } catch (err: any) {
             setError("Giriş bağlantısı geçersiz veya süresi dolmuş. Lütfen yeni bir bağlantı isteyin.");
@@ -44,13 +56,16 @@ export default function LoginPage() {
       }
     };
     checkEmailLink();
-  }, [router]);
+  }, [router, apiUrl]);
 
   const handleGoogleLogin = async () => {
     setLoading(true);
     setError("");
     try {
-      await signInWithPopup(auth, googleProvider);
+      const result = await signInWithPopup(auth, googleProvider);
+      
+      await syncUserWithBackend(result.user);
+      
       router.push("/dashboard");
     } catch (err: any) {
       setError("Google ile giriş yapılamadı.");
