@@ -73,7 +73,10 @@ export default function CreateProject() {
   
   const [userId, setUserId] = useState<string | null>(null);
   
-  // YENİ: Kredi Kontrol State'leri
+  // EKLENDİ: Sayfa yetki kontrolü sırasındaki yüklenme durumu
+  const [authLoading, setAuthLoading] = useState(true);
+  
+  // Kredi Kontrol State'leri
   const [remainingCredits, setRemainingCredits] = useState<number | null>(null);
   const [isCreditChecking, setIsCreditChecking] = useState(true);
   
@@ -102,14 +105,14 @@ export default function CreateProject() {
           console.error("Kredi kontrol hatası:", err);
         } finally {
           setIsCreditChecking(false);
+          setAuthLoading(false);
         }
       } else {
-        setUserId(null);
-        setIsCreditChecking(false);
+        router.push("/login");
       }
     });
     return () => unsubscribe();
-  }, [apiUrl]);
+  }, [apiUrl, router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setErrorMessage(""); 
@@ -166,6 +169,14 @@ export default function CreateProject() {
   };
 
   const isOutOfCredits = !isCreditChecking && remainingCredits !== null && remainingCredits <= 0;
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-[#050505] flex items-center justify-center">
+        <span className="w-8 h-8 border-2 border-white/20 border-t-[#6366F1] rounded-full animate-spin"></span>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#050505] text-[#FAFAFA] font-sans selection:bg-[#6366F1]/30 selection:text-white relative overflow-x-hidden">
