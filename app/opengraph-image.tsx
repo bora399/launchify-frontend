@@ -1,5 +1,4 @@
 import { ImageResponse } from 'next/og'
-import iconSvg from '@/app/icon.svg'
  
 export const runtime = 'edge'
  
@@ -10,12 +9,7 @@ export const size = {
 }
 export const contentType = 'image/png'
  
-export default async function Image(req: Request) {
-  const url = new URL(req.url)
-  const origin = url.origin
-  
-  const imgSrc = `${origin}${iconSvg.src}`
-
+export default async function Image() {
   return new ImageResponse(
     (
       <div
@@ -27,32 +21,17 @@ export default async function Image(req: Request) {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          position: 'relative',
           fontFamily: 'sans-serif',
-          overflow: 'hidden',
         }}
       >
         <div
           style={{
             position: 'absolute',
-            top: '-20%',
-            left: '-10%',
-            width: '800px',
-            height: '800px',
-            background: 'radial-gradient(circle, rgba(99,102,241,0.2) 0%, rgba(0,0,0,0) 70%)',
-            borderRadius: '50%',
-          }}
-        />
-        
-        <div
-          style={{
-            position: 'absolute',
-            bottom: '-20%',
-            right: '-10%',
-            width: '800px',
-            height: '800px',
-            background: 'radial-gradient(circle, rgba(168,85,247,0.15) 0%, rgba(0,0,0,0) 70%)',
-            borderRadius: '50%',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '16px',
+            background: 'linear-gradient(to right, #407ec9, #7bed97)',
           }}
         />
 
@@ -62,21 +41,41 @@ export default async function Image(req: Request) {
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            zIndex: 10,
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '30px' }}>
-            <img
-              src={imgSrc}
-              width="80"
-              height="80"
-              style={{
-                marginRight: '24px',
-              }}
-            />
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '40px' }}>
+            
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              viewBox="0 0 512 512" 
+              width="100" 
+              height="100" 
+              style={{ marginRight: '30px' }}
+            >
+              <defs>
+                <linearGradient id="leftGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#407ec9"/>
+                  <stop offset="100%" stopColor="#4abec3"/>
+                </linearGradient>
+                
+                <linearGradient id="rightGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#6ad5bd"/>
+                  <stop offset="100%" stopColor="#7bed97"/>
+                </linearGradient>
+              </defs>
+              
+              <rect x="16" y="16" width="480" height="480" rx="140" fill="#1e1e1e" stroke="#333333" strokeWidth="6"/>
+              
+              <line x1="256" y1="16" x2="256" y2="496" stroke="#262626" strokeWidth="4"/>
+              <line x1="16" y1="256" x2="496" y2="256" stroke="#262626" strokeWidth="4"/>
+
+              <polygon points="256,136 136,376 256,312" fill="url(#leftGrad)"/>
+              <polygon points="256,136 376,376 256,312" fill="url(#rightGrad)"/>
+            </svg>
+            
             <h1
               style={{
-                fontSize: '72px',
+                fontSize: '80px',
                 fontWeight: '900',
                 color: 'white',
                 margin: 0,
@@ -104,11 +103,11 @@ export default async function Image(req: Request) {
 
           <p
             style={{
-              fontSize: '32px',
-              color: 'rgba(255,255,255,0.6)',
+              fontSize: '36px',
+              color: '#a1a1aa',
               margin: 0,
               textAlign: 'center',
-              maxWidth: '850px',
+              maxWidth: '900px',
               lineHeight: 1.4,
             }}
           >

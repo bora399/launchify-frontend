@@ -1,28 +1,22 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
-    <!-- Sol parça için mavi-turkuaz degrade -->
     <linearGradient id="leftGrad" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" stop-color="#407ec9"/>
       <stop offset="100%" stop-color="#4abec3"/>
     </linearGradient>
     
-    <!-- Sağ parça için nane yeşili degrade -->
     <linearGradient id="rightGrad" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" stop-color="#6ad5bd"/>
       <stop offset="100%" stop-color="#7bed97"/>
     </linearGradient>
   </defs>
   
-  <!-- Koyu gri arka plan ve ince sınır çizgisi -->
   <rect x="16" y="16" width="480" height="480" rx="140" fill="#1e1e1e" stroke="#333333" stroke-width="6"/>
   
-  <!-- Referans görseldeki arka planda yer alan hafif kılavuz çizgileri -->
   <line x1="256" y1="16" x2="256" y2="496" stroke="#262626" stroke-width="4"/>
   <line x1="16" y1="256" x2="496" y2="256" stroke="#262626" stroke-width="4"/>
 
-  <!-- Ok Tasarımı (Sol Parça) -->
   <polygon points="256,136 136,376 256,312" fill="url(#leftGrad)"/>
   
-  <!-- Ok Tasarımı (Sağ Parça) -->
   <polygon points="256,136 376,376 256,312" fill="url(#rightGrad)"/>
 </svg>
