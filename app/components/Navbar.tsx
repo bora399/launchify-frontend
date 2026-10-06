@@ -1,79 +1,150 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import Logo from './Logo'; 
-import { usePathname } from 'next/navigation';
+import { usePathname } from "next/navigation";
 import { auth } from "@/firebase";
 import { onAuthStateChanged, User } from "firebase/auth";
+import Image from "next/image";
+import iconSvg from "@/app/icon.svg"; 
 
 export default function Navbar() {
-  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
-  const brandColor = "#6366F1"; 
   const pathname = usePathname();
 
+  const isActive = (path: string) => pathname === path;
+
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", handleScroll);
-    
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
     });
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      unsubscribe();
-    };
+    return () => unsubscribe();
   }, []);
 
-  const platformPages = ['/', '/create', '/about', '/dashboard'];
-  if (!platformPages.includes(pathname)) {
-    return null;
-  }
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+  }, [isMobileMenuOpen]);
+
+  const navLinks = [
+    { name: "Ana Sayfa", href: "/" },
+    { name: "Özellikler", href: "/features" },
+    { name: "Platform Üret", href: "/create" },
+    { name: "Hakkımızda", href: "/about" },
+  ];
 
   return (
-    <nav className={`fixed w-full top-0 z-50 transition-all duration-300 ${
-        isScrolled ? 'bg-[#050505]/80 backdrop-blur-xl border-b border-white/5 py-4' : 'bg-transparent py-6'
-      }`}
-    >
-      <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
+    <header className="fixed top-0 left-0 w-full z-50 bg-[#050505]/80 backdrop-blur-md border-b border-white/5 transition-all">
+      <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
         
-        <Link href="/"><Logo /></Link>
-        
-        <div className="hidden md:flex items-center gap-8 text-sm font-medium text-white/50" style={{ fontFamily: "'Manrope', sans-serif" }}>
-          <Link href="/" className="hover:text-white transition-colors">Ana Sayfa</Link>
-          <Link href="/#ozellikler" className="hover:text-white transition-colors">Özellikler</Link>
-          <Link href="/create" className="hover:text-white transition-colors">Platform Üret</Link>
-          <Link href="/about" className="hover:text-white transition-colors">Hakkımızda</Link>
-        </div>
-        
-        <div className="flex items-center gap-4">
-          {!user ? (
-            <Link href="/login" className="hidden md:block text-white/70 hover:text-white text-sm font-medium transition-colors mr-2">
+        <Link href="/" className="flex items-center gap-3 z-50 relative" onClick={() => setIsMobileMenuOpen(false)}>
+          <Image src={iconSvg} alt="Launchify Logo" width={32} height={32} />
+          <span className="text-xl font-extrabold text-white font-heading tracking-tight">Launchify.</span>
+        </Link>
+
+        <nav className="hidden md:flex items-center gap-8">
+          {navLinks.map((link) => (
+            <Link 
+              key={link.name} 
+              href={link.href}
+              className={`text-sm font-medium transition-colors hover:text-white ${isActive(link.href) ? "text-white" : "text-white/50"}`}
+            >
+              {link.name}
+            </Link>
+          ))}
+        </nav>
+
+        <div className="hidden md:flex items-center gap-4">
+          {user ? (
+            <>
+              <Link href="/dashboard" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
+                Panelim
+              </Link>
+              <Link 
+                href="/create" 
+                className="px-5 py-2.5 text-white text-sm font-semibold rounded-xl hover:scale-105 transition-all flex items-center gap-2"
+                style={{ backgroundColor: "#6366F1", boxShadow: "0 0 20px -5px rgba(99,102,241,0.5)" }}
+              >
+                Projeyi Başlat <span className="text-lg leading-none">→</span>
+              </Link>
+            </>
+          ) : (
+            <Link 
+              href="/login" 
+              className="px-5 py-2.5 bg-white text-black text-sm font-bold rounded-xl hover:bg-gray-200 transition-colors"
+            >
               Giriş Yap
             </Link>
-          ) : (
-            <Link href="/dashboard" className="hidden md:block text-white/70 hover:text-white text-sm font-medium transition-colors mr-2">
-              Panelim
-            </Link>
           )}
-
-          <Link 
-            href="/create" 
-            className="px-6 py-2.5 text-white text-sm font-semibold rounded-lg transition-all hover:scale-105 flex items-center gap-2" 
-            style={{ 
-              backgroundColor: brandColor, 
-              boxShadow: `0 0 20px -5px ${brandColor}`,
-              fontFamily: "'Manrope', sans-serif"
-            }}
-          >
-            Projeyi Başlat
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-          </Link>
         </div>
 
+        {/* MOBİL: HAMBURGER İKONU (Masaüstünde Gizli) */}
+        <button 
+          className="md:hidden z-50 relative p-2 -mr-2 text-white/70 hover:text-white"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          aria-label="Menüyü Aç/Kapat"
+        >
+          {isMobileMenuOpen ? (
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          ) : (
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+          )}
+        </button>
+
       </div>
-    </nav>
+
+      <div 
+        className={`fixed inset-0 bg-[#0A0A0A] z-40 flex flex-col pt-24 px-6 md:hidden transition-all duration-300 ease-in-out ${
+          isMobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
+      >
+        <div className="flex flex-col gap-6 text-lg font-medium">
+          {navLinks.map((link) => (
+            <Link 
+              key={link.name} 
+              href={link.href}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className={`border-b border-white/5 pb-4 ${isActive(link.href) ? "text-white" : "text-white/50"}`}
+            >
+              {link.name}
+            </Link>
+          ))}
+        </div>
+
+        <div className="mt-8 flex flex-col gap-4">
+          {user ? (
+            <>
+              <Link 
+                href="/dashboard" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="w-full py-4 bg-white/5 border border-white/10 text-center text-white font-medium rounded-xl hover:bg-white/10 transition-colors"
+              >
+                Panelim
+              </Link>
+              <Link 
+                href="/create" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="w-full py-4 text-white text-center font-bold rounded-xl flex items-center justify-center gap-2"
+                style={{ backgroundColor: "#6366F1", boxShadow: "0 0 30px -10px rgba(99,102,241,0.5)" }}
+              >
+                Projeyi Başlat <span className="text-xl leading-none">→</span>
+              </Link>
+            </>
+          ) : (
+            <Link 
+              href="/login" 
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="w-full py-4 bg-white text-black text-center font-bold rounded-xl"
+            >
+              Giriş Yap
+            </Link>
+          )}
+        </div>
+      </div>
+    </header>
   );
 }
