@@ -203,7 +203,7 @@ export default function DashboardPage() {
         ) : (
           <div className="space-y-12">
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="bg-[#0A0A0A] border border-white/10 rounded-2xl p-6 shadow-xl relative overflow-hidden backdrop-blur-xl">
                 <div className="absolute top-0 left-0 w-1 h-full bg-[#6366F1]"></div>
                 <p className="text-white/50 text-xs font-bold uppercase tracking-wider mb-2">Toplam Platform</p>
