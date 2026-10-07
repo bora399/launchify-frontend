@@ -5,6 +5,10 @@ import { auth } from "@/firebase";
 import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+// YENİ EKLENDİ: Recharts bileşenleri
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+
+const BRAND_COLOR = "#6366F1";
 
 export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null);
@@ -85,6 +89,13 @@ export default function DashboardPage() {
     }
   };
 
+  // YENİ EKLENDİ: Recharts için veri formatlama
+  const chartData = projects.map(p => ({
+    name: p.productName || p.slug || "İsimsiz",
+    Ziyaret: p.totalVisits || 0
+  }));
+  const totalViews = projects.reduce((sum, p) => sum + (p.totalVisits || 0), 0);
+
   if (authLoading) return (
     <div className="min-h-screen bg-[#050505] flex items-center justify-center">
       <span className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin"></span>
@@ -94,6 +105,7 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-[#050505] text-[#FAFAFA] font-sans selection:bg-white/20 relative overflow-hidden pt-32 pb-20">
       
+      {/* Silme Modalı (Aynı kaldı) */}
       {projectToDelete && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
           <div className="bg-[#111] border border-white/10 rounded-2xl p-6 md:p-8 max-w-md w-full shadow-2xl animate-in fade-in zoom-in duration-200">
@@ -128,6 +140,7 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {/* Arka Plan Efektleri */}
       <style dangerouslySetInnerHTML={{__html: `
         .dark-grid-pattern {
           background-size: 50px 50px;
@@ -142,6 +155,7 @@ export default function DashboardPage() {
 
       <main className="max-w-7xl mx-auto px-6 relative z-10">
         
+        {/* Üst Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6 bg-[#0A0A0A]/50 p-6 rounded-2xl border border-white/5 backdrop-blur-sm">
           <div>
             <h1 className="text-3xl font-bold font-heading mb-2">Projelerim</h1>
@@ -175,6 +189,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* İçerik Alanı */}
         {projectsLoading ? (
            <div className="flex justify-center items-center py-20">
              <span className="w-8 h-8 border-2 border-[#6366F1]/50 border-t-[#6366F1] rounded-full animate-spin"></span>
@@ -191,67 +206,143 @@ export default function DashboardPage() {
              </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {projects.map((project) => (
-              <div key={project.id || project.slug} className="bg-[#0A0A0A] border border-white/10 rounded-3xl p-6 hover:border-white/20 transition-all group relative overflow-hidden backdrop-blur-xl hover:shadow-[0_0_30px_rgba(255,255,255,0.03)]">
-                 <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-bl-full -z-10 group-hover:bg-blue-500/20 transition-colors"></div>
-                 
-                 <div className="flex justify-between items-start mb-6">
-                   <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center font-bold text-white/80 border border-white/10 shadow-inner group-hover:scale-110 transition-transform uppercase">
-                      {project.productName ? project.productName.charAt(0) : "P"}
-                   </div>
-                   <span className="px-3 py-1 text-xs font-semibold bg-green-500/10 text-green-400 rounded-full border border-green-500/20 flex items-center gap-1.5">
-                     <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
-                     Yayında
-                   </span>
-                 </div>
-
-                 <h3 className="text-xl font-bold mb-1 tracking-tight text-white group-hover:text-blue-400 transition-colors line-clamp-1">
-                   {project.productName || project.slug}
-                 </h3>
-                 <p className="text-white/40 text-sm mb-6 flex items-center gap-2 capitalize">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-                    Şablon: {project.templateType || "Bilinmiyor"}
-                 </p>
-                 
-                 <div className="flex items-center gap-3 pt-4 border-t border-white/5">
-                    <Link href={`/${project.slug}`} target="_blank" className="text-sm font-medium bg-white/5 hover:bg-white/10 px-4 py-2.5 rounded-xl transition-colors flex-1 text-center border border-white/5 group-hover:border-white/10">
-                      Siteyi Görüntüle
-                    </Link>
-                    
-                    <div className="relative dropdown-container">
-                      <button 
-                        onClick={() => setOpenDropdownId(openDropdownId === project.id ? null : project.id)}
-                        className={`p-2.5 hover:text-white transition-colors rounded-xl border border-white/5 ${openDropdownId === project.id ? 'bg-white/10 text-white' : 'bg-white/5 text-white/40 hover:bg-white/10'}`} 
-                        title="Ayarlar"
-                      >
-                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-                      </button>
-
-                      {/* Dropdown Menü */}
-                      {openDropdownId === project.id && (
-                        <div className="absolute right-0 bottom-full mb-2 w-40 bg-[#1A1A1A] border border-white/10 rounded-xl shadow-xl overflow-hidden z-50 animate-in fade-in slide-in-from-bottom-2 duration-200">
-                          <Link href={`/${project.slug}`} target="_blank" className="flex items-center gap-2 w-full px-4 py-3 text-sm text-white/80 hover:bg-white/5 hover:text-white transition-colors">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-                            Siteyi İncele
-                          </Link>
-                          <div className="h-px bg-white/5 w-full"></div>
-                          <button 
-                            onClick={() => {
-                              setProjectToDelete(project);
-                              setOpenDropdownId(null);
-                            }}
-                            className="flex items-center gap-2 w-full px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors text-left"
-                          >
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                            Kaldır
-                          </button>
-                        </div>
-                      )}
-                    </div>
+          <div className="space-y-12">
+            
+            {/* YENİ EKLENDİ: İstatistik Kartları */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-[#0A0A0A] border border-white/10 rounded-2xl p-6 shadow-xl relative overflow-hidden backdrop-blur-xl">
+                <div className="absolute top-0 left-0 w-1 h-full bg-[#6366F1]"></div>
+                <p className="text-white/50 text-xs font-bold uppercase tracking-wider mb-2">Toplam Platform</p>
+                <h3 className="text-4xl font-heading font-extrabold">{projects.length}</h3>
+              </div>
+              <div className="bg-[#0A0A0A] border border-white/10 rounded-2xl p-6 shadow-xl relative overflow-hidden backdrop-blur-xl">
+                <div className="absolute top-0 left-0 w-1 h-full bg-green-500"></div>
+                <p className="text-white/50 text-xs font-bold uppercase tracking-wider mb-2">Toplam Ziyaret</p>
+                <h3 className="text-4xl font-heading font-extrabold text-green-400">{totalViews}</h3>
+              </div>
+              <div className="bg-[#0A0A0A] border border-white/10 rounded-2xl p-6 shadow-xl relative overflow-hidden backdrop-blur-xl flex flex-col justify-center items-start">
+                 <div className="absolute top-0 left-0 w-1 h-full bg-purple-500"></div>
+                 <p className="text-white/50 text-xs font-bold uppercase tracking-wider mb-2">Sistem Durumu</p>
+                 <div className="flex items-center gap-2 text-purple-400 font-bold">
+                   <span className="w-2.5 h-2.5 rounded-full bg-purple-500 animate-pulse"></span>
+                   Background Worker Aktif
                  </div>
               </div>
-            ))}
+            </div>
+
+            {/* YENİ EKLENDİ: Recharts Grafik */}
+            <div className="bg-[#0A0A0A] border border-white/10 rounded-3xl p-6 md:p-8 shadow-2xl relative overflow-hidden backdrop-blur-xl">
+              <div className="mb-6">
+                <h2 className="text-xl font-bold font-heading">Trafik Analizi</h2>
+                <p className="text-white/40 text-sm">Projelerinizin anlık görüntülenme metrikleri</p>
+              </div>
+              <div className="h-[250px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="colorVisits" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={BRAND_COLOR} stopOpacity={0.4}/>
+                        <stop offset="95%" stopColor={BRAND_COLOR} stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                    <XAxis 
+                      dataKey="name" 
+                      stroke="rgba(255,255,255,0.3)" 
+                      fontSize={12} 
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <YAxis 
+                      stroke="rgba(255,255,255,0.3)" 
+                      fontSize={12} 
+                      tickLine={false}
+                      axisLine={false}
+                      allowDecimals={false}
+                    />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#0a0a0a', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '12px', color: '#fff' }}
+                      itemStyle={{ color: '#6366F1', fontWeight: 'bold' }}
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="Ziyaret" 
+                      stroke={BRAND_COLOR} 
+                      strokeWidth={3}
+                      fillOpacity={1} 
+                      fill="url(#colorVisits)" 
+                      animationDuration={1500}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Mevcut Proje Listesi */}
+            <div>
+              <h2 className="text-xl font-bold font-heading mb-6">Aktif Platformlar</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {projects.map((project) => (
+                  <div key={project.id || project.slug} className="bg-[#0A0A0A] border border-white/10 rounded-3xl p-6 hover:border-white/20 transition-all group relative overflow-hidden backdrop-blur-xl hover:shadow-[0_0_30px_rgba(255,255,255,0.03)]">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-bl-full -z-10 group-hover:bg-blue-500/20 transition-colors"></div>
+                    
+                    <div className="flex justify-between items-start mb-6">
+                      <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center font-bold text-white/80 border border-white/10 shadow-inner group-hover:scale-110 transition-transform uppercase">
+                          {project.productName ? project.productName.charAt(0) : "P"}
+                      </div>
+                      <span className="px-3 py-1 text-xs font-semibold bg-green-500/10 text-green-400 rounded-full border border-green-500/20 flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
+                        Yayında
+                      </span>
+                    </div>
+
+                    <h3 className="text-xl font-bold mb-1 tracking-tight text-white group-hover:text-blue-400 transition-colors line-clamp-1">
+                      {project.productName || project.slug}
+                    </h3>
+                    <p className="text-white/40 text-sm mb-6 flex items-center gap-2 capitalize">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                        Şablon: {project.templateType || "Bilinmiyor"}
+                    </p>
+                    
+                    <div className="flex items-center gap-3 pt-4 border-t border-white/5">
+                        <Link href={`/${project.slug}`} target="_blank" className="text-sm font-medium bg-white/5 hover:bg-white/10 px-4 py-2.5 rounded-xl transition-colors flex-1 text-center border border-white/5 group-hover:border-white/10">
+                          Siteyi Görüntüle
+                        </Link>
+                        
+                        <div className="relative dropdown-container">
+                          <button 
+                            onClick={() => setOpenDropdownId(openDropdownId === project.id ? null : project.id)}
+                            className={`p-2.5 hover:text-white transition-colors rounded-xl border border-white/5 ${openDropdownId === project.id ? 'bg-white/10 text-white' : 'bg-white/5 text-white/40 hover:bg-white/10'}`} 
+                            title="Ayarlar"
+                          >
+                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                          </button>
+
+                          {openDropdownId === project.id && (
+                            <div className="absolute right-0 bottom-full mb-2 w-40 bg-[#1A1A1A] border border-white/10 rounded-xl shadow-xl overflow-hidden z-50 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                              <Link href={`/${project.slug}`} target="_blank" className="flex items-center gap-2 w-full px-4 py-3 text-sm text-white/80 hover:bg-white/5 hover:text-white transition-colors">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                                Siteyi İncele
+                              </Link>
+                              <div className="h-px bg-white/5 w-full"></div>
+                              <button 
+                                onClick={() => {
+                                  setProjectToDelete(project);
+                                  setOpenDropdownId(null);
+                                }}
+                                className="flex items-center gap-2 w-full px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors text-left"
+                              >
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                Kaldır
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         )}
       </main>

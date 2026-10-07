@@ -175,7 +175,8 @@ export default function CreateProject() {
     setIsLoading(true);
     setErrorMessage("");
     setLogs(["[Sistem] Üretim isteği kuyruğa alındı. Güvenlik doğrulamaları yapılıyor..."]); // Terminali başlat
-
+    setProgress(5);
+    
     try {
       const response = await fetch(`${apiUrl}/api/LandingPages/create`, {
         method: 'POST',
