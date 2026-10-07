@@ -3,6 +3,7 @@ import TemplateBrutal from '../components/templates/Brutal';
 import TemplateMinimal from '../components/templates/Minimal';
 import TemplateCorporate from '../components/templates/Corporate';
 import TemplateAurora from '../components/templates/Aurora';
+import AnalyticsTracker from '../components/AnalyticsTracker'; 
 
 interface ProjectData {
   id?: string;
@@ -77,13 +78,13 @@ export default async function SlugPage({ params }: { params: Promise<{ slug: str
 
   switch (projectData.templateType) {
     case 'brutal':
-      return <TemplateBrutal data={projectData} />;
+      return <><AnalyticsTracker projectId={slug} /><TemplateBrutal data={projectData} /></>;
     case 'minimal':
-      return <TemplateMinimal data={projectData} />;
+      return <><AnalyticsTracker projectId={slug} /><TemplateMinimal data={projectData} /></>;
     case 'corporate':
-      return <TemplateCorporate data={projectData} />;
+      return <><AnalyticsTracker projectId={slug} /><TemplateCorporate data={projectData} /></>;
     case 'aurora':
     default:
-      return <TemplateAurora data={projectData} />;
+      return <><AnalyticsTracker projectId={slug} /><TemplateAurora data={projectData} /></>;
   }
 }
