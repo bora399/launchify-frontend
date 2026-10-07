@@ -89,7 +89,6 @@ export default function DashboardPage() {
     }
   };
 
-  // YENİ EKLENDİ: Recharts için veri formatlama
   const chartData = projects.map(p => ({
     name: p.productName || p.slug || "İsimsiz",
     Ziyaret: p.TotalVisits || 0
@@ -105,7 +104,6 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-[#050505] text-[#FAFAFA] font-sans selection:bg-white/20 relative overflow-hidden pt-32 pb-20">
       
-      {/* Silme Modalı (Aynı kaldı) */}
       {projectToDelete && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
           <div className="bg-[#111] border border-white/10 rounded-2xl p-6 md:p-8 max-w-md w-full shadow-2xl animate-in fade-in zoom-in duration-200">
@@ -140,7 +138,6 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Arka Plan Efektleri */}
       <style dangerouslySetInnerHTML={{__html: `
         .dark-grid-pattern {
           background-size: 50px 50px;
@@ -155,7 +152,6 @@ export default function DashboardPage() {
 
       <main className="max-w-7xl mx-auto px-6 relative z-10">
         
-        {/* Üst Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6 bg-[#0A0A0A]/50 p-6 rounded-2xl border border-white/5 backdrop-blur-sm">
           <div>
             <h1 className="text-3xl font-bold font-heading mb-2">Projelerim</h1>
@@ -189,7 +185,6 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* İçerik Alanı */}
         {projectsLoading ? (
            <div className="flex justify-center items-center py-20">
              <span className="w-8 h-8 border-2 border-[#6366F1]/50 border-t-[#6366F1] rounded-full animate-spin"></span>
@@ -208,7 +203,6 @@ export default function DashboardPage() {
         ) : (
           <div className="space-y-12">
             
-            {/* YENİ EKLENDİ: İstatistik Kartları */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="bg-[#0A0A0A] border border-white/10 rounded-2xl p-6 shadow-xl relative overflow-hidden backdrop-blur-xl">
                 <div className="absolute top-0 left-0 w-1 h-full bg-[#6366F1]"></div>
@@ -230,7 +224,6 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* YENİ EKLENDİ: Recharts Grafik */}
             <div className="bg-[#0A0A0A] border border-white/10 rounded-3xl p-6 md:p-8 shadow-2xl relative overflow-hidden backdrop-blur-xl">
               <div className="mb-6">
                 <h2 className="text-xl font-bold font-heading">Trafik Analizi</h2>
@@ -278,7 +271,6 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Mevcut Proje Listesi */}
             <div>
               <h2 className="text-xl font-bold font-heading mb-6">Aktif Platformlar</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

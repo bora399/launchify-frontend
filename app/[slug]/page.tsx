@@ -78,13 +78,13 @@ export default async function SlugPage({ params }: { params: Promise<{ slug: str
 
   switch (projectData.templateType) {
     case 'brutal':
-      return <><AnalyticsTracker projectId={slug} /><TemplateBrutal data={projectData} /></>;
+      return <><AnalyticsTracker projectId={projectData.id!} /><TemplateBrutal data={projectData} /></>;
     case 'minimal':
-      return <><AnalyticsTracker projectId={slug} /><TemplateMinimal data={projectData} /></>;
+      return <><AnalyticsTracker projectId={projectData.id!} /><TemplateMinimal data={projectData} /></>;
     case 'corporate':
-      return <><AnalyticsTracker projectId={slug} /><TemplateCorporate data={projectData} /></>;
+      return <><AnalyticsTracker projectId={projectData.id!} /><TemplateCorporate data={projectData} /></>;
     case 'aurora':
     default:
-      return <><AnalyticsTracker projectId={slug} /><TemplateAurora data={projectData} /></>;
+      return <><AnalyticsTracker projectId={projectData.id!} /><TemplateAurora data={projectData} /></>;
   }
 }
