@@ -363,7 +363,7 @@ export default function CreateProject() {
                   <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
                   <div className="w-3 h-3 rounded-full bg-yellow-500/80"></div>
                   <div className="w-3 h-3 rounded-full bg-green-500/80"></div>
-                  <span className="ml-2 text-xs text-white/40 font-sans tracking-widest uppercase">Launchify AI Terminal</span>
+                  <span className="ml-2 text-xs text-white/40 font-sans tracking-widest uppercase">Launchify Terminal</span>
                 </div>
                 
                 <div className="mt-4 flex flex-col gap-2">
