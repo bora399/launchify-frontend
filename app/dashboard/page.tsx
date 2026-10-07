@@ -214,14 +214,6 @@ export default function DashboardPage() {
                 <p className="text-white/50 text-xs font-bold uppercase tracking-wider mb-2">Toplam Ziyaret</p>
                 <h3 className="text-4xl font-heading font-extrabold text-green-400">{totalViews}</h3>
               </div>
-              <div className="bg-[#0A0A0A] border border-white/10 rounded-2xl p-6 shadow-xl relative overflow-hidden backdrop-blur-xl flex flex-col justify-center items-start">
-                 <div className="absolute top-0 left-0 w-1 h-full bg-purple-500"></div>
-                 <p className="text-white/50 text-xs font-bold uppercase tracking-wider mb-2">Sistem Durumu</p>
-                 <div className="flex items-center gap-2 text-purple-400 font-bold">
-                   <span className="w-2.5 h-2.5 rounded-full bg-purple-500 animate-pulse"></span>
-                   Background Worker Aktif
-                 </div>
-              </div>
             </div>
 
             <div className="bg-[#0A0A0A] border border-white/10 rounded-3xl p-6 md:p-8 shadow-2xl relative overflow-hidden backdrop-blur-xl">
