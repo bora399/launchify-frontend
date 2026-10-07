@@ -79,9 +79,10 @@ export default function CreateProject() {
   const [remainingCredits, setRemainingCredits] = useState<number | null>(null);
   const [isCreditChecking, setIsCreditChecking] = useState(true);
   
-  // YENİ: SignalR Log State'leri
   const [logs, setLogs] = useState<string[]>([]);
   const [connectionId, setConnectionId] = useState<string>("");
+
+  const [progress, setProgress] = useState(0);
 
   const [formData, setFormData] = useState({
     productName: "", 
@@ -107,6 +108,15 @@ export default function CreateProject() {
 
         connection.on("ReceiveLog", (message: string) => {
           setLogs((prevLogs) => [...prevLogs, message]);
+
+          const stepMatch = message.match(/\[Adım (\d+)\/(\d+)\]/);
+          if (stepMatch) {
+            const currentStep = parseInt(stepMatch[1], 10);
+            const totalSteps = parseInt(stepMatch[2], 10);
+            setProgress((currentStep / totalSteps) * 100);
+          } else if (message.includes("✅")) {
+            setProgress(100);
+          }
         });
       })
       .catch(err => console.error("SignalR Bağlantı Hatası:", err));
@@ -358,15 +368,25 @@ export default function CreateProject() {
             </div>
             
             {isLoading && (
-              <div className="mt-6 bg-[#0a0a0a] border border-white/10 rounded-xl p-6 font-mono text-sm h-56 overflow-y-auto shadow-2xl relative animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <div className="absolute top-0 left-0 w-full h-8 bg-white/5 border-b border-white/10 flex items-center px-4 rounded-t-xl gap-2 sticky">
+              <div className="mt-6 bg-[#0a0a0a] border border-white/10 rounded-xl p-6 font-mono text-sm h-64 overflow-hidden shadow-[0_10px_40px_-10px_rgba(0,0,0,0.8)] relative animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col">
+                
+                <div className="w-full h-8 flex items-center gap-2 mb-4">
                   <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
                   <div className="w-3 h-3 rounded-full bg-yellow-500/80"></div>
                   <div className="w-3 h-3 rounded-full bg-green-500/80"></div>
-                  <span className="ml-2 text-xs text-white/40 font-sans tracking-widest uppercase">Launchify Terminal</span>
+                  <span className="ml-2 text-xs text-white/40 font-sans tracking-widest uppercase">Launchify AI Terminal</span>
+                </div>
+
+                <div className="w-full bg-white/5 rounded-full h-1.5 mb-4 overflow-hidden relative">
+                  <div 
+                    className="bg-[#6366F1] h-full rounded-full transition-all duration-700 ease-out shadow-[0_0_15px_rgba(99,102,241,0.8)] relative"
+                    style={{ width: `${progress}%` }}
+                  >
+                    <div className="absolute top-0 right-0 bottom-0 w-4 bg-white/50 blur-[2px]"></div>
+                  </div>
                 </div>
                 
-                <div className="mt-4 flex flex-col gap-2">
+                <div className="flex-1 overflow-y-auto flex flex-col gap-2 pr-2 custom-scrollbar">
                   {logs.map((log, index) => (
                     <div 
                       key={index} 
