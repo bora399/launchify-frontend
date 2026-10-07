@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { auth } from "@/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import Link from "next/link";
+import * as signalR from "@microsoft/signalr"; 
 
 const BRAND_COLOR = "#6366F1";
 
@@ -73,13 +74,15 @@ export default function CreateProject() {
   
   const [userId, setUserId] = useState<string | null>(null);
   
-  // EKLENDİ: Sayfa yetki kontrolü sırasındaki yüklenme durumu
   const [authLoading, setAuthLoading] = useState(true);
   
-  // Kredi Kontrol State'leri
   const [remainingCredits, setRemainingCredits] = useState<number | null>(null);
   const [isCreditChecking, setIsCreditChecking] = useState(true);
   
+  // YENİ: SignalR Log State'leri
+  const [logs, setLogs] = useState<string[]>([]);
+  const [connectionId, setConnectionId] = useState<string>("");
+
   const [formData, setFormData] = useState({
     productName: "", 
     templateType: "aurora", 
@@ -89,6 +92,29 @@ export default function CreateProject() {
   });
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://launchify-backend-3a7w.onrender.com";
+
+  useEffect(() => {
+    const connection = new signalR.HubConnectionBuilder()
+      .withUrl(`${apiUrl}/generationHub`)
+      .withAutomaticReconnect()
+      .build();
+
+    connection.start()
+      .then(async () => {
+        console.log("SignalR Hub Bağlantısı Başarılı!");
+        const id = await connection.invoke("GetConnectionId");
+        setConnectionId(id);
+
+        connection.on("ReceiveLog", (message: string) => {
+          setLogs((prevLogs) => [...prevLogs, message]);
+        });
+      })
+      .catch(err => console.error("SignalR Bağlantı Hatası:", err));
+
+    return () => {
+      connection.stop();
+    };
+  }, [apiUrl]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -138,6 +164,7 @@ export default function CreateProject() {
 
     setIsLoading(true);
     setErrorMessage("");
+    setLogs(["[Sistem] Üretim isteği kuyruğa alındı. Güvenlik doğrulamaları yapılıyor..."]); // Terminali başlat
 
     try {
       const response = await fetch(`${apiUrl}/api/LandingPages/create`, {
@@ -150,20 +177,23 @@ export default function CreateProject() {
           ContactEmail: formData.contactEmail,
           DemoLink: formData.demoLink === "" ? null : formData.demoLink,
           ProductDescription: formData.productDescription,
-          UserId: userId 
+          UserId: userId,
+          ConnectionId: connectionId
         }),
       });
 
       const responseData = await response.json();
 
       if (response.ok) {
-        router.push(`/${responseData.slug}`);
+        setTimeout(() => {
+          router.push(`/${responseData.slug}`);
+        }, 1500);
       } else {
         setErrorMessage(responseData.message || "Sistem şu anda yoğun veya altyapı yanıt vermiyor. Lütfen daha sonra tekrar deneyin.");
+        setIsLoading(false);
       }
     } catch (error) {
       setErrorMessage("Sunucu ile bağlantı kurulamadı. Ağ bağlantınızı veya güvenlik duvarınızı kontrol edin.");
-    } finally {
       setIsLoading(false);
     }
   };
@@ -236,8 +266,8 @@ export default function CreateProject() {
             
             <div>
               <label htmlFor="productName" className="block text-xs font-bold uppercase tracking-widest text-white/60 mb-3 cursor-pointer">Ürün / Platform Adı</label>
-              <input id="productName" required type="text" name="productName" onChange={handleChange} maxLength={60}
-                className="w-full bg-white/5 border border-white/10 text-white rounded-xl focus:bg-white/10 focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1] block p-4 outline-none transition-all placeholder:text-white/20"
+              <input id="productName" required type="text" name="productName" onChange={handleChange} maxLength={60} disabled={isLoading}
+                className="w-full bg-white/5 border border-white/10 text-white rounded-xl focus:bg-white/10 focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1] block p-4 outline-none transition-all placeholder:text-white/20 disabled:opacity-50"
                 placeholder="Örn: Launchify SaaS" />
             </div>
 
@@ -247,12 +277,12 @@ export default function CreateProject() {
                 {TEMPLATES.map((template) => (
                   <div 
                     key={template.id}
-                    onClick={() => selectTemplate(template.id)}
+                    onClick={() => !isLoading && selectTemplate(template.id)}
                     className={`group cursor-pointer p-4 rounded-2xl border transition-all duration-300 flex items-start gap-4 ${
                       formData.templateType === template.id 
                         ? 'border-[#6366F1] bg-[#6366F1]/10 ring-1 ring-[#6366F1]' 
                         : 'border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20'
-                    }`}
+                    } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     <div className={`shrink-0 w-20 h-20 rounded-xl overflow-hidden ${template.previewClass} relative shadow-inner`}>
                        {template.previewVibe}
@@ -280,16 +310,16 @@ export default function CreateProject() {
                 <span>Ürün Özellikleri (AI Briefi)</span>
                 <span className="text-[10px] text-white/30">{formData.productDescription.length}/1000</span>
               </label>
-              <textarea id="productDescription" required name="productDescription" rows={4} onChange={handleChange} maxLength={1000}
-                className="w-full bg-white/5 border border-white/10 text-white rounded-xl focus:bg-white/10 focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1] block p-4 outline-none resize-none transition-all placeholder:text-white/20 leading-relaxed"
+              <textarea id="productDescription" required name="productDescription" rows={4} onChange={handleChange} maxLength={1000} disabled={isLoading}
+                className="w-full bg-white/5 border border-white/10 text-white rounded-xl focus:bg-white/10 focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1] block p-4 outline-none resize-none transition-all placeholder:text-white/20 leading-relaxed disabled:opacity-50"
                 placeholder="Platformunuz hangi problemi çözüyor? Hedef kitleye sağladığı temel fayda nedir?" />
             </div>
 
             <div className="grid md:grid-cols-2 gap-8">
               <div>
                 <label htmlFor="contactEmail" className="block text-xs font-bold uppercase tracking-widest text-white/60 mb-3 cursor-pointer">Kurumsal E-Posta</label>
-                <input id="contactEmail" required type="email" name="contactEmail" onChange={handleChange} maxLength={100}
-                  className="w-full bg-white/5 border border-white/10 text-white rounded-xl focus:bg-white/10 focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1] block p-4 outline-none transition-all placeholder:text-white/20"
+                <input id="contactEmail" required type="email" name="contactEmail" onChange={handleChange} maxLength={100} disabled={isLoading}
+                  className="w-full bg-white/5 border border-white/10 text-white rounded-xl focus:bg-white/10 focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1] block p-4 outline-none transition-all placeholder:text-white/20 disabled:opacity-50"
                   placeholder="ornek@sirket.com" />
               </div>
               <div>
@@ -297,8 +327,8 @@ export default function CreateProject() {
                   <span>Demo Linki</span>
                   <span className="text-[10px] text-white/30 border border-white/10 px-2 py-0.5 rounded-full">Opsiyonel</span>
                 </label>
-                <input id="demoLink" type="url" name="demoLink" onChange={handleChange} maxLength={255}
-                  className="w-full bg-white/5 border border-white/10 text-white rounded-xl focus:bg-white/10 focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1] block p-4 outline-none transition-all placeholder:text-white/20"
+                <input id="demoLink" type="url" name="demoLink" onChange={handleChange} maxLength={255} disabled={isLoading}
+                  className="w-full bg-white/5 border border-white/10 text-white rounded-xl focus:bg-white/10 focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1] block p-4 outline-none transition-all placeholder:text-white/20 disabled:opacity-50"
                   placeholder="https://..." />
               </div>
             </div>
@@ -316,7 +346,7 @@ export default function CreateProject() {
                 ) : isLoading ? (
                   <>
                     <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                    Yapay Zeka İnşa Ediyor...
+                    Süreç Başlatıldı...
                   </>
                 ) : (
                   <>
@@ -326,6 +356,41 @@ export default function CreateProject() {
                 )}
               </button>
             </div>
+            
+            {isLoading && (
+              <div className="mt-6 bg-[#0a0a0a] border border-white/10 rounded-xl p-6 font-mono text-sm h-56 overflow-y-auto shadow-2xl relative animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="absolute top-0 left-0 w-full h-8 bg-white/5 border-b border-white/10 flex items-center px-4 rounded-t-xl gap-2 sticky">
+                  <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
+                  <div className="w-3 h-3 rounded-full bg-yellow-500/80"></div>
+                  <div className="w-3 h-3 rounded-full bg-green-500/80"></div>
+                  <span className="ml-2 text-xs text-white/40 font-sans tracking-widest uppercase">Launchify AI Terminal</span>
+                </div>
+                
+                <div className="mt-4 flex flex-col gap-2">
+                  {logs.map((log, index) => (
+                    <div 
+                      key={index} 
+                      className={`transition-all duration-300 ${
+                        log.includes("✅") ? "text-green-400 font-bold" : 
+                        log.includes("❌") || log.includes("[Hata]") ? "text-red-400" : 
+                        log.includes("[Uyarı]") ? "text-yellow-400" : 
+                        "text-indigo-300"
+                      }`}
+                    >
+                      <span className="text-white/30 mr-2">{">"}</span> 
+                      {log}
+                    </div>
+                  ))}
+                  
+                  {!logs[logs.length - 1]?.includes("✅") && !logs[logs.length - 1]?.includes("❌") && (
+                    <div className="text-white/50 animate-pulse mt-1">
+                      <span className="text-white/30 mr-2">{">"}</span>_
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+            
           </form>
         </div>
       </div>
