@@ -5,6 +5,7 @@ import TemplateCorporate from '../components/templates/Corporate';
 import TemplateAurora from '../components/templates/Aurora';
 
 interface ProjectData {
+  id?: string;
   productName: string;
   aiGeneratedHeroTitle: string;
   aiGeneratedMarketingCopy: string;
@@ -46,16 +47,21 @@ export default async function SlugPage({ params }: { params: Promise<{ slug: str
     
     if (res.ok) {
       const fetchedData = await res.json();
+      
+      const projectId = fetchedData.id || fetchedData.Id || slug;
+      
       projectData = {
-      productName: fetchedData.productName || fetchedData.ProductName || "Platform",
-      aiGeneratedHeroTitle: fetchedData.aiGeneratedHeroTitle || fetchedData.AiGeneratedHeroTitle || "Vizyonunuzu Hayata Geçirin.",
-      aiGeneratedMarketingCopy: fetchedData.aiGeneratedMarketingCopy || fetchedData.AiGeneratedMarketingCopy || "Yeni nesil altyapı çözümleri.",
-      accentColor: fetchedData.accentColor || fetchedData.AccentColor || DEFAULT_ACCENT_COLOR,
-          
-      templateType: (fetchedData.templateType || fetchedData.TemplateType || fetchedData.themeType || fetchedData.ThemeType || "aurora").toLowerCase(),
-          
-      demoLink: fetchedData.demoLink ?? fetchedData.DemoLink ?? undefined,
-    };
+        id: projectId,
+        productName: fetchedData.productName || fetchedData.ProductName || "Platform",
+        aiGeneratedHeroTitle: fetchedData.aiGeneratedHeroTitle || fetchedData.AiGeneratedHeroTitle || "Vizyonunuzu Hayata Geçirin.",
+        aiGeneratedMarketingCopy: fetchedData.aiGeneratedMarketingCopy || fetchedData.AiGeneratedMarketingCopy || "Yeni nesil altyapı çözümleri.",
+        accentColor: fetchedData.accentColor || fetchedData.AccentColor || DEFAULT_ACCENT_COLOR,
+        templateType: (fetchedData.templateType || fetchedData.TemplateType || fetchedData.themeType || fetchedData.ThemeType || "aurora").toLowerCase(),
+        demoLink: fetchedData.demoLink ?? fetchedData.DemoLink ?? undefined,
+      };
+
+      fetch(`${apiUrl}/api/analytics/${projectId}/visit`, { method: 'POST' })
+        .catch(err => console.error("Analitik kaydedilemedi:", err));
     }
   } catch (error) {
     console.error("Veri çekilirken hata oluştu:", error);
