@@ -91,9 +91,9 @@ export default function DashboardPage() {
 
   const chartData = projects.map(p => ({
     name: p.productName || p.slug || "İsimsiz",
-    Ziyaret: p.TotalVisits || 0
+    Ziyaret: p.TotalVisits || p.totalVisits || 0
   }));
-  const totalViews = projects.reduce((sum, p) => sum + (p.TotalVisits || 0), 0);
+  const totalViews = projects.reduce((sum, p) => sum + (p.TotalVisits || p.totalVisits || 0), 0);
 
   if (authLoading) return (
     <div className="min-h-screen bg-[#050505] flex items-center justify-center">
