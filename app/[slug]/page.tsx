@@ -5,7 +5,12 @@ import TemplateCorporate from '../components/templates/Corporate';
 import TemplateAurora from '../components/templates/Aurora';
 import AnalyticsTracker from '../components/AnalyticsTracker'; 
 
-interface ProjectData {
+export interface FeatureItem {
+  title: string;
+  description: string;
+}
+
+export interface ProjectData {
   id?: string;
   productName: string;
   aiGeneratedHeroTitle: string;
@@ -13,6 +18,9 @@ interface ProjectData {
   accentColor: string;
   templateType: string;
   demoLink?: string;
+  // YENİ EKLENEN VERİLER:
+  callToActionText: string;
+  features: FeatureItem[];
 }
 
 const DEFAULT_ACCENT_COLOR = "#3B82F6";
@@ -48,17 +56,22 @@ export default async function SlugPage({ params }: { params: Promise<{ slug: str
     
     if (res.ok) {
       const fetchedData = await res.json();
-      
       const projectId = fetchedData.id || fetchedData.Id || slug;
+      
+      const ai = fetchedData.aiConfig || fetchedData.AiConfig || {};
       
       projectData = {
         id: projectId,
         productName: fetchedData.productName || fetchedData.ProductName || "Platform",
-        aiGeneratedHeroTitle: fetchedData.aiGeneratedHeroTitle || fetchedData.AiGeneratedHeroTitle || "Vizyonunuzu Hayata Geçirin.",
-        aiGeneratedMarketingCopy: fetchedData.aiGeneratedMarketingCopy || fetchedData.AiGeneratedMarketingCopy || "Yeni nesil altyapı çözümleri.",
-        accentColor: fetchedData.accentColor || fetchedData.AccentColor || DEFAULT_ACCENT_COLOR,
-        templateType: (fetchedData.templateType || fetchedData.TemplateType || fetchedData.themeType || fetchedData.ThemeType || "aurora").toLowerCase(),
+        aiGeneratedHeroTitle: ai.aiGeneratedHeroTitle || ai.AiGeneratedHeroTitle || fetchedData.aiGeneratedHeroTitle || "Vizyonunuzu Hayata Geçirin.",
+        aiGeneratedMarketingCopy: ai.aiGeneratedMarketingCopy || ai.AiGeneratedMarketingCopy || fetchedData.aiGeneratedMarketingCopy || "Yeni nesil altyapı çözümleri.",
+        accentColor: ai.accentColor || ai.AccentColor || fetchedData.accentColor || DEFAULT_ACCENT_COLOR,
+        templateType: (fetchedData.templateType || fetchedData.TemplateType || fetchedData.themeType || "aurora").toLowerCase(),
         demoLink: fetchedData.demoLink ?? fetchedData.DemoLink ?? undefined,
+        
+        // YAPAY ZEKADAN GELEN YENİ İÇERİKLER:
+        callToActionText: ai.callToActionText || ai.CallToActionText || "Erken Erişime Katıl",
+        features: ai.features || ai.Features || []
       };
 
       fetch(`${apiUrl}/api/analytics/${projectId}/visit`, { method: 'POST' })
