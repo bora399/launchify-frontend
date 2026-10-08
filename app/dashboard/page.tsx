@@ -1,14 +1,20 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { auth } from "@/firebase";
 import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-// YENİ EKLENDİ: Recharts bileşenleri
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const BRAND_COLOR = "#6366F1";
+
+interface WaitlistEntry {
+  id: string;
+  pageId: string;
+  email: string;
+  createdAt: string;
+}
 
 export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null);
@@ -22,6 +28,11 @@ export default function DashboardPage() {
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
   const [projectToDelete, setProjectToDelete] = useState<any | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Waitlist Modal Durumları
+  const [selectedProjectForLeads, setSelectedProjectForLeads] = useState<any | null>(null);
+  const [leads, setLeads] = useState<WaitlistEntry[]>([]);
+  const [leadsLoading, setLeadsLoading] = useState(false);
   
   const router = useRouter();
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://launchify-backend-3a7w.onrender.com";
@@ -89,6 +100,47 @@ export default function DashboardPage() {
     }
   };
 
+  // Waitlist Taleplerini Çekme
+  const handleOpenLeads = async (project: any) => {
+    setSelectedProjectForLeads(project);
+    setOpenDropdownId(null);
+    setLeadsLoading(true);
+
+    try {
+      const res = await fetch(`${apiUrl}/api/Waitlist/${project.id}`);
+      if (res.ok) {
+        const data = await res.json();
+        setLeads(data);
+      } else {
+        setLeads([]);
+      }
+    } catch (error) {
+      console.error("Waitlist verileri çekilemedi:", error);
+      setLeads([]);
+    } finally {
+      setLeadsLoading(false);
+    }
+  };
+
+  // CSV Dışa Aktarma
+  const handleDownloadCSV = () => {
+    if (leads.length === 0 || !selectedProjectForLeads) return;
+
+    const headers = "ID,Email,KayitTarihi\n";
+    const rows = leads
+      .map(entry => `"${entry.id}","${entry.email}","${new Date(entry.createdAt).toLocaleString('tr-TR')}"`)
+      .join("\n");
+
+    const blob = new Blob([headers + rows], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `waitlist_${selectedProjectForLeads.slug || selectedProjectForLeads.id}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const chartData = projects.map(p => ({
     name: p.productName || p.slug || "İsimsiz",
     Ziyaret: p.TotalVisits || p.totalVisits || 0
@@ -104,6 +156,7 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-[#050505] text-[#FAFAFA] font-sans selection:bg-white/20 relative overflow-hidden pt-32 pb-20">
       
+      {/* Silme Onay Modal */}
       {projectToDelete && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
           <div className="bg-[#111] border border-white/10 rounded-2xl p-6 md:p-8 max-w-md w-full shadow-2xl animate-in fade-in zoom-in duration-200">
@@ -133,6 +186,94 @@ export default function DashboardPage() {
                   "Evet, Kaldır"
                 )}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toplanan Talepler (Waitlist) Modal */}
+      {selectedProjectForLeads && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-md px-4">
+          <div className="bg-[#111] border border-white/10 rounded-3xl p-6 md:p-8 max-w-2xl w-full shadow-2xl animate-in fade-in zoom-in duration-200 max-h-[85vh] flex flex-col">
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="text-xl font-bold font-heading text-white">Toplanan Talepler (Leads)</h3>
+                  <span className="px-2.5 py-0.5 rounded-full bg-[#6366F1]/10 text-[#6366F1] text-xs font-bold border border-[#6366F1]/20">
+                    {leads.length} Kayıt
+                  </span>
+                </div>
+                <p className="text-white/40 text-xs">
+                  <strong className="text-white/70">{selectedProjectForLeads.productName || selectedProjectForLeads.slug}</strong> projesine kayıt olan potansiyel müşteriler.
+                </p>
+              </div>
+              <button 
+                onClick={() => setSelectedProjectForLeads(null)}
+                className="p-2 text-white/40 hover:text-white bg-white/5 hover:bg-white/10 rounded-xl transition-colors"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto pr-1">
+              {leadsLoading ? (
+                <div className="flex justify-center items-center py-16">
+                  <span className="w-8 h-8 border-2 border-[#6366F1]/50 border-t-[#6366F1] rounded-full animate-spin"></span>
+                </div>
+              ) : leads.length === 0 ? (
+                <div className="text-center py-16 bg-white/[0.02] border border-dashed border-white/5 rounded-2xl">
+                  <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center mx-auto mb-3 text-white/30">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                  </div>
+                  <p className="text-white/60 text-sm font-medium">Henüz toplanan e-posta yok</p>
+                  <p className="text-white/30 text-xs mt-1">Ziyaretçiler form doldurdukça burada listelenecek.</p>
+                </div>
+              ) : (
+                <div className="border border-white/5 rounded-2xl overflow-hidden bg-white/[0.01]">
+                  <table className="w-full text-left text-sm text-gray-300">
+                    <thead className="border-b border-white/10 text-xs text-white/40 uppercase bg-white/[0.02]">
+                      <tr>
+                        <th className="py-3 px-4 font-semibold">E-posta</th>
+                        <th className="py-3 px-4 text-right font-semibold">Kayıt Tarihi</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/5">
+                      {leads.map(lead => (
+                        <tr key={lead.id} className="hover:bg-white/[0.03] transition-colors">
+                          <td className="py-3 px-4 font-medium text-white">{lead.email}</td>
+                          <td className="py-3 px-4 text-right text-white/40 text-xs">
+                            {new Date(lead.createdAt).toLocaleDateString("tr-TR", {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit"
+                            })}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-white/5 flex justify-end gap-3 items-center">
+              <button 
+                onClick={() => setSelectedProjectForLeads(null)}
+                className="px-5 py-2.5 bg-white/5 text-white/60 hover:text-white rounded-xl text-xs font-semibold hover:bg-white/10 transition-colors"
+              >
+                Kapat
+              </button>
+              {leads.length > 0 && (
+                <button
+                  onClick={handleDownloadCSV}
+                  className="px-5 py-2.5 bg-[#6366F1] hover:bg-[#5558E6] text-white rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-lg shadow-[#6366F1]/20"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                  CSV İndir
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -197,7 +338,7 @@ export default function DashboardPage() {
              <h3 className="text-xl font-bold mb-2">Henüz projeniz yok</h3>
              <p className="text-white/40 text-sm mb-6 max-w-md mx-auto">İlk B2B Landing Page'inizi yapay zeka destekli altyapımızla dakikalar içinde oluşturun.</p>
              <Link href="/create" className="inline-flex px-6 py-2.5 bg-white text-black text-sm font-bold rounded-xl hover:bg-gray-200 transition-colors">
-               Projeyi Başlat
+                Projeyi Başlat
              </Link>
           </div>
         ) : (
@@ -235,13 +376,13 @@ export default function DashboardPage() {
                       dataKey="name" 
                       stroke="rgba(255,255,255,0.3)" 
                       fontSize={12} 
-                      tickLine={false}
+                      tickLine={false} 
                       axisLine={false}
                     />
                     <YAxis 
                       stroke="rgba(255,255,255,0.3)" 
                       fontSize={12} 
-                      tickLine={false}
+                      tickLine={false} 
                       axisLine={false}
                       allowDecimals={false}
                     />
@@ -303,9 +444,17 @@ export default function DashboardPage() {
                           </button>
 
                           {openDropdownId === project.id && (
-                            <div className="absolute right-0 bottom-full mb-2 w-40 bg-[#1A1A1A] border border-white/10 rounded-xl shadow-xl overflow-hidden z-50 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                            <div className="absolute right-0 bottom-full mb-2 w-48 bg-[#1A1A1A] border border-white/10 rounded-xl shadow-xl overflow-hidden z-50 animate-in fade-in slide-from-bottom-2 duration-200">
+                              <button 
+                                onClick={() => handleOpenLeads(project)}
+                                className="flex items-center gap-2 w-full px-4 py-3 text-sm text-[#6366F1] hover:bg-white/5 transition-colors text-left font-medium"
+                              >
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                                Toplanan Talepler
+                              </button>
+                              <div className="h-px bg-white/5 w-full"></div>
                               <Link href={`/${project.slug}`} target="_blank" className="flex items-center gap-2 w-full px-4 py-3 text-sm text-white/80 hover:bg-white/5 hover:text-white transition-colors">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
                                 Siteyi İncele
                               </Link>
                               <div className="h-px bg-white/5 w-full"></div>
@@ -316,7 +465,7 @@ export default function DashboardPage() {
                                 }}
                                 className="flex items-center gap-2 w-full px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors text-left"
                               >
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                                 Kaldır
                               </button>
                             </div>
