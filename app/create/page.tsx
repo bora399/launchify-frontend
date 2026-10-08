@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { auth } from "@/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import Link from "next/link";
-import * as signalR from "@microsoft/signalr"; 
+import * as signalR from "@microsoft/signalr";
 
 const BRAND_COLOR = "#6366F1";
 
@@ -17,8 +17,8 @@ const TEMPLATES = [
     previewClass: "bg-black relative overflow-hidden",
     previewVibe: (
       <>
-        <div className="absolute top-[-20%] left-[-20%] w-[100%] h-[100%] rounded-full bg-purple-600/50 blur-[20px]"></div>
-        <div className="absolute bottom-[-20%] right-[-20%] w-[100%] h-[100%] rounded-full bg-blue-600/50 blur-[20px]"></div>
+        <div className="absolute top-[-20%] left-[-20%] w-full h-full rounded-full bg-purple-600/50 blur-[20px]"></div>
+        <div className="absolute bottom-[-20%] right-[-20%] w-full h-full rounded-full bg-blue-600/50 blur-[20px]"></div>
         <div className="absolute inset-2 border border-white/20 bg-white/10 backdrop-blur-md rounded-md"></div>
       </>
     )
@@ -56,7 +56,7 @@ const TEMPLATES = [
     previewVibe: (
       <div className="w-full h-full flex flex-col">
         <div className="w-full h-3 bg-white shadow-sm flex items-center px-1">
-           <div className="w-2 h-2 rounded-sm bg-slate-800"></div>
+          <div className="w-2 h-2 rounded-sm bg-slate-800"></div>
         </div>
         <div className="flex-1 flex gap-1 p-1 items-center justify-center">
           <div className="w-1/2 h-4/5 bg-white rounded-sm shadow-sm"></div>
@@ -71,24 +71,22 @@ export default function CreateProject() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  
+
   const [userId, setUserId] = useState<string | null>(null);
-  
   const [authLoading, setAuthLoading] = useState(true);
-  
+
   const [remainingCredits, setRemainingCredits] = useState<number | null>(null);
   const [isCreditChecking, setIsCreditChecking] = useState(true);
-  
+
   const [logs, setLogs] = useState<string[]>([]);
   const [connectionId, setConnectionId] = useState<string>("");
-
   const [progress, setProgress] = useState(0);
 
   const [formData, setFormData] = useState({
-    productName: "", 
-    templateType: "aurora", 
-    contactEmail: "", 
-    demoLink: "", 
+    productName: "",
+    templateType: "aurora",
+    contactEmail: "",
+    demoLink: "",
     productDescription: ""
   });
 
@@ -130,7 +128,7 @@ export default function CreateProject() {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         setUserId(user.uid);
-        
+
         try {
           const res = await fetch(`${apiUrl}/api/User/${user.uid}`);
           if (res.ok) {
@@ -151,7 +149,7 @@ export default function CreateProject() {
   }, [apiUrl, router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setErrorMessage(""); 
+    setErrorMessage("");
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -166,7 +164,7 @@ export default function CreateProject() {
       setErrorMessage("Proje oluşturabilmek için lütfen önce giriş yapın.");
       return;
     }
-    
+
     if (remainingCredits !== null && remainingCredits <= 0) {
       setErrorMessage("Proje oluşturma hakkınız (krediniz) bitmiştir.");
       return;
@@ -174,37 +172,52 @@ export default function CreateProject() {
 
     setIsLoading(true);
     setErrorMessage("");
-    setLogs(["[Sistem] Üretim isteği kuyruğa alındı. Güvenlik doğrulamaları yapılıyor..."]); // Terminali başlat
+    setLogs(["[Sistem] Üretim isteği kuyruğa alındı. Güvenlik doğrulamaları yapılıyor..."]);
     setProgress(5);
-    
+
     try {
       const response = await fetch(`${apiUrl}/api/LandingPages/create`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Id': userId
+        },
         body: JSON.stringify({
           ProductName: formData.productName,
-          ThemeType: formData.templateType, 
+          ThemeType: formData.templateType,
           TemplateType: formData.templateType,
           ContactEmail: formData.contactEmail,
           DemoLink: formData.demoLink === "" ? null : formData.demoLink,
           ProductDescription: formData.productDescription,
           UserId: userId,
-          ConnectionId: connectionId
+          ConnectionId: connectionId || null
         }),
       });
 
-      const responseData = await response.json();
+      const rawText = await response.text();
+      let responseData: any = {};
+      try {
+        responseData = JSON.parse(rawText);
+      } catch {
+        responseData = { message: rawText };
+      }
 
       if (response.ok) {
         setTimeout(() => {
           router.push(`/${responseData.slug}`);
         }, 1500);
       } else {
-        setErrorMessage(responseData.message || "Sistem şu anda yoğun veya altyapı yanıt vermiyor. Lütfen daha sonra tekrar deneyin.");
+        const backendMessage = responseData?.message || rawText;
+        setErrorMessage(
+          backendMessage && backendMessage.trim() !== ""
+            ? `[Hata ${response.status}] ${backendMessage}`
+            : `Sistem şu anda yoğun veya altyapı yanıt vermiyor (HTTP ${response.status}).`
+        );
         setIsLoading(false);
       }
-    } catch (error) {
-      setErrorMessage("Sunucu ile bağlantı kurulamadı. Ağ bağlantınızı veya güvenlik duvarınızı kontrol edin.");
+    } catch (error: any) {
+      console.error("Fetch Hatası:", error);
+      setErrorMessage(`Sunucu ile bağlantı kurulamadı: ${error?.message || "Ağ hatası"}`);
       setIsLoading(false);
     }
   };
@@ -221,7 +234,6 @@ export default function CreateProject() {
 
   return (
     <div className="min-h-screen bg-[#050505] text-[#FAFAFA] font-sans selection:bg-[#6366F1]/30 selection:text-white relative overflow-x-hidden">
-      
       <style dangerouslySetInnerHTML={{__html: `
         @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600&family=Outfit:wght@400;500;700;800&display=swap');
         .font-heading { font-family: 'Outfit', sans-serif; }
@@ -238,7 +250,6 @@ export default function CreateProject() {
       <div className="fixed top-[10%] left-1/2 -translate-x-1/2 w-[600px] h-[500px] opacity-20 blur-[120px] rounded-full pointer-events-none" style={{ backgroundColor: BRAND_COLOR }}></div>
 
       <div className="relative z-10 w-full max-w-4xl mx-auto px-6 pt-24 pb-24">
-        
         <div className="mb-12 text-center">
           <h1 className="text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-4 font-heading">
             Sistemi Başlat
@@ -250,7 +261,7 @@ export default function CreateProject() {
 
         <div className="bg-[#111111]/80 backdrop-blur-xl rounded-3xl border border-white/10 p-8 md:p-12 shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#6366F1] to-transparent opacity-50"></div>
-          
+
           {isOutOfCredits && (
             <div className="absolute inset-0 z-50 bg-[#050505]/80 backdrop-blur-md flex flex-col items-center justify-center text-center p-8">
               <div className="w-16 h-16 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mb-6 border border-red-500/20 shadow-[0_0_30px_-5px_rgba(239,68,68,0.3)]">
@@ -274,7 +285,6 @@ export default function CreateProject() {
           )}
 
           <form onSubmit={handleSubmit} className={`space-y-10 font-body relative z-10 ${isOutOfCredits ? 'opacity-30 pointer-events-none blur-sm' : ''}`}>
-            
             <div>
               <label htmlFor="productName" className="block text-xs font-bold uppercase tracking-widest text-white/60 mb-3 cursor-pointer">Ürün / Platform Adı</label>
               <input id="productName" required type="text" name="productName" onChange={handleChange} maxLength={60} disabled={isLoading}
@@ -286,17 +296,17 @@ export default function CreateProject() {
               <label className="block text-xs font-bold uppercase tracking-widest text-white/60 mb-4">Tasarım Karakteri (Şablon)</label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {TEMPLATES.map((template) => (
-                  <div 
+                  <div
                     key={template.id}
                     onClick={() => !isLoading && selectTemplate(template.id)}
                     className={`group cursor-pointer p-4 rounded-2xl border transition-all duration-300 flex items-start gap-4 ${
-                      formData.templateType === template.id 
-                        ? 'border-[#6366F1] bg-[#6366F1]/10 ring-1 ring-[#6366F1]' 
+                      formData.templateType === template.id
+                        ? 'border-[#6366F1] bg-[#6366F1]/10 ring-1 ring-[#6366F1]'
                         : 'border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20'
                     } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     <div className={`shrink-0 w-20 h-20 rounded-xl overflow-hidden ${template.previewClass} relative shadow-inner`}>
-                       {template.previewVibe}
+                      {template.previewVibe}
                     </div>
                     <div className="flex flex-col justify-center h-full">
                       <h3 className={`font-bold text-lg transition-colors ${formData.templateType === template.id ? 'text-[#6366F1]' : 'text-white group-hover:text-white/90'}`}>
@@ -367,10 +377,9 @@ export default function CreateProject() {
                 )}
               </button>
             </div>
-            
+
             {isLoading && (
               <div className="mt-6 bg-[#0a0a0a] border border-white/10 rounded-xl p-6 font-mono text-sm h-64 overflow-hidden shadow-[0_10px_40px_-10px_rgba(0,0,0,0.8)] relative animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col">
-                
                 <div className="w-full h-8 flex items-center gap-2 mb-4">
                   <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
                   <div className="w-3 h-3 rounded-full bg-yellow-500/80"></div>
@@ -379,30 +388,30 @@ export default function CreateProject() {
                 </div>
 
                 <div className="w-full bg-white/5 rounded-full h-1.5 mb-4 overflow-hidden relative">
-                  <div 
+                  <div
                     className="bg-[#6366F1] h-full rounded-full transition-all duration-700 ease-out shadow-[0_0_15px_rgba(99,102,241,0.8)] relative"
                     style={{ width: `${progress}%` }}
                   >
                     <div className="absolute top-0 right-0 bottom-0 w-4 bg-white/50 blur-[2px]"></div>
                   </div>
                 </div>
-                
+
                 <div className="flex-1 overflow-y-auto flex flex-col gap-2 pr-2 custom-scrollbar">
                   {logs.map((log, index) => (
-                    <div 
-                      key={index} 
+                    <div
+                      key={index}
                       className={`transition-all duration-300 ${
-                        log.includes("✅") ? "text-green-400 font-bold" : 
-                        log.includes("❌") || log.includes("[Hata]") ? "text-red-400" : 
-                        log.includes("[Uyarı]") ? "text-yellow-400" : 
+                        log.includes("✅") ? "text-green-400 font-bold" :
+                        log.includes("❌") || log.includes("[Hata]") ? "text-red-400" :
+                        log.includes("[Uyarı]") ? "text-yellow-400" :
                         "text-indigo-300"
                       }`}
                     >
-                      <span className="text-white/30 mr-2">{">"}</span> 
+                      <span className="text-white/30 mr-2">{">"}</span>
                       {log}
                     </div>
                   ))}
-                  
+
                   {!logs[logs.length - 1]?.includes("✅") && !logs[logs.length - 1]?.includes("❌") && (
                     <div className="text-white/50 animate-pulse mt-1">
                       <span className="text-white/30 mr-2">{">"}</span>_
@@ -411,7 +420,6 @@ export default function CreateProject() {
                 </div>
               </div>
             )}
-            
           </form>
         </div>
       </div>
