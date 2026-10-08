@@ -20,6 +20,7 @@ const ACCENT_PRESETS = ["#6366F1", "#10B981", "#EC4899", "#3B82F6", "#F59E0B", "
 export default function EditModal({ isOpen, onClose, project, onUpdated }: EditModalProps) {
   const ai = project?.aiConfig || project?.AiConfig || {};
 
+  const [activeTab, setActiveTab] = useState<'editor' | 'preview'>('editor');
   const [productName, setProductName] = useState(
     project?.productName || project?.ProductName || ""
   );
@@ -52,11 +53,11 @@ export default function EditModal({ isOpen, onClose, project, onUpdated }: EditM
     ...project,
     id: project?.id || "preview-id",
     slug: project?.slug || "onizleme",
-    productName: productName,
+    productName,
     ProductName: productName,
-    templateType: templateType,
+    templateType,
     TemplateType: templateType,
-    accentColor: accentColor,
+    accentColor,
     AccentColor: accentColor,
     aiGeneratedHeroTitle: heroTitle,
     AiGeneratedHeroTitle: heroTitle,
@@ -67,10 +68,9 @@ export default function EditModal({ isOpen, onClose, project, onUpdated }: EditM
     demoLink: project?.demoLink || "#",
     features: currentFeatures,
     Features: currentFeatures,
-
     aiConfig: {
       ...ai,
-      accentColor: accentColor,
+      accentColor,
       AccentColor: accentColor,
       aiGeneratedHeroTitle: heroTitle,
       AiGeneratedHeroTitle: heroTitle,
@@ -83,7 +83,7 @@ export default function EditModal({ isOpen, onClose, project, onUpdated }: EditM
     },
     AiConfig: {
       ...ai,
-      accentColor: accentColor,
+      accentColor,
       AccentColor: accentColor,
       aiGeneratedHeroTitle: heroTitle,
       AiGeneratedHeroTitle: heroTitle,
@@ -145,50 +145,88 @@ export default function EditModal({ isOpen, onClose, project, onUpdated }: EditM
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 pt-16 sm:p-6 sm:pt-20 overflow-hidden">
-      
+    <div className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/90 backdrop-blur-md p-2 sm:p-4 md:p-6 overflow-hidden">
       <div className="fixed inset-0" onClick={onClose} />
 
-      <div className="relative z-10 bg-[#0d0d0d] border border-white/10 rounded-3xl w-full max-w-6xl shadow-2xl flex flex-col h-[88vh] max-h-[820px] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative z-10 bg-[#0d0d0d] border border-white/10 rounded-2xl sm:rounded-3xl w-full max-w-6xl shadow-2xl flex flex-col h-[94vh] sm:h-[88vh] max-h-[850px] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         
-        <div className="flex justify-between items-center px-6 py-4 border-b border-white/5 bg-[#141414] shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-[#6366F1]/10 border border-[#6366F1]/20 flex items-center justify-center text-[#6366F1]">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+        {/* Üst Bar */}
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center px-4 sm:px-6 py-3 sm:py-4 border-b border-white/5 bg-[#141414] shrink-0 gap-2 sm:gap-0">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-[#6366F1]/10 border border-[#6366F1]/20 flex items-center justify-center text-[#6366F1]">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+              </div>
+              <div>
+                <h3 className="text-sm sm:text-base font-bold font-heading text-white leading-tight">Canlı Sayfa Editörü</h3>
+                <p className="text-white/40 text-[10px] sm:text-[11px] hidden sm:block">Değişiklikler anında önizlemeye yansır.</p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-base font-bold font-heading text-white leading-tight">Canlı Sayfa Editörü</h3>
-              <p className="text-white/40 text-[11px]">Değişiklikler sağdaki önizleme ekranına anında yansır.</p>
-            </div>
+            
+            <button 
+              onClick={onClose} 
+              className="p-1.5 sm:p-2 text-white/40 hover:text-white bg-white/5 rounded-lg sm:rounded-xl sm:hidden"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
           </div>
-          <button 
-            onClick={onClose} 
-            className="p-2 text-white/40 hover:text-white bg-white/5 hover:bg-white/10 rounded-xl transition-colors cursor-pointer"
-            title="Kapat"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-          </button>
+
+          {/* Mobilde Düzenle / Önizleme Geçiş Tab'ı */}
+          <div className="flex items-center justify-between sm:justify-end gap-2">
+            <div className="flex lg:hidden bg-white/5 p-1 rounded-xl border border-white/5 w-full sm:w-auto">
+              <button
+                type="button"
+                onClick={() => setActiveTab('editor')}
+                className={`flex-1 sm:flex-none px-3 py-1 text-xs font-semibold rounded-lg transition-all ${
+                  activeTab === 'editor' ? 'bg-[#6366F1] text-white shadow-sm' : 'text-white/50 hover:text-white'
+                }`}
+              >
+                Düzenle
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('preview')}
+                className={`flex-1 sm:flex-none px-3 py-1 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+                  activeTab === 'preview' ? 'bg-[#6366F1] text-white shadow-sm' : 'text-white/50 hover:text-white'
+                }`}
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                Önizleme
+              </button>
+            </div>
+
+            <button 
+              onClick={onClose} 
+              className="p-2 text-white/40 hover:text-white bg-white/5 hover:bg-white/10 rounded-xl transition-colors cursor-pointer hidden sm:block"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+          </div>
         </div>
 
+        {/* Gövde */}
         <div className="flex-1 flex flex-col lg:flex-row overflow-hidden min-h-0">
           
-          <div className="w-full lg:w-[400px] border-r border-white/5 flex flex-col shrink-0 bg-[#0F0F0F]">
-            <form onSubmit={handleSave} className="flex-1 overflow-y-auto p-5 space-y-4">
+          {/* Sol Panel: Kontroller */}
+          <div className={`w-full lg:w-[400px] border-r border-white/5 flex flex-col shrink-0 bg-[#0F0F0F] ${
+            activeTab === 'editor' ? 'flex' : 'hidden lg:flex'
+          }`}>
+            <form onSubmit={handleSave} className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-3.5 sm:space-y-4">
               
               <div>
-                <label className="text-[11px] font-semibold text-white/60 mb-1 block uppercase tracking-wider">Proje Adı</label>
+                <label className="text-[10px] sm:text-[11px] font-semibold text-white/60 mb-1 block uppercase tracking-wider">Proje Adı</label>
                 <input 
                   type="text" 
                   value={productName} 
                   onChange={e => setProductName(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-[#6366F1]"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-[#6366F1]"
                   required
                 />
               </div>
 
               <div>
-                <label className="text-[11px] font-semibold text-white/60 mb-1.5 block uppercase tracking-wider">Şablon Stili</label>
-                <div className="grid grid-cols-4 gap-1.5">
+                <label className="text-[10px] sm:text-[11px] font-semibold text-white/60 mb-1 block uppercase tracking-wider">Şablon Stili</label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
                   {TEMPLATES.map(tpl => (
                     <button
                       type="button"
@@ -207,54 +245,54 @@ export default function EditModal({ isOpen, onClose, project, onUpdated }: EditM
               </div>
 
               <div>
-                <label className="text-[11px] font-semibold text-white/60 mb-1 block uppercase tracking-wider">Hero Başlığı</label>
+                <label className="text-[10px] sm:text-[11px] font-semibold text-white/60 mb-1 block uppercase tracking-wider">Hero Başlığı</label>
                 <textarea 
                   rows={2}
                   value={heroTitle} 
                   onChange={e => setHeroTitle(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-[#6366F1] resize-none"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-[#6366F1] resize-none"
                   required
                 />
               </div>
 
               <div>
-                <label className="text-[11px] font-semibold text-white/60 mb-1 block uppercase tracking-wider">Pazarlama & Açıklama Metni</label>
+                <label className="text-[10px] sm:text-[11px] font-semibold text-white/60 mb-1 block uppercase tracking-wider">Açıklama Metni</label>
                 <textarea 
-                  rows={4}
+                  rows={3}
                   value={marketingCopy} 
                   onChange={e => setMarketingCopy(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-[#6366F1]"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-[#6366F1]"
                   required
                 />
               </div>
 
               <div>
-                <label className="text-[11px] font-semibold text-white/60 mb-1 block uppercase tracking-wider">Buton (CTA) Metni</label>
+                <label className="text-[10px] sm:text-[11px] font-semibold text-white/60 mb-1 block uppercase tracking-wider">Buton (CTA) Metni</label>
                 <input 
                   type="text" 
                   value={ctaText} 
                   onChange={e => setCtaText(e.target.value)}
                   placeholder="Erken Erişime Katıl"
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-[#6366F1]"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-[#6366F1]"
                 />
               </div>
 
               <div>
-                <label className="text-[11px] font-semibold text-white/60 mb-1.5 block uppercase tracking-wider">Vurgu Rengi</label>
-                <div className="flex items-center gap-2">
+                <label className="text-[10px] sm:text-[11px] font-semibold text-white/60 mb-1.5 block uppercase tracking-wider">Vurgu Rengi</label>
+                <div className="flex items-center gap-2 overflow-x-auto pb-1">
                   <input 
                     type="color" 
                     value={accentColor} 
                     onChange={e => setAccentColor(e.target.value)}
-                    className="w-9 h-9 rounded-xl border border-white/10 bg-transparent cursor-pointer p-0.5"
+                    className="w-8 h-8 rounded-lg border border-white/10 bg-transparent cursor-pointer p-0.5 shrink-0"
                   />
-                  <div className="flex gap-2 flex-1">
+                  <div className="flex gap-1.5 flex-1 items-center">
                     {ACCENT_PRESETS.map(c => (
                       <button
                         type="button"
                         key={c}
                         onClick={() => setAccentColor(c)}
-                        className={`w-7 h-7 rounded-full border border-white/20 transition-transform cursor-pointer ${
+                        className={`w-6 h-6 rounded-full border border-white/20 transition-transform cursor-pointer shrink-0 ${
                           accentColor.toLowerCase() === c.toLowerCase() ? 'scale-110 border-white ring-2 ring-white/40' : 'hover:scale-105'
                         }`}
                         style={{ backgroundColor: c }}
@@ -264,18 +302,18 @@ export default function EditModal({ isOpen, onClose, project, onUpdated }: EditM
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-white/5 flex justify-end gap-2.5">
+              <div className="pt-3 border-t border-white/5 flex justify-end gap-2">
                 <button 
                   type="button" 
                   onClick={onClose} 
-                  className="px-4 py-2.5 bg-white/5 hover:bg-white/10 text-white/60 hover:text-white rounded-xl text-xs font-semibold cursor-pointer"
+                  className="px-3.5 py-2 bg-white/5 hover:bg-white/10 text-white/60 hover:text-white rounded-xl text-xs font-semibold"
                 >
                   İptal
                 </button>
                 <button 
                   type="submit" 
                   disabled={isSaving}
-                  className="px-5 py-2.5 bg-[#6366F1] hover:bg-[#5558E6] text-white font-bold rounded-xl text-xs flex items-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+                  className="px-4 py-2 bg-[#6366F1] hover:bg-[#5558E6] text-white font-bold rounded-xl text-xs transition-all disabled:opacity-50"
                 >
                   {isSaving ? "Kaydediliyor..." : "Kaydet & Yayınla"}
                 </button>
@@ -283,21 +321,24 @@ export default function EditModal({ isOpen, onClose, project, onUpdated }: EditM
             </form>
           </div>
 
-          <div className="flex-1 bg-[#050505] p-3 sm:p-5 flex flex-col min-w-0 overflow-hidden">
-            <div className="w-full h-full bg-[#080808] border border-white/10 rounded-2xl overflow-hidden flex flex-col shadow-inner">
+          {/* Sağ Panel: Canlı Önizleme */}
+          <div className={`flex-1 bg-[#050505] p-2 sm:p-4 md:p-5 flex-col min-w-0 overflow-hidden ${
+            activeTab === 'preview' ? 'flex' : 'hidden lg:flex'
+          }`}>
+            <div className="w-full h-full bg-[#080808] border border-white/10 rounded-xl sm:rounded-2xl overflow-hidden flex flex-col shadow-inner">
               
-              <div className="bg-[#141414] px-4 py-2 border-b border-white/5 flex items-center justify-between shrink-0">
+              <div className="bg-[#141414] px-3 sm:px-4 py-2 border-b border-white/5 flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-red-500/80"></span>
-                  <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/80"></span>
-                  <span className="w-2.5 h-2.5 rounded-full bg-green-500/80"></span>
+                  <span className="w-2 h-2 rounded-full bg-red-500/80"></span>
+                  <span className="w-2 h-2 rounded-full bg-yellow-500/80"></span>
+                  <span className="w-2 h-2 rounded-full bg-green-500/80"></span>
                 </div>
-                <div className="bg-black/60 border border-white/10 rounded-lg px-4 py-0.5 text-[11px] text-white/50 font-mono max-w-xs truncate">
+                <div className="bg-black/60 border border-white/10 rounded-lg px-2.5 sm:px-4 py-0.5 text-[10px] sm:text-[11px] text-white/50 font-mono max-w-[150px] sm:max-w-xs truncate">
                   launchify.app/{project?.slug || "onizleme"}
                 </div>
                 <div className="text-[10px] text-emerald-400 font-semibold flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                  Canlı Önizleme
+                  <span className="hidden sm:inline">Canlı Önizleme</span>
                 </div>
               </div>
 

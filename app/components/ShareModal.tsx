@@ -28,18 +28,15 @@ export default function ShareModal({ isOpen, onClose, project }: ShareModalProps
   };
 
   const shareTwitter = () => {
-    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareTitle)}&url=${encodeURIComponent(pageUrl)}`;
-    window.open(url, '_blank');
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareTitle)}&url=${encodeURIComponent(pageUrl)}`, '_blank');
   };
 
   const shareLinkedIn = () => {
-    const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(pageUrl)}`;
-    window.open(url, '_blank');
+    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(pageUrl)}`, '_blank');
   };
 
   const shareWhatsApp = () => {
-    const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(`${shareTitle}${pageUrl}`)}`;
-    window.open(url, '_blank');
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(`${shareTitle}${pageUrl}`)}`, '_blank');
   };
 
   const downloadQR = () => {
@@ -70,33 +67,32 @@ export default function ShareModal({ isOpen, onClose, project }: ShareModalProps
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 sm:p-6">
+    <div className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/85 backdrop-blur-md p-4 overflow-y-auto">
       <div className="fixed inset-0" onClick={onClose} />
 
-      <div className="relative z-10 bg-[#111111] border border-white/10 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative z-10 bg-[#111111] border border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-7 max-w-sm sm:max-w-md w-full shadow-2xl animate-in fade-in zoom-in-95 duration-200">
         
-        {/* Başlık */}
-        <div className="flex justify-between items-start mb-6">
+        <div className="flex justify-between items-start mb-5">
           <div>
-            <h3 className="text-xl font-bold font-heading text-white">Paylaş & Dağıt</h3>
-            <p className="text-white/40 text-xs mt-1">
+            <h3 className="text-lg sm:text-xl font-bold font-heading text-white">Paylaş & Dağıt</h3>
+            <p className="text-white/40 text-xs mt-0.5 truncate max-w-[220px] sm:max-w-none">
               <strong className="text-white/70">{project.productName || project.slug}</strong> sayfanızı yayınlayın.
             </p>
           </div>
           <button 
             onClick={onClose}
-            className="p-2 text-white/40 hover:text-white bg-white/5 hover:bg-white/10 rounded-xl transition-colors cursor-pointer"
+            className="p-1.5 sm:p-2 text-white/40 hover:text-white bg-white/5 rounded-xl transition-colors cursor-pointer"
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
           </button>
         </div>
 
-        <div className="flex flex-col items-center justify-center p-6 bg-white/5 border border-white/5 rounded-2xl mb-6">
-          <div className="bg-white p-4 rounded-xl shadow-lg mb-4">
+        <div className="flex flex-col items-center justify-center p-4 sm:p-5 bg-white/5 border border-white/5 rounded-2xl mb-5">
+          <div className="bg-white p-3 rounded-xl shadow-lg mb-3">
             <QRCodeSVG 
               id="project-qr-svg"
               value={pageUrl} 
-              size={160}
+              size={130}
               bgColor="#ffffff"
               fgColor="#000000"
               level="Q"
@@ -111,7 +107,7 @@ export default function ShareModal({ isOpen, onClose, project }: ShareModalProps
           </button>
         </div>
 
-        <div className="flex items-center gap-2 bg-black/50 border border-white/10 rounded-xl p-2 mb-6">
+        <div className="flex items-center gap-2 bg-black/50 border border-white/10 rounded-xl p-1.5 sm:p-2 mb-4">
           <input 
             type="text" 
             readOnly 
@@ -120,7 +116,7 @@ export default function ShareModal({ isOpen, onClose, project }: ShareModalProps
           />
           <button 
             onClick={copyToClipboard}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer ${
               copied 
                 ? 'bg-green-500 text-white' 
                 : 'bg-white/10 hover:bg-white/20 text-white'
@@ -130,24 +126,25 @@ export default function ShareModal({ isOpen, onClose, project }: ShareModalProps
           </button>
         </div>
 
-        <div className="grid grid-cols-3 gap-3">
+        {/* Mobilde 1 kolon veya kompakt 3 kolon */}
+        <div className="grid grid-cols-3 gap-2">
           <button
             onClick={shareTwitter}
-            className="flex items-center justify-center gap-2 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs font-medium text-white transition-all cursor-pointer"
+            className="py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs font-medium text-white transition-all text-center"
           >
-            <span>X / Twitter</span>
+            X / Twitter
           </button>
           <button
             onClick={shareLinkedIn}
-            className="flex items-center justify-center gap-2 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs font-medium text-white transition-all cursor-pointer"
+            className="py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs font-medium text-white transition-all text-center"
           >
-            <span>LinkedIn</span>
+            LinkedIn
           </button>
           <button
             onClick={shareWhatsApp}
-            className="flex items-center justify-center gap-2 py-2.5 bg-green-500/10 hover:bg-green-500/20 border border-green-500/20 rounded-xl text-xs font-medium text-green-400 transition-all cursor-pointer"
+            className="py-2.5 bg-green-500/10 hover:bg-green-500/20 border border-green-500/20 rounded-xl text-xs font-medium text-green-400 transition-all text-center"
           >
-            <span>WhatsApp</span>
+            WhatsApp
           </button>
         </div>
 

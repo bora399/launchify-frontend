@@ -336,36 +336,26 @@ export default function DashboardPage() {
                     </p>
                   </div>
                 ) : (
-                  <div className="border border-white/5 rounded-2xl overflow-hidden bg-white/[0.01]">
-                    <table className="w-full text-left text-sm text-gray-300">
-                      <thead className="border-b border-white/10 text-xs text-white/40 uppercase bg-white/[0.02] sticky top-0 backdrop-blur-md">
+                  <div className="border border-white/5 rounded-2xl overflow-x-auto bg-white/[0.01]">
+                    <table className="w-full text-left text-xs sm:text-sm text-gray-300 min-w-[280px]">
+                      <thead className="border-b border-white/10 text-[11px] sm:text-xs text-white/40 uppercase bg-white/[0.02] sticky top-0 backdrop-blur-md">
                         <tr>
-                          <th className="py-3 px-4 font-semibold">E-posta</th>
-                          <th className="py-3 px-4 text-right font-semibold">
-                            Kayıt Tarihi
-                          </th>
+                          <th className="py-2.5 px-3 sm:py-3 sm:px-4 font-semibold">E-posta</th>
+                          <th className="py-2.5 px-3 sm:py-3 sm:px-4 text-right font-semibold">Kayıt Tarihi</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-white/5">
                         {leads.map((lead) => (
-                          <tr
-                            key={lead.id}
-                            className="hover:bg-white/[0.03] transition-colors"
-                          >
-                            <td className="py-3 px-4 font-medium text-white break-all">
-                              {lead.email}
-                            </td>
-                            <td className="py-3 px-4 text-right text-white/40 text-xs whitespace-nowrap">
-                              {new Date(lead.createdAt).toLocaleDateString(
-                                "tr-TR",
-                                {
-                                  day: "2-digit",
-                                  month: "short",
-                                  year: "numeric",
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                },
-                              )}
+                          <tr key={lead.id} className="hover:bg-white/[0.03] transition-colors">
+                            <td className="py-2.5 px-3 sm:py-3 sm:px-4 font-medium text-white break-all">{lead.email}</td>
+                            <td className="py-2.5 px-3 sm:py-3 sm:px-4 text-right text-white/40 text-[11px] sm:text-xs whitespace-nowrap">
+                              {new Date(lead.createdAt).toLocaleDateString("tr-TR", {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit"
+                              })}
                             </td>
                           </tr>
                         ))}
@@ -374,7 +364,6 @@ export default function DashboardPage() {
                   </div>
                 )}
               </div>
-
               <div className="mt-6 pt-4 border-t border-white/5 flex justify-end gap-3 items-center shrink-0">
                 <button
                   onClick={() => setSelectedProjectForLeads(null)}
