@@ -648,14 +648,6 @@ export default function DashboardPage() {
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <span
-                          className="px-2.5 py-1 text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 rounded-xl border border-emerald-500/20 flex items-center gap-1.5"
-                          title="Proje canlıda yayında"
-                        >
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                          Yayında
-                        </span>
-
                         <button
                           onClick={() => setProjectToEdit(project)}
                           className="group/edit px-3 py-1 text-[11px] font-medium bg-white/5 hover:bg-[#6366F1]/15 text-white/70 hover:text-white border border-white/10 hover:border-[#6366F1]/40 rounded-xl transition-all duration-200 flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95"
@@ -677,6 +669,16 @@ export default function DashboardPage() {
                           </svg>
                           <span>Düzenle</span>
                         </button>
+
+                        <span
+                          className="px-2.5 py-1 text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 rounded-xl border border-emerald-500/20 flex items-center gap-1.5"
+                          title="Proje canlıda yayında"
+                        >
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                          Yayında
+                        </span>
+
+                        
                       </div>
                     </div>
 
