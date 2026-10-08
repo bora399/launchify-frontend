@@ -6,6 +6,7 @@ import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { createPortal } from "react-dom";
 
 const BRAND_COLOR = "#6366F1";
 
@@ -35,6 +36,12 @@ export default function DashboardPage() {
   
   const router = useRouter();
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://launchify-backend-3a7w.onrender.com";
+  
+  const [mounted, setMounted] = useState(false);  
+  
+  useEffect(() => {
+  setMounted(true);
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -198,14 +205,14 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {selectedProjectForLeads && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 sm:p-6 overflow-y-auto">
+      {mounted && selectedProjectForLeads && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 sm:p-6">
           <div 
-            className="fixed inset-0 -z-10" 
+            className="fixed inset-0" 
             onClick={() => setSelectedProjectForLeads(null)} 
           />
 
-          <div className="bg-[#111111] border border-white/10 rounded-3xl p-6 sm:p-8 max-w-2xl w-full shadow-2xl animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[85vh] my-auto">
+          <div className="relative z-10 bg-[#111111] border border-white/10 rounded-3xl p-6 sm:p-8 max-w-2xl w-full shadow-2xl animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[85vh]">
             
             <div className="flex justify-between items-start mb-6 shrink-0">
               <div>
@@ -221,7 +228,7 @@ export default function DashboardPage() {
               </div>
               <button 
                 onClick={() => setSelectedProjectForLeads(null)}
-                className="p-2 text-white/40 hover:text-white bg-white/5 hover:bg-white/10 rounded-xl transition-colors"
+                className="p-2 text-white/40 hover:text-white bg-white/5 hover:bg-white/10 rounded-xl transition-colors cursor-pointer"
                 title="Kapat"
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
@@ -274,7 +281,7 @@ export default function DashboardPage() {
             <div className="mt-6 pt-4 border-t border-white/5 flex justify-end gap-3 items-center shrink-0">
               <button 
                 onClick={() => setSelectedProjectForLeads(null)}
-                className="px-5 py-2.5 bg-white/5 text-white/60 hover:text-white rounded-xl text-xs font-semibold hover:bg-white/10 transition-colors"
+                className="px-5 py-2.5 bg-white/5 text-white/60 hover:text-white rounded-xl text-xs font-semibold hover:bg-white/10 transition-colors cursor-pointer"
               >
                 Kapat
               </button>
@@ -290,7 +297,8 @@ export default function DashboardPage() {
             </div>
 
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       <style dangerouslySetInnerHTML={{__html: `
