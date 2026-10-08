@@ -9,11 +9,31 @@ export default function TemplateCorporate({ data }: { data: any }) {
   const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const handleSubscribe = (e: React.FormEvent) => {
+  const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
     if(email) {
-      setIsSubmitted(true);
-      setEmail('');
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://launchify-backend-3a7w.onrender.com";
+        const res = await fetch(`${apiUrl}/api/Waitlist`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            pageId: data.id, // SlugPage'den gönderdiğimiz proje ID'si
+            email: email
+          })
+        });
+
+        if (res.ok) {
+          setIsSubmitted(true);
+          setEmail('');
+        } else {
+          console.error("Sunucu hatası: E-posta kaydedilemedi.");
+        }
+      } catch (error) {
+        console.error("Bağlantı hatası:", error);
+      }
     }
   };
 
@@ -34,7 +54,6 @@ export default function TemplateCorporate({ data }: { data: any }) {
         </a>
       </nav>
 
-      {/* Hero Alanı */}
       <main className="max-w-7xl mx-auto px-6 md:px-12 py-16 md:py-24 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold uppercase mb-6 tracking-wide border border-blue-100">
@@ -58,7 +77,6 @@ export default function TemplateCorporate({ data }: { data: any }) {
           </div>
         </div>
         
-        {/* Sağ Taraf - İstatistik Grafik Objesi */}
         <div className="relative h-[450px] w-full rounded-2xl overflow-hidden shadow-2xl flex items-center justify-center bg-white border border-gray-200">
           <div style={{ backgroundColor: accent }} className="absolute top-0 right-0 w-64 h-64 rounded-full opacity-10 blur-3xl"></div>
           <div className="relative z-10 w-3/4 space-y-4">
@@ -73,7 +91,6 @@ export default function TemplateCorporate({ data }: { data: any }) {
         </div>
       </main>
 
-      {/* Yapay Zeka Özellikler Section */}
       {data?.features && data.features.length > 0 && (
         <section id="features" className="py-24 bg-white border-y border-gray-200">
           <div className="max-w-7xl mx-auto px-6 md:px-12">
@@ -96,7 +113,6 @@ export default function TemplateCorporate({ data }: { data: any }) {
         </section>
       )}
 
-      {/* Kurumsal B2B Lead Capture */}
       <section id="waitlist" className="py-24 bg-gray-900 text-white relative overflow-hidden">
         <div style={{ backgroundColor: accent }} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full opacity-20 blur-[100px] pointer-events-none"></div>
         <div className="max-w-3xl mx-auto px-6 text-center relative z-10">
@@ -132,7 +148,6 @@ export default function TemplateCorporate({ data }: { data: any }) {
         </div>
       </section>
 
-      {/* Footer */}
       <footer className="bg-white border-t border-gray-200 py-10 px-6 md:px-12 text-center text-sm text-gray-500 flex flex-col md:flex-row justify-between items-center max-w-7xl mx-auto">
         <span>© 2026 {data?.productName} Kurumsal Çözümler.</span>
         <span className="mt-4 md:mt-0">Powered by Launchify</span>

@@ -9,11 +9,31 @@ export default function TemplateBrutal({ data }: { data: any }) {
   const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const handleSubscribe = (e: React.FormEvent) => {
+  const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
     if(email) {
-      setIsSubmitted(true);
-      setEmail('');
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://launchify-backend-3a7w.onrender.com";
+        const res = await fetch(`${apiUrl}/api/Waitlist`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            pageId: data.id, // SlugPage'den gönderdiğimiz proje ID'si
+            email: email
+          })
+        });
+
+        if (res.ok) {
+          setIsSubmitted(true);
+          setEmail('');
+        } else {
+          console.error("Sunucu hatası: E-posta kaydedilemedi.");
+        }
+      } catch (error) {
+        console.error("Bağlantı hatası:", error);
+      }
     }
   };
 
@@ -27,7 +47,6 @@ export default function TemplateBrutal({ data }: { data: any }) {
         </a>
       </nav>
 
-      {/* Hero Alanı */}
       <main className="px-6 md:px-12 py-20 md:py-32 flex flex-col items-start max-w-7xl mx-auto">
         <div className="inline-block border-2 border-black px-4 py-1 mb-6 font-bold uppercase bg-white shadow-[4px_4px_0px_rgba(0,0,0,1)]">
           Kalıpları Yık 🚀
@@ -45,7 +64,6 @@ export default function TemplateBrutal({ data }: { data: any }) {
         </div>
       </main>
 
-      {/* Kayan Yazı (Marquee) Efekti */}
       <div className="border-y-4 border-black overflow-hidden flex whitespace-nowrap bg-black text-white py-4 font-black uppercase text-2xl tracking-widest">
         <div className="animate-[marquee_20s_linear_infinite] flex items-center gap-10">
           <span>{data?.productName}</span> <span>✦</span> <span>GÜCÜ HİSSET</span> <span>✦</span>
@@ -55,7 +73,6 @@ export default function TemplateBrutal({ data }: { data: any }) {
         </div>
       </div>
 
-      {/* Özellikler Grid (AI Verisi) */}
       {data?.features && data.features.length > 0 && (
         <section className="px-6 md:px-12 py-24 max-w-7xl mx-auto">
           <h2 className="text-5xl font-black uppercase mb-12 border-b-4 border-black pb-4 inline-block">Neden Biz?</h2>
@@ -73,7 +90,6 @@ export default function TemplateBrutal({ data }: { data: any }) {
         </section>
       )}
 
-      {/* Neobrutalist Lead Capture (Waitlist) */}
       <section id="waitlist" className="px-6 md:px-12 py-20 bg-black text-white border-t-4 border-black">
         <div className="max-w-4xl mx-auto border-4 border-white p-10 md:p-16 shadow-[-16px_16px_0px_rgba(255,255,255,1)] relative">
           <div style={{ backgroundColor: accent }} className="absolute -top-6 -right-6 px-4 py-2 border-2 border-white text-black font-black uppercase rotate-6">Sınırlı Kontenjan!</div>
@@ -108,7 +124,6 @@ export default function TemplateBrutal({ data }: { data: any }) {
         </div>
       </section>
 
-      {/* Footer */}
       <footer className="bg-white text-black border-t-4 border-black px-6 md:px-12 py-12">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
           <h2 className="text-4xl font-black uppercase tracking-tighter">{data?.productName || "Launchify"}*</h2>

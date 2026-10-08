@@ -9,12 +9,31 @@ export default function TemplateAurora({ data }: { data: any }) {
   const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const handleSubscribe = (e: React.FormEvent) => {
+  const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
     if(email) {
-      // TODO: İleride bu maili backend'e yollayacağımız fonksiyon buraya gelecek
-      setIsSubmitted(true);
-      setEmail('');
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://launchify-backend-3a7w.onrender.com";
+        const res = await fetch(`${apiUrl}/api/Waitlist`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            pageId: data.id, // SlugPage'den gönderdiğimiz proje ID'si
+            email: email
+          })
+        });
+
+        if (res.ok) {
+          setIsSubmitted(true);
+          setEmail('');
+        } else {
+          console.error("Sunucu hatası: E-posta kaydedilemedi.");
+        }
+      } catch (error) {
+        console.error("Bağlantı hatası:", error);
+      }
     }
   };
 
@@ -35,7 +54,6 @@ export default function TemplateAurora({ data }: { data: any }) {
         </a>
       </nav>
 
-      {/* Hero Alanı */}
       <main className="flex flex-col items-center justify-center pt-32 pb-20 text-center px-4 relative z-10 max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-1000">
         <div className="px-5 py-2 rounded-full border border-white/10 bg-white/5 text-xs font-medium mb-8 text-gray-300 flex items-center gap-2 backdrop-blur-md">
           <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: accent }}></span> 
@@ -59,7 +77,6 @@ export default function TemplateAurora({ data }: { data: any }) {
         </div>
       </main>
 
-      {/* Yapay Zeka Özellikler Bento Grid */}
       {data?.features && data.features.length > 0 && (
         <section className="max-w-6xl mx-auto px-6 py-24 relative z-10">
           <div className="text-center mb-16">
@@ -88,7 +105,6 @@ export default function TemplateAurora({ data }: { data: any }) {
         </section>
       )}
 
-      {/* Modern Lead Capture (Waitlist) Alanı */}
       <section id="waitlist" className="py-24 relative z-10 px-4">
         <div className="max-w-4xl mx-auto relative">
           <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-blue-500/10 blur-3xl rounded-[3rem]"></div>
@@ -130,7 +146,6 @@ export default function TemplateAurora({ data }: { data: any }) {
         </div>
       </section>
 
-      {/* Footer */}
       <footer className="border-t border-white/10 py-10 text-center text-gray-500 text-sm relative z-10 flex flex-col items-center bg-[#050505]">
         <div className="text-2xl font-bold text-white mb-2 flex items-center gap-2">
           <div className="w-3 h-3 rounded-full" style={{ backgroundColor: accent }}></div>

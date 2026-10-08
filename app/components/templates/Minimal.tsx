@@ -9,17 +9,36 @@ export default function TemplateMinimal({ data }: { data: any }) {
   const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const handleSubscribe = (e: React.FormEvent) => {
+  const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
     if(email) {
-      setIsSubmitted(true);
-      setEmail('');
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://launchify-backend-3a7w.onrender.com";
+        const res = await fetch(`${apiUrl}/api/Waitlist`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            pageId: data.id, // SlugPage'den gönderdiğimiz proje ID'si
+            email: email
+          })
+        });
+
+        if (res.ok) {
+          setIsSubmitted(true);
+          setEmail('');
+        } else {
+          console.error("Sunucu hatası: E-posta kaydedilemedi.");
+        }
+      } catch (error) {
+        console.error("Bağlantı hatası:", error);
+      }
     }
   };
 
   return (
     <div className="min-h-screen bg-white text-gray-900 font-serif selection:bg-gray-200">
-      {/* Navbar */}
       <nav className="px-8 md:px-16 py-10 flex justify-between items-center max-w-7xl mx-auto">
         <div className="text-xl tracking-[0.2em] uppercase font-light">{data?.productName || "Launchify"}</div>
         <div className="flex gap-8 items-center text-xs tracking-widest uppercase text-gray-400 font-sans">
@@ -30,7 +49,6 @@ export default function TemplateMinimal({ data }: { data: any }) {
         </div>
       </nav>
 
-      {/* Hero Alanı */}
       <main className="flex flex-col items-center justify-center pt-20 pb-32 text-center px-6 max-w-4xl mx-auto">
         <h1 className="text-4xl md:text-6xl font-light leading-[1.2] mb-10 text-gray-900">
           {data?.aiGeneratedHeroTitle || "Sadelikteki kusursuz dengeyi keşfedin."}
@@ -43,7 +61,6 @@ export default function TemplateMinimal({ data }: { data: any }) {
         </a>
       </main>
 
-      {/* Dinamik Özellikler Section */}
       {data?.features && data.features.length > 0 && (
         <section id="features" className="max-w-5xl mx-auto px-6 py-24 border-t border-gray-100 font-sans">
           <div className="grid md:grid-cols-12 gap-12">
@@ -65,7 +82,6 @@ export default function TemplateMinimal({ data }: { data: any }) {
         </section>
       )}
 
-      {/* Minimalist Lead Capture */}
       <section id="waitlist" className="py-32 px-6 max-w-3xl mx-auto text-center border-t border-gray-100">
         <h2 className="text-3xl font-light mb-6">Bizimle İletişimde Kalın</h2>
         <p className="text-gray-500 font-sans font-light mb-12">
@@ -97,7 +113,6 @@ export default function TemplateMinimal({ data }: { data: any }) {
         )}
       </section>
 
-      {/* Footer */}
       <footer className="mt-10 py-16 text-center text-[10px] tracking-widest uppercase text-gray-400 font-sans">
         <p>{data?.productName} © 2026 — Tasarımın Özü.</p>
       </footer>
