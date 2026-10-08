@@ -29,7 +29,6 @@ export default function DashboardPage() {
   const [projectToDelete, setProjectToDelete] = useState<any | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Waitlist Modal Durumları
   const [selectedProjectForLeads, setSelectedProjectForLeads] = useState<any | null>(null);
   const [leads, setLeads] = useState<WaitlistEntry[]>([]);
   const [leadsLoading, setLeadsLoading] = useState(false);
@@ -55,6 +54,17 @@ export default function DashboardPage() {
     });
     return () => unsubscribe();
   }, [router]);
+
+  useEffect(() => {
+  if (selectedProjectForLeads || projectToDelete) {
+    document.body.style.overflow = 'hidden';
+  } else {
+    document.body.style.overflow = 'unset';
+  }
+  return () => {
+    document.body.style.overflow = 'unset';
+  };
+}, [selectedProjectForLeads, projectToDelete]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -100,7 +110,6 @@ export default function DashboardPage() {
     }
   };
 
-  // Waitlist Taleplerini Çekme
   const handleOpenLeads = async (project: any) => {
     setSelectedProjectForLeads(project);
     setOpenDropdownId(null);
@@ -122,7 +131,6 @@ export default function DashboardPage() {
     }
   };
 
-  // CSV Dışa Aktarma
   const handleDownloadCSV = () => {
     if (leads.length === 0 || !selectedProjectForLeads) return;
 
@@ -156,7 +164,6 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-[#050505] text-[#FAFAFA] font-sans selection:bg-white/20 relative overflow-hidden pt-32 pb-20">
       
-      {/* Silme Onay Modal */}
       {projectToDelete && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
           <div className="bg-[#111] border border-white/10 rounded-2xl p-6 md:p-8 max-w-md w-full shadow-2xl animate-in fade-in zoom-in duration-200">
@@ -191,11 +198,16 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Toplanan Talepler (Waitlist) Modal */}
       {selectedProjectForLeads && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-md px-4">
-          <div className="bg-[#111] border border-white/10 rounded-3xl p-6 md:p-8 max-w-2xl w-full shadow-2xl animate-in fade-in zoom-in duration-200 max-h-[85vh] flex flex-col">
-            <div className="flex justify-between items-start mb-6">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 sm:p-6 overflow-y-auto">
+          <div 
+            className="fixed inset-0 -z-10" 
+            onClick={() => setSelectedProjectForLeads(null)} 
+          />
+
+          <div className="bg-[#111111] border border-white/10 rounded-3xl p-6 sm:p-8 max-w-2xl w-full shadow-2xl animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[85vh] my-auto">
+            
+            <div className="flex justify-between items-start mb-6 shrink-0">
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <h3 className="text-xl font-bold font-heading text-white">Toplanan Talepler (Leads)</h3>
@@ -210,18 +222,19 @@ export default function DashboardPage() {
               <button 
                 onClick={() => setSelectedProjectForLeads(null)}
                 className="p-2 text-white/40 hover:text-white bg-white/5 hover:bg-white/10 rounded-xl transition-colors"
+                title="Kapat"
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto pr-1">
+            <div className="flex-1 overflow-y-auto pr-1 min-h-[160px]">
               {leadsLoading ? (
                 <div className="flex justify-center items-center py-16">
                   <span className="w-8 h-8 border-2 border-[#6366F1]/50 border-t-[#6366F1] rounded-full animate-spin"></span>
                 </div>
               ) : leads.length === 0 ? (
-                <div className="text-center py-16 bg-white/[0.02] border border-dashed border-white/5 rounded-2xl">
+                <div className="text-center py-14 bg-white/[0.02] border border-dashed border-white/5 rounded-2xl">
                   <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center mx-auto mb-3 text-white/30">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
                   </div>
@@ -231,17 +244,17 @@ export default function DashboardPage() {
               ) : (
                 <div className="border border-white/5 rounded-2xl overflow-hidden bg-white/[0.01]">
                   <table className="w-full text-left text-sm text-gray-300">
-                    <thead className="border-b border-white/10 text-xs text-white/40 uppercase bg-white/[0.02]">
+                    <thead className="border-b border-white/10 text-xs text-white/40 uppercase bg-white/[0.02] sticky top-0 backdrop-blur-md">
                       <tr>
                         <th className="py-3 px-4 font-semibold">E-posta</th>
                         <th className="py-3 px-4 text-right font-semibold">Kayıt Tarihi</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5">
-                      {leads.map(lead => (
+                      {leads.map((lead) => (
                         <tr key={lead.id} className="hover:bg-white/[0.03] transition-colors">
-                          <td className="py-3 px-4 font-medium text-white">{lead.email}</td>
-                          <td className="py-3 px-4 text-right text-white/40 text-xs">
+                          <td className="py-3 px-4 font-medium text-white break-all">{lead.email}</td>
+                          <td className="py-3 px-4 text-right text-white/40 text-xs whitespace-nowrap">
                             {new Date(lead.createdAt).toLocaleDateString("tr-TR", {
                               day: "2-digit",
                               month: "short",
@@ -258,7 +271,7 @@ export default function DashboardPage() {
               )}
             </div>
 
-            <div className="mt-6 pt-4 border-t border-white/5 flex justify-end gap-3 items-center">
+            <div className="mt-6 pt-4 border-t border-white/5 flex justify-end gap-3 items-center shrink-0">
               <button 
                 onClick={() => setSelectedProjectForLeads(null)}
                 className="px-5 py-2.5 bg-white/5 text-white/60 hover:text-white rounded-xl text-xs font-semibold hover:bg-white/10 transition-colors"
@@ -268,13 +281,14 @@ export default function DashboardPage() {
               {leads.length > 0 && (
                 <button
                   onClick={handleDownloadCSV}
-                  className="px-5 py-2.5 bg-[#6366F1] hover:bg-[#5558E6] text-white rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-lg shadow-[#6366F1]/20"
+                  className="px-5 py-2.5 bg-[#6366F1] hover:bg-[#5558E6] text-white rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-lg shadow-[#6366F1]/20 cursor-pointer"
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                   CSV İndir
                 </button>
               )}
             </div>
+
           </div>
         </div>
       )}
