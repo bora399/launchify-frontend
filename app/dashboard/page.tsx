@@ -40,11 +40,11 @@ export default function DashboardPage() {
   const [projectToDelete, setProjectToDelete] = useState<any | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const [selectedProjectForLeads, setSelectedProjectForLeads] = useState<
-    any | null
-  >(null);
+  const [selectedProjectForLeads, setSelectedProjectForLeads] = useState<any | null>(null);
   const [leads, setLeads] = useState<WaitlistEntry[]>([]);
   const [leadsLoading, setLeadsLoading] = useState(false);
+
+  const [projectLeadsCount, setProjectLeadsCount] = useState<Record<string, number>>({});
 
   const router = useRouter();
   const apiUrl =
@@ -96,7 +96,24 @@ export default function DashboardPage() {
         const projRes = await fetch(
           `${apiUrl}/api/LandingPages/user/${user.uid}`,
         );
-        if (projRes.ok) setProjects(await projRes.json());
+        if (projRes.ok) {
+          const projData = await projRes.json();
+          setProjects(projData);
+
+          // Her proje için lead sayılarını arka planda çekip conversion rate hesaplayalım
+          projData.forEach(async (p: any) => {
+            try {
+              const lRes = await fetch(`${apiUrl}/api/Waitlist/${p.id}`);
+              if (lRes.ok) {
+                const lData = await lRes.json();
+                setProjectLeadsCount((prev) => ({
+                  ...prev,
+                  [p.id]: Array.isArray(lData) ? lData.length : 0,
+                }));
+              }
+            } catch {}
+          });
+        }
 
         const userRes = await fetch(`${apiUrl}/api/User/${user.uid}`);
         if (userRes.ok) {
@@ -148,6 +165,10 @@ export default function DashboardPage() {
       if (res.ok) {
         const data = await res.json();
         setLeads(data);
+        setProjectLeadsCount((prev) => ({
+          ...prev,
+          [project.id]: data.length,
+        }));
       } else {
         setLeads([]);
       }
@@ -189,10 +210,21 @@ export default function DashboardPage() {
     name: p.productName || p.slug || "İsimsiz",
     Ziyaret: p.TotalVisits || p.totalVisits || 0,
   }));
+
   const totalViews = projects.reduce(
     (sum, p) => sum + (p.TotalVisits || p.totalVisits || 0),
     0,
   );
+
+  const totalLeadsCollected = Object.values(projectLeadsCount).reduce(
+    (sum, count) => sum + count,
+    0,
+  );
+
+  const conversionRate =
+    totalViews > 0
+      ? ((totalLeadsCollected / totalViews) * 100).toFixed(1)
+      : "0.0";
 
   if (authLoading)
     return (
@@ -203,38 +235,15 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-[#050505] text-[#FAFAFA] font-sans selection:bg-white/20 relative overflow-hidden pt-32 pb-20">
-      {/* Proje Silme Modalı */}
       {projectToDelete && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
           <div className="bg-[#111] border border-white/10 rounded-2xl p-6 md:p-8 max-w-md w-full shadow-2xl animate-in fade-in zoom-in duration-200">
             <div className="w-12 h-12 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mb-5 border border-red-500/20">
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M3 6h18"></path>
-                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
-              </svg>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
             </div>
-            <h3 className="text-xl font-bold mb-2 font-heading">
-              Projeyi Kaldır
-            </h3>
+            <h3 className="text-xl font-bold mb-2 font-heading">Projeyi Kaldır</h3>
             <p className="text-white/50 text-sm mb-6">
-              <strong className="text-white">
-                {projectToDelete.productName || projectToDelete.slug}
-              </strong>{" "}
-              adlı projeyi kalıcı olarak silmek istediğinize emin misiniz? Bu
-              işlem geri alınamaz ve{" "}
-              <strong className="text-green-400">
-                1 krediniz hesabınıza iade edilecektir.
-              </strong>
+              <strong className="text-white">{projectToDelete.productName || projectToDelete.slug}</strong> adlı projeyi kalıcı olarak silmek istediğinize emin misiniz? Bu işlem geri alınamaz ve <strong className="text-green-400">1 krediniz hesabınıza iade edilecektir.</strong>
             </p>
             <div className="flex items-center gap-3 w-full">
               <button
@@ -249,44 +258,30 @@ export default function DashboardPage() {
                 disabled={isDeleting}
                 className="flex-1 py-3 px-4 bg-red-500 text-white font-bold rounded-xl hover:bg-red-600 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
               >
-                {isDeleting ? (
-                  <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                ) : (
-                  "Evet, Kaldır"
-                )}
+                {isDeleting ? <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> : "Evet, Kaldır"}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Toplanan Talepler Modalı (Portal) */}
       {mounted &&
         selectedProjectForLeads &&
         createPortal(
           <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 sm:p-6">
-            <div
-              className="fixed inset-0"
-              onClick={() => setSelectedProjectForLeads(null)}
-            />
+            <div className="fixed inset-0" onClick={() => setSelectedProjectForLeads(null)} />
 
             <div className="relative z-10 bg-[#111111] border border-white/10 rounded-3xl p-6 sm:p-8 max-w-2xl w-full shadow-2xl animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[85vh]">
               <div className="flex justify-between items-start mb-6 shrink-0">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-xl font-bold font-heading text-white">
-                      Toplanan Talepler (Leads)
-                    </h3>
+                    <h3 className="text-xl font-bold font-heading text-white">Toplanan Talepler (Leads)</h3>
                     <span className="px-2.5 py-0.5 rounded-full bg-[#6366F1]/10 text-[#6366F1] text-xs font-bold border border-[#6366F1]/20">
                       {leads.length} Kayıt
                     </span>
                   </div>
                   <p className="text-white/40 text-xs">
-                    <strong className="text-white/70">
-                      {selectedProjectForLeads.productName ||
-                        selectedProjectForLeads.slug}
-                    </strong>{" "}
-                    projesine kayıt olan potansiyel müşteriler.
+                    <strong className="text-white/70">{selectedProjectForLeads.productName || selectedProjectForLeads.slug}</strong> projesine kayıt olan potansiyel müşteriler.
                   </p>
                 </div>
                 <button
@@ -294,17 +289,7 @@ export default function DashboardPage() {
                   className="p-2 text-white/40 hover:text-white bg-white/5 hover:bg-white/10 rounded-xl transition-colors cursor-pointer"
                   title="Kapat"
                 >
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                  </svg>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </button>
               </div>
 
@@ -316,24 +301,10 @@ export default function DashboardPage() {
                 ) : leads.length === 0 ? (
                   <div className="text-center py-14 bg-white/[0.02] border border-dashed border-white/5 rounded-2xl">
                     <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center mx-auto mb-3 text-white/30">
-                      <svg
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      >
-                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-                        <polyline points="22,6 12,13 2,6"></polyline>
-                      </svg>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
                     </div>
-                    <p className="text-white/60 text-sm font-medium">
-                      Henüz toplanan e-posta yok
-                    </p>
-                    <p className="text-white/30 text-xs mt-1">
-                      Ziyaretçiler form doldurdukça burada listelenecek.
-                    </p>
+                    <p className="text-white/60 text-sm font-medium">Henüz toplanan e-posta yok</p>
+                    <p className="text-white/30 text-xs mt-1">Ziyaretçiler form doldurdukça burada listelenecek.</p>
                   </div>
                 ) : (
                   <div className="border border-white/5 rounded-2xl overflow-x-auto bg-white/[0.01]">
@@ -364,6 +335,7 @@ export default function DashboardPage() {
                   </div>
                 )}
               </div>
+
               <div className="mt-6 pt-4 border-t border-white/5 flex justify-end gap-3 items-center shrink-0">
                 <button
                   onClick={() => setSelectedProjectForLeads(null)}
@@ -376,18 +348,7 @@ export default function DashboardPage() {
                     onClick={handleDownloadCSV}
                     className="px-5 py-2.5 bg-[#6366F1] hover:bg-[#5558E6] text-white rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-lg shadow-[#6366F1]/20 cursor-pointer"
                   >
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                    >
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                      <polyline points="7 10 12 15 17 10"></polyline>
-                      <line x1="12" y1="15" x2="12" y2="3"></line>
-                    </svg>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                     CSV İndir
                   </button>
                 )}
@@ -397,7 +358,6 @@ export default function DashboardPage() {
           document.body,
         )}
 
-      {/* Paylaş & QR Modalı */}
       {mounted && projectToShare && (
         <ShareModal
           isOpen={!!projectToShare}
@@ -406,7 +366,6 @@ export default function DashboardPage() {
         />
       )}
 
-      {/* Canlı Düzenleme Modalı */}
       {mounted && projectToEdit && (
         <EditModal
           isOpen={!!projectToEdit}
@@ -437,31 +396,17 @@ export default function DashboardPage() {
       <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-600/5 rounded-full blur-[120px] pointer-events-none"></div>
 
       <main className="max-w-7xl mx-auto px-6 relative z-10">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6 bg-[#0A0A0A]/50 p-6 rounded-2xl border border-white/5 backdrop-blur-sm">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6 bg-[#0A0A0A]/50 p-6 rounded-2xl border border-white/5 backdrop-blur-sm">
           <div>
             <h1 className="text-3xl font-bold font-heading mb-2">Projelerim</h1>
             <p className="text-white/50 text-sm">
-              <span className="text-white/80 mr-1 font-medium">
-                {user?.email}
-              </span>{" "}
-              hesabına ait projeleri yönetiyorsunuz.
+              <span className="text-white/80 mr-1 font-medium">{user?.email}</span> hesabına ait projeleri yönetiyorsunuz.
             </p>
           </div>
           <div className="flex items-center gap-3 w-full md:w-auto flex-wrap">
             {remainingCredits !== null && (
               <div className="px-4 py-2.5 bg-[#6366F1]/10 border border-[#6366F1]/20 text-[#6366F1] text-sm font-bold rounded-xl flex items-center gap-2">
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                </svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>
                 {remainingCredits} Kredi Kaldı
               </div>
             )}
@@ -492,23 +437,11 @@ export default function DashboardPage() {
         ) : projects.length === 0 ? (
           <div className="py-20 text-center bg-[#0A0A0A]/30 border border-dashed border-white/10 rounded-3xl backdrop-blur-sm">
             <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mx-auto mb-4 text-white/30">
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                <polyline points="17 8 12 3 7 8"></polyline>
-                <line x1="12" y1="23" x2="12" y2="15"></line>
-              </svg>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="23" x2="12" y2="15"></line></svg>
             </div>
             <h3 className="text-xl font-bold mb-2">Henüz projeniz yok</h3>
             <p className="text-white/40 text-sm mb-6 max-w-md mx-auto">
-              İlk B2B Landing Page'inizi yapay zeka destekli altyapımızla
-              dakikalar içinde oluşturun.
+              İlk B2B Landing Page'inizi yapay zeka destekli altyapımızla dakikalar içinde oluşturun.
             </p>
             <Link
               href="/create"
@@ -519,7 +452,9 @@ export default function DashboardPage() {
           </div>
         ) : (
           <div className="space-y-12">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              
               <div className="bg-[#0A0A0A] border border-white/10 rounded-2xl p-6 shadow-xl relative overflow-hidden backdrop-blur-xl">
                 <div className="absolute top-0 left-0 w-1 h-full bg-[#6366F1]"></div>
                 <p className="text-white/50 text-xs font-bold uppercase tracking-wider mb-2">
@@ -529,6 +464,7 @@ export default function DashboardPage() {
                   {projects.length}
                 </h3>
               </div>
+
               <div className="bg-[#0A0A0A] border border-white/10 rounded-2xl p-6 shadow-xl relative overflow-hidden backdrop-blur-xl">
                 <div className="absolute top-0 left-0 w-1 h-full bg-green-500"></div>
                 <p className="text-white/50 text-xs font-bold uppercase tracking-wider mb-2">
@@ -538,8 +474,25 @@ export default function DashboardPage() {
                   {totalViews}
                 </h3>
               </div>
+
+              <div className="bg-[#0A0A0A] border border-white/10 rounded-2xl p-6 shadow-xl relative overflow-hidden backdrop-blur-xl sm:col-span-2 lg:col-span-1">
+                <div className="absolute top-0 left-0 w-1 h-full bg-amber-400"></div>
+                <div className="flex items-center justify-between">
+                  <p className="text-white/50 text-xs font-bold uppercase tracking-wider mb-2">
+                    Dönüşüm Oranı
+                  </p>
+                  <span className="text-[11px] font-bold text-amber-400/90 bg-amber-400/10 px-2 py-0.5 rounded-full border border-amber-400/20">
+                    {totalLeadsCollected} Talep
+                  </span>
+                </div>
+                <h3 className="text-4xl font-heading font-extrabold text-amber-300">
+                  %{conversionRate}
+                </h3>
+              </div>
+
             </div>
 
+            {/* GRAFİK */}
             <div className="bg-[#0A0A0A] border border-white/10 rounded-3xl p-6 md:p-8 shadow-2xl relative overflow-hidden backdrop-blur-xl">
               <div className="mb-6">
                 <h2 className="text-xl font-bold font-heading">
@@ -649,8 +602,6 @@ export default function DashboardPage() {
                             fill="none"
                             stroke="currentColor"
                             strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
                             className="text-white/50 group-hover/edit:text-[#6366F1] transition-colors"
                           >
                             <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
@@ -666,31 +617,23 @@ export default function DashboardPage() {
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                           Yayında
                         </span>
-
-                        
                       </div>
                     </div>
 
                     <h3 className="text-xl font-bold mb-1 tracking-tight text-white group-hover:text-blue-400 transition-colors line-clamp-1">
                       {project.productName || project.slug}
                     </h3>
-                    <p className="text-white/40 text-sm mb-6 flex items-center gap-2 capitalize">
-                      <svg
-                        width="14"
-                        height="14"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                        <line x1="12" y1="22.08" x2="12" y2="12"></line>
-                      </svg>
-                      Şablon: {project.templateType || "Bilinmiyor"}
-                    </p>
+
+                    <div className="flex items-center justify-between text-white/40 text-xs mb-6">
+                      <span className="capitalize">
+                        Şablon: {project.templateType || "Bilinmiyor"}
+                      </span>
+                      {projectLeadsCount[project.id] !== undefined && projectLeadsCount[project.id] > 0 && (
+                        <span className="text-amber-400/90 font-semibold bg-amber-400/10 px-2 py-0.5 rounded-md border border-amber-400/20">
+                          🔥 {projectLeadsCount[project.id]} Talep
+                        </span>
+                      )}
+                    </div>
 
                     <div className="flex items-center gap-3 pt-4 border-t border-white/5">
                       <Link
@@ -708,7 +651,7 @@ export default function DashboardPage() {
                               openDropdownId === project.id ? null : project.id,
                             )
                           }
-                          className={`p-2.5 hover:text-white transition-colors rounded-xl border border-white/5 ${openDropdownId === project.id ? "bg-white/10 text-white" : "bg-white/5 text-white/40 hover:bg-white/10"}`}
+                          className={`p-2.5 hover:text-white transition-colors rounded-xl border border-white/5 cursor-pointer ${openDropdownId === project.id ? "bg-white/10 text-white" : "bg-white/5 text-white/40 hover:bg-white/10"}`}
                           title="Ayarlar"
                         >
                           <svg
@@ -718,8 +661,6 @@ export default function DashboardPage() {
                             fill="none"
                             stroke="currentColor"
                             strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
                           >
                             <circle cx="12" cy="12" r="3"></circle>
                             <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
@@ -730,19 +671,9 @@ export default function DashboardPage() {
                           <div className="absolute right-0 bottom-full mb-2 w-48 bg-[#1A1A1A] border border-white/10 rounded-xl shadow-xl overflow-hidden z-50 animate-in fade-in slide-from-bottom-2 duration-200">
                             <button
                               onClick={() => handleOpenLeads(project)}
-                              className="flex items-center gap-2 w-full px-4 py-3 text-sm text-[#6366F1] hover:bg-white/5 transition-colors text-left font-medium"
+                              className="flex items-center gap-2 w-full px-4 py-3 text-sm text-[#6366F1] hover:bg-white/5 transition-colors text-left font-medium cursor-pointer"
                             >
-                              <svg
-                                width="14"
-                                height="14"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                              >
-                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-                                <polyline points="22,6 12,13 2,6"></polyline>
-                              </svg>
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
                               Toplanan Talepler
                             </button>
                             <div className="h-px bg-white/5 w-full"></div>
@@ -751,18 +682,7 @@ export default function DashboardPage() {
                               target="_blank"
                               className="flex items-center gap-2 w-full px-4 py-3 text-sm text-white/80 hover:bg-white/5 hover:text-white transition-colors"
                             >
-                              <svg
-                                width="14"
-                                height="14"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                              >
-                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                                <polyline points="15 3 21 3 21 9"></polyline>
-                                <line x1="10" y1="14" x2="21" y2="3"></line>
-                              </svg>
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
                               Siteyi İncele
                             </Link>
                             <button
@@ -770,32 +690,9 @@ export default function DashboardPage() {
                                 setProjectToShare(project);
                                 setOpenDropdownId(null);
                               }}
-                              className="flex items-center gap-2 w-full px-4 py-3 text-sm text-white/80 hover:bg-white/5 hover:text-white transition-colors text-left"
+                              className="flex items-center gap-2 w-full px-4 py-3 text-sm text-white/80 hover:bg-white/5 hover:text-white transition-colors text-left cursor-pointer"
                             >
-                              <svg
-                                width="14"
-                                height="14"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                              >
-                                <circle cx="18" cy="5" r="3"></circle>
-                                <circle cx="6" cy="12" r="3"></circle>
-                                <circle cx="18" cy="19" r="3"></circle>
-                                <line
-                                  x1="8.59"
-                                  y1="13.51"
-                                  x2="15.42"
-                                  y2="17.49"
-                                ></line>
-                                <line
-                                  x1="15.41"
-                                  y1="6.51"
-                                  x2="8.59"
-                                  y2="10.49"
-                                ></line>
-                              </svg>
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
                               Paylaş & QR Kod
                             </button>
                             <div className="h-px bg-white/5 w-full"></div>
@@ -804,19 +701,9 @@ export default function DashboardPage() {
                                 setProjectToDelete(project);
                                 setOpenDropdownId(null);
                               }}
-                              className="flex items-center gap-2 w-full px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors text-left"
+                              className="flex items-center gap-2 w-full px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors text-left cursor-pointer"
                             >
-                              <svg
-                                width="14"
-                                height="14"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                              >
-                                <polyline points="3 6 5 6 21 6"></polyline>
-                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                              </svg>
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7c-1 0-2-1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                               Kaldır
                             </button>
                           </div>

@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import Link from 'next/link';
 import TemplateBrutal from '../components/templates/Brutal';
 import TemplateMinimal from '../components/templates/Minimal';
 import TemplateCorporate from '../components/templates/Corporate';
@@ -18,7 +19,6 @@ export interface ProjectData {
   accentColor: string;
   templateType: string;
   demoLink?: string;
-  // YENİ EKLENEN VERİLER:
   callToActionText: string;
   features: FeatureItem[];
 }
@@ -68,8 +68,6 @@ export default async function SlugPage({ params }: { params: Promise<{ slug: str
         accentColor: ai.accentColor || ai.AccentColor || fetchedData.accentColor || DEFAULT_ACCENT_COLOR,
         templateType: (fetchedData.templateType || fetchedData.TemplateType || fetchedData.themeType || "aurora").toLowerCase(),
         demoLink: fetchedData.demoLink ?? fetchedData.DemoLink ?? undefined,
-        
-        // YAPAY ZEKADAN GELEN YENİ İÇERİKLER:
         callToActionText: ai.callToActionText || ai.CallToActionText || "Erken Erişime Katıl",
         features: ai.features || ai.Features || []
       };
@@ -89,15 +87,43 @@ export default async function SlugPage({ params }: { params: Promise<{ slug: str
     );
   }
 
-  switch (projectData.templateType) {
-    case 'brutal':
-      return <><AnalyticsTracker projectId={projectData.id!} /><TemplateBrutal data={projectData} /></>;
-    case 'minimal':
-      return <><AnalyticsTracker projectId={projectData.id!} /><TemplateMinimal data={projectData} /></>;
-    case 'corporate':
-      return <><AnalyticsTracker projectId={projectData.id!} /><TemplateCorporate data={projectData} /></>;
-    case 'aurora':
-    default:
-      return <><AnalyticsTracker projectId={projectData.id!} /><TemplateAurora data={projectData} /></>;
-  }
+  const renderTemplate = () => {
+    switch (projectData?.templateType) {
+      case 'brutal':
+        return <TemplateBrutal data={projectData} />;
+      case 'minimal':
+        return <TemplateMinimal data={projectData} />;
+      case 'corporate':
+        return <TemplateCorporate data={projectData} />;
+      case 'aurora':
+      default:
+        return <TemplateAurora data={projectData} />;
+    }
+  };
+
+  return (
+    <>
+      <AnalyticsTracker projectId={projectData.id!} />
+      {renderTemplate()}
+
+      <aside aria-label="Platform bilgisi" className="fixed bottom-3 right-3 sm:bottom-4 sm:right-4 z-[9999]">
+        <Link 
+          href="/" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="group flex items-center gap-2 px-3 py-1.5 sm:px-3.5 sm:py-2 bg-black/80 hover:bg-black text-white border border-white/15 hover:border-[#6366F1]/50 rounded-full text-[11px] sm:text-xs font-medium shadow-2xl backdrop-blur-md transition-all hover:scale-105 active:scale-95"
+        >
+          <span className="flex items-center justify-center w-4 h-4 rounded-full bg-[#6366F1] text-white text-[9px] font-black">
+            ⚡
+          </span>
+          <span className="text-white/60 group-hover:text-white transition-colors">
+            Created with <strong className="text-white font-bold">Launchify</strong>
+          </span>
+          <span className="text-white/40 group-hover:text-[#6366F1] group-hover:translate-x-0.5 transition-all text-[10px]">
+            ↗
+          </span>
+        </Link>
+      </aside>
+    </>
+  );
 }
