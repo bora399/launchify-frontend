@@ -33,15 +33,45 @@ export default function EditModal({ isOpen, onClose, project, onUpdated }: EditM
 
   const previewData = {
     ...project,
-    productName,
-    templateType,
+    id: project?.id,
+    slug: project?.slug || "onizleme",
+    productName: productName,
+    ProductName: productName,
+    templateType: templateType,
+    TemplateType: templateType,
     aiConfig: {
       ...ai,
       aiGeneratedHeroTitle: heroTitle,
+      AiGeneratedHeroTitle: heroTitle,
       aiGeneratedMarketingCopy: marketingCopy,
-      callToActionText: ctaText,
-      accentColor,
-      features: ai.features || ai.Features || []
+      AiGeneratedMarketingCopy: marketingCopy,
+      callToActionText: ctaText || "Erken Erişime Katıl",
+      CallToActionText: ctaText || "Erken Erişime Katıl",
+      accentColor: accentColor,
+      AccentColor: accentColor,
+      features: ai.features || ai.Features || [
+        { title: "Yapay Zeka Mimarisi", description: "Saniyeler içinde üretim ve dağıtım." },
+        { title: "Yüksek Dönüşüm", description: "B2B odaklı optimize edilmiş şablonlar." },
+        { title: "Kolay Entegrasyon", description: "Talepleri doğrudan toplayın ve yönetin." }
+      ],
+      Features: ai.features || ai.Features || [
+        { title: "Yapay Zeka Mimarisi", description: "Saniyeler içinde üretim ve dağıtım." },
+        { title: "Yüksek Dönüşüm", description: "B2B odaklı optimize edilmiş şablonlar." },
+        { title: "Kolay Entegrasyon", description: "Talepleri doğrudan toplayın ve yönetin." }
+      ]
+    },
+    AiConfig: {
+      ...ai,
+      aiGeneratedHeroTitle: heroTitle,
+      AiGeneratedHeroTitle: heroTitle,
+      aiGeneratedMarketingCopy: marketingCopy,
+      AiGeneratedMarketingCopy: marketingCopy,
+      callToActionText: ctaText || "Erken Erişime Katıl",
+      CallToActionText: ctaText || "Erken Erişime Katıl",
+      accentColor: accentColor,
+      AccentColor: accentColor,
+      features: ai.features || ai.Features || [],
+      Features: ai.features || ai.Features || []
     }
   };
 
@@ -233,33 +263,35 @@ export default function EditModal({ isOpen, onClose, project, onUpdated }: EditM
             </form>
           </div>
 
-          {/* SAĞ: Canlı Önizleme Ekranı (Browser Mockup Çerçevesi) */}
-          <div className="flex-1 bg-[#050505] p-4 sm:p-6 flex flex-col min-w-0 overflow-hidden">
-            <div className="w-full h-full bg-[#0A0A0A] border border-white/10 rounded-2xl overflow-hidden flex flex-col shadow-inner">
-              
-              <div className="bg-[#141414] px-4 py-2.5 border-b border-white/5 flex items-center justify-between shrink-0">
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-red-500/80"></span>
-                  <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/80"></span>
-                  <span className="w-2.5 h-2.5 rounded-full bg-green-500/80"></span>
-                </div>
-                <div className="bg-black/50 border border-white/10 rounded-lg px-4 py-1 text-[11px] text-white/40 font-mono max-w-xs truncate">
-                  launchify.app/{project?.slug || "onizleme"}
-                </div>
-                <div className="text-[10px] text-emerald-400 font-semibold flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                  Eş Zamanlı Önizleme
-                </div>
+          {/* SAĞ: Canlı Önizleme Ekranı */}
+        <div className="flex-1 bg-[#050505] p-3 sm:p-5 flex flex-col min-w-0 overflow-hidden">
+          <div className="w-full h-full bg-[#080808] border border-white/10 rounded-2xl overflow-hidden flex flex-col shadow-inner">
+                        
+            {/* Tarayıcı Üst Sekme Çubuğu */}
+            <div className="bg-[#141414] px-4 py-2 border-b border-white/5 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-red-500/80"></span>
+                <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/80"></span>
+                <span className="w-2.5 h-2.5 rounded-full bg-green-500/80"></span>
               </div>
-
-              <div className="flex-1 overflow-y-auto relative pointer-events-auto">
-                <div className="transform-gpu origin-top">
-                  {renderTemplatePreview()}
-                </div>
+              <div className="bg-black/60 border border-white/10 rounded-lg px-4 py-0.5 text-[11px] text-white/50 font-mono max-w-xs truncate">
+                launchify.app/{project?.slug || "onizleme"}
               </div>
-
+              <div className="text-[10px] text-emerald-400 font-semibold flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                Canlı Önizleme
+              </div>
             </div>
+                        
+            {/* Canlı Render Edilen Şablon Ekranı */}
+            <div className="flex-1 overflow-y-auto relative bg-[#050505] text-white">
+              <div className="w-full">
+                {renderTemplatePreview()}
+              </div>
+            </div>
+                        
           </div>
+        </div>
 
         </div>
 
