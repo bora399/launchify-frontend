@@ -235,34 +235,75 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-[#050505] text-[#FAFAFA] font-sans selection:bg-white/20 relative overflow-hidden pt-32 pb-20">
-      {projectToDelete && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
-          <div className="bg-[#111] border border-white/10 rounded-2xl p-6 md:p-8 max-w-md w-full shadow-2xl animate-in fade-in zoom-in duration-200">
-            <div className="w-12 h-12 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mb-5 border border-red-500/20">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
-            </div>
-            <h3 className="text-xl font-bold mb-2 font-heading">Projeyi Kaldır</h3>
-            <p className="text-white/50 text-sm mb-6">
-              <strong className="text-white">{projectToDelete.productName || projectToDelete.slug}</strong> adlı projeyi kalıcı olarak silmek istediğinize emin misiniz? Bu işlem geri alınamaz ve <strong className="text-green-400">1 krediniz hesabınıza iade edilecektir.</strong>
-            </p>
+      {/* Proje Silme Modalı (Portal ile Sayfanın En Üstüne Çıkarıldı) */}
+{mounted &&
+  projectToDelete &&
+  createPortal(
+    <div className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
+      {/* Arka plan tıklama */}
+      <div 
+        className="fixed inset-0" 
+        onClick={() => !isDeleting && setProjectToDelete(null)} 
+      />
+
+      <div className="relative z-10 bg-[#111111] border border-white/10 rounded-2xl sm:rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+        <div className="w-12 h-12 bg-red-500/10 text-red-500 rounded-2xl flex items-center justify-center mb-5 border border-red-500/20">
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M3 6h18"></path>
+            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+          </svg>
+        </div>
+
+        <h3 className="text-xl font-bold mb-2 font-heading text-white">
+          Projeyi Kaldır
+        </h3>
+
+        <p className="text-white/60 text-sm mb-6 leading-relaxed">
+          <strong className="text-white">
+            {projectToDelete.productName || projectToDelete.slug}
+          </strong>{" "}
+          adlı projeyi kalıcı olarak silmek istediğinize emin misiniz? Bu
+          işlem geri alınamaz ve{" "}
+          <strong className="text-emerald-400">
+            1 krediniz hesabınıza iade edilecektir.
+          </strong>
+        </p>
+
             <div className="flex items-center gap-3 w-full">
               <button
+                type="button"
                 onClick={() => setProjectToDelete(null)}
                 disabled={isDeleting}
-                className="flex-1 py-3 px-4 bg-white/5 border border-white/10 rounded-xl text-white font-medium hover:bg-white/10 transition-colors disabled:opacity-50"
+                className="flex-1 py-3 px-4 bg-white/5 border border-white/10 rounded-xl text-white/70 hover:text-white font-medium hover:bg-white/10 transition-colors disabled:opacity-50 text-sm cursor-pointer"
               >
                 İptal Et
               </button>
               <button
+                type="button"
                 onClick={handleDeleteProject}
                 disabled={isDeleting}
-                className="flex-1 py-3 px-4 bg-red-500 text-white font-bold rounded-xl hover:bg-red-600 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                className="flex-1 py-3 px-4 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-50 text-sm shadow-lg shadow-red-500/20 cursor-pointer"
               >
-                {isDeleting ? <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> : "Evet, Kaldır"}
+                {isDeleting ? (
+                  <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                ) : (
+                  "Evet, Kaldır"
+                )}
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {mounted &&
