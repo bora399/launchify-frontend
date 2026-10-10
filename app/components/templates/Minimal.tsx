@@ -9,6 +9,12 @@ export default function TemplateMinimal({ data }: { data: any }) {
   const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
 
+  const features = data?.features || data?.aiConfig?.features || [
+    { title: "Gereksiz Her Şeyden Arınmış", description: "Yalnızca amacınıza hizmet eden, dikkat dağıtmayan zarif bir kullanıcı deneyimi." },
+    { title: "Zamanın Ötesinde Tasarım", description: "Trendlere değil, tipografik dengeye ve beyaz alanın gücüne odaklanan estetik." },
+    { title: "Sıfır Fazlalık, Maksimum Hız", description: "Gereksiz betiklerden arındırılmış, hafif ve anında yüklenen altyapı." }
+  ];
+
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
@@ -34,83 +40,86 @@ export default function TemplateMinimal({ data }: { data: any }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#FCFCFC] text-gray-900 font-serif selection:bg-gray-200 overflow-x-hidden">
-      {/* Navbar */}
-      <nav className="px-4 sm:px-8 md:px-12 py-5 sm:py-8 flex justify-between items-center max-w-5xl mx-auto border-b border-gray-100">
-        <div className="text-base sm:text-lg tracking-[0.25em] uppercase font-light truncate max-w-[200px] sm:max-w-none">
+    <div className="min-h-screen bg-[#FCFCFA] text-zinc-900 font-serif selection:bg-zinc-200 overflow-x-hidden">
+      
+      <nav className="px-6 sm:px-12 py-8 flex justify-between items-center max-w-5xl mx-auto border-b border-zinc-200/60">
+        <div className="text-base tracking-[0.25em] uppercase font-light">
           {data?.productName || "Launchify"}
         </div>
-        <a href="#waitlist" style={{ color: accent }} className="text-xs tracking-widest uppercase font-semibold hover:opacity-70 transition-opacity font-sans shrink-0">
+        <a 
+          href="#waitlist" 
+          style={{ color: accent }} 
+          className="text-xs font-sans tracking-[0.2em] uppercase font-semibold hover:opacity-60 transition-opacity"
+        >
           {data?.callToActionText || data?.aiConfig?.callToActionText || "İletişim"}
         </a>
       </nav>
 
-      {/* Hero */}
-      <main className="flex flex-col items-center justify-center pt-14 sm:pt-24 pb-16 sm:pb-24 text-center px-4 max-w-3xl mx-auto">
-        <p className="text-[11px] font-sans tracking-[0.3em] uppercase text-gray-400 mb-6">
-          01 — Giriş & Vizyon
-        </p>
+      <main className="max-w-3xl mx-auto px-6 pt-20 sm:pt-32 pb-20 text-center">
+        <span className="text-[11px] font-sans tracking-[0.35em] uppercase text-zinc-400 block mb-6">
+          MANİFESTO — 01
+        </span>
 
-        <h1 className="text-3xl sm:text-5xl md:text-6xl font-light leading-[1.2] mb-6 sm:mb-8 text-gray-950">
+        <h1 className="text-3xl sm:text-6xl font-light leading-[1.18] mb-8 text-zinc-950 tracking-tight">
           {data?.aiGeneratedHeroTitle || data?.aiConfig?.aiGeneratedHeroTitle || "Sadelikteki kusursuz dengeyi keşfedin."}
         </h1>
 
-        <p className="text-sm sm:text-lg text-gray-500 leading-relaxed max-w-xl mb-8 sm:mb-12 font-sans font-light">
-          {data?.aiGeneratedMarketingCopy || data?.aiConfig?.aiGeneratedMarketingCopy || "Gereksiz detaylardan arındırılmış, sadece amaca hizmet eden minimalist yaklaşım."}
+        <p className="text-base sm:text-xl text-zinc-500 font-sans font-light leading-relaxed max-w-xl mx-auto mb-12">
+          {data?.aiGeneratedMarketingCopy || data?.aiConfig?.aiGeneratedMarketingCopy || "Gereksiz tüm detaylardan arındırılmış, sadece temel amaca hizmet eden minimalist yaklaşım."}
         </p>
 
-        <a href="#waitlist" style={{ backgroundColor: accent }} className="w-full sm:w-auto px-8 sm:px-12 py-3.5 sm:py-4 text-white text-xs tracking-[0.2em] uppercase hover:opacity-85 transition-opacity inline-block font-sans text-center">
-          {data?.callToActionText || data?.aiConfig?.callToActionText || "Projeyi Keşfet"}
+        <a 
+          href="#waitlist" 
+          style={{ backgroundColor: accent }} 
+          className="px-10 py-4 text-white text-xs font-sans tracking-[0.25em] uppercase hover:opacity-85 transition-opacity inline-block shadow-sm"
+        >
+          {data?.callToActionText || data?.aiConfig?.callToActionText || "Projeyi İncele"}
         </a>
       </main>
 
-      {/* Features */}
-      {data?.features && data.features.length > 0 && (
-        <section className="max-w-4xl mx-auto px-4 sm:px-6 py-14 sm:py-20 border-t border-gray-100 font-sans">
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-10">
-            <div className="md:col-span-4 text-xs tracking-widest uppercase text-gray-400 pt-1">
-              02 — Odak Noktamız
-            </div>
-            <div className="md:col-span-8 space-y-8 sm:space-y-12">
-              {data.features.map((feature: any, idx: number) => (
-                <div key={idx} className="flex gap-4 sm:gap-6 items-start">
-                  <span className="text-gray-300 font-light text-lg sm:text-xl">0{idx + 1}</span>
-                  <div>
-                    <h3 className="text-lg sm:text-xl font-medium mb-1.5 text-gray-950 font-serif">{feature.title}</h3>
-                    <p className="text-gray-500 font-light leading-relaxed text-xs sm:text-sm">{feature.description}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+      <section className="max-w-4xl mx-auto px-6 py-20 border-t border-zinc-200/60 font-sans">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-10">
+          <div className="md:col-span-4 text-xs tracking-[0.25em] uppercase text-zinc-400 pt-1">
+            TEMEL DEĞERLER
           </div>
-        </section>
-      )}
+          <div className="md:col-span-8 space-y-12">
+            {features.map((feature: any, idx: number) => (
+              <div key={idx} className="flex gap-6 items-start">
+                <span className="text-zinc-300 font-serif text-2xl font-light">0{idx + 1}</span>
+                <div>
+                  <h3 className="text-xl font-medium mb-2 text-zinc-950 font-serif">{feature.title}</h3>
+                  <p className="text-zinc-500 font-light text-sm leading-relaxed">{feature.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-      {/* Waitlist */}
-      <section id="waitlist" className="py-16 sm:py-24 px-4 sm:px-6 max-w-xl mx-auto text-center border-t border-gray-100">
-        <h2 className="text-2xl sm:text-3xl font-light mb-3 text-gray-950">Bizimle İletişimde Kalın</h2>
-        <p className="text-gray-500 font-sans font-light mb-8 text-xs sm:text-sm">
-          Sadece {data?.productName} ile ilgili temel güncellemeler için e-posta bırakın.
+      <section id="waitlist" className="py-24 px-6 max-w-lg mx-auto text-center border-t border-zinc-200/60">
+        <h2 className="text-2xl sm:text-3xl font-light mb-3 text-zinc-950">İletişimde Kalın</h2>
+        <p className="text-zinc-500 font-sans font-light text-xs sm:text-sm mb-10">
+          Sadece {data?.productName} ile ilgili en önemli gelişmelerden haberdar olmak için e-postanızı bırakın.
         </p>
-        
+
         {isSubmitted ? (
-          <div className="text-xs tracking-widest uppercase text-gray-500 font-sans border-b border-gray-200 pb-2 inline-block">
+          <div className="text-xs font-sans tracking-[0.2em] uppercase text-zinc-600 border-b border-zinc-300 pb-2 inline-block">
             İlginiz için teşekkür ederiz. Kaydınız alındı.
           </div>
         ) : (
-          <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row items-center gap-3 font-sans border-b border-gray-300 pb-2 sm:pb-0">
+          <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row items-center gap-3 font-sans border-b border-zinc-300 pb-2">
             <input 
               type="email" 
               required
               value={email} 
               onChange={(e) => setEmail(e.target.value)}
               placeholder="E-posta adresiniz..." 
-              className="w-full bg-transparent text-gray-950 px-0 py-3 focus:outline-none placeholder:text-gray-400 text-xs sm:text-sm font-light"
+              className="w-full bg-transparent text-zinc-950 px-2 py-3 focus:outline-none placeholder:text-zinc-400 text-sm font-light"
             />
             <button 
               type="submit" 
               style={{ color: accent }} 
-              className="w-full sm:w-auto text-xs font-semibold uppercase tracking-widest hover:opacity-70 transition-opacity py-2 sm:py-0 shrink-0 cursor-pointer text-center"
+              className="w-full sm:w-auto text-xs font-semibold uppercase tracking-[0.2em] hover:opacity-60 transition-opacity py-2 shrink-0 cursor-pointer"
             >
               Gönder
             </button>
@@ -118,9 +127,8 @@ export default function TemplateMinimal({ data }: { data: any }) {
         )}
       </section>
 
-      {/* Footer */}
-      <footer className="py-8 text-center text-[10px] tracking-widest uppercase text-gray-400 font-sans px-4 border-t border-gray-50">
-        <p>{data?.productName} © 2026 — Tasarımın Özü.</p>
+      <footer className="py-12 text-center text-[10px] font-sans tracking-[0.25em] uppercase text-zinc-400 px-6 border-t border-zinc-200/40">
+        {data?.productName} © 2026 — Sadelik ve Estetik.
       </footer>
     </div>
   );
