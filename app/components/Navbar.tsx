@@ -64,7 +64,6 @@ const isSystemRoute = pathname === "/" || systemPrefixes.some(prefix => pathname
   const navLinks = [
     { name: "Ana Sayfa", href: "/" },
     { name: "Özellikler", href: "/#ozellikler" },
-    { name: "SSS", href: "/#sss" },
     { name: "Platform Üret", href: "/create" },
     { name: "Hakkımızda", href: "/about" },
     { name: "SSS", href: "/sss" },
