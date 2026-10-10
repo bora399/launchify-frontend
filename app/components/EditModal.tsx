@@ -44,6 +44,8 @@ export default function EditModal({ isOpen, onClose, project, onUpdated }: EditM
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiMessage, setAiMessage] = useState<string | null>(null);
 
+  const [activeAiMode, setActiveAiMode] = useState<string | null>(null);
+
   if (!isOpen) return null;
 
   const currentFeatures = ai.features || ai.Features || project?.features || [
@@ -114,6 +116,7 @@ export default function EditModal({ isOpen, onClose, project, onUpdated }: EditM
   };
 
   const handleAiAssist = async (mode: 'punchy' | 'corporate' | 'minimal' | 'redesign') => {
+    setActiveAiMode(mode);
     setIsAiLoading(true);
     setAiMessage(null);
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://launchify-backend-3a7w.onrender.com";
@@ -271,38 +274,38 @@ export default function EditModal({ isOpen, onClose, project, onUpdated }: EditM
               </div>
 
               <div className="grid grid-cols-2 gap-1.5">
-                <button
-                  type="button"
-                  disabled={isAiLoading}
-                  onClick={() => handleAiAssist('punchy')}
-                  className="px-2.5 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-[11px] font-medium text-white/80 hover:text-white transition-all text-left flex items-center gap-1.5 disabled:opacity-40 cursor-pointer"
-                >
-                  <span>🔥</span> Daha Vurucu Yap
-                </button>
-                <button
-                  type="button"
-                  disabled={isAiLoading}
-                  onClick={() => handleAiAssist('corporate')}
-                  className="px-2.5 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-[11px] font-medium text-white/80 hover:text-white transition-all text-left flex items-center gap-1.5 disabled:opacity-40 cursor-pointer"
-                >
-                  <span>💼</span> Kurumsal (B2B)
-                </button>
-                <button
-                  type="button"
-                  disabled={isAiLoading}
-                  onClick={() => handleAiAssist('minimal')}
-                  className="px-2.5 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-[11px] font-medium text-white/80 hover:text-white transition-all text-left flex items-center gap-1.5 disabled:opacity-40 cursor-pointer"
-                >
-                  <span>⚡</span> Sade & Kısa
-                </button>
-                <button
-                  type="button"
-                  disabled={isAiLoading}
-                  onClick={() => handleAiAssist('redesign')}
-                  className="px-2.5 py-1.5 bg-[#6366F1]/15 hover:bg-[#6366F1]/25 border border-[#6366F1]/30 rounded-lg text-[11px] font-semibold text-[#818cf8] hover:text-white transition-all text-left flex items-center gap-1.5 disabled:opacity-40 cursor-pointer col-span-1"
-                >
-                  <span>🎨</span> AI Tasarım Remix
-                </button>
+                {[
+                  { id: 'punchy', label: 'Daha Vurucu Yap', icon: '🔥' },
+                  { id: 'corporate', label: 'Kurumsal (B2B)', icon: '💼' },
+                  { id: 'minimal', label: 'Sade & Kısa', icon: '⚡' },
+                  { id: 'redesign', label: 'AI Tasarım Remix', icon: '🎨' },
+                ].map((btn) => {
+                  const isSelected = activeAiMode === btn.id;
+                  const isThisLoading = isAiLoading && isSelected;
+
+                  return (
+                    <button
+                      key={btn.id}
+                      type="button"
+                      disabled={isAiLoading}
+                      onClick={() => handleAiAssist(btn.id as any)}
+                      className={`px-2.5 py-1.5 rounded-lg text-[11px] transition-all text-left flex items-center justify-between cursor-pointer disabled:opacity-50 border ${
+                        isSelected
+                          ? "bg-[#6366F1]/20 border-[#6366F1] text-white font-bold ring-1 ring-[#6366F1]/50 shadow-[0_0_12px_rgba(99,102,241,0.25)]"
+                          : "bg-white/5 hover:bg-white/10 border-white/10 text-white/70 hover:text-white font-medium"
+                      }`}
+                    >
+                      <span className="flex items-center gap-1.5 truncate">
+                        <span>{btn.icon}</span>
+                        <span className="truncate">{btn.label}</span>
+                      </span>
+
+                      {isThisLoading && (
+                        <span className="w-2.5 h-2.5 border border-white/30 border-t-white rounded-full animate-spin shrink-0"></span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
