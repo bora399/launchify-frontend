@@ -71,12 +71,7 @@ export default function AboutPage() {
 
       <div className="relative z-10 w-full max-w-5xl mx-auto px-6 pt-32 pb-24">
         
-        {/* Hero */}
         <div className="mb-20 text-center">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-semibold text-white/70 mb-6 backdrop-blur-md">
-            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: BRAND_COLOR }}></span>
-            Launchify Hikayesi & Vizyonu
-          </div>
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white tracking-tight mb-6 font-heading leading-[1.15]">
             Her Büyük Girişim, Doğrulanmış Bir Fikirle Başlar.
           </h1>

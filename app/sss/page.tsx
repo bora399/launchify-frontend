@@ -52,10 +52,6 @@ export default function SssPage() {
       <div className="relative z-10 w-full max-w-4xl mx-auto px-6 pt-32 pb-24">
         
         <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-semibold text-white/70 mb-4 backdrop-blur-md">
-            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: BRAND_COLOR }}></span>
-            Yardım Merkezi & Merak Edilenler
-          </div>
           <h1 className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight mb-4 font-heading">
             Sıkça Sorulan Sorular
           </h1>
