@@ -709,56 +709,83 @@ export default function DashboardPage() {
                         </button>
 
                         {openDropdownId === project.id && (
-                          <div className="absolute right-0 bottom-full mb-2 w-48 bg-[#1A1A1A] border border-white/10 rounded-xl shadow-xl overflow-hidden z-50 animate-in fade-in slide-from-bottom-2 duration-200">
+                          <div className="absolute right-0 bottom-full mb-2 w-56 bg-[#141414] border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50 animate-in fade-in slide-from-bottom-2 duration-150 p-1.5 backdrop-blur-xl">
+                            
                             <button
                               onClick={() => handleOpenLeads(project)}
-                              className="flex items-center gap-2 w-full px-4 py-3 text-sm text-[#6366F1] hover:bg-white/5 transition-colors text-left font-medium cursor-pointer"
+                              className="flex items-center gap-2.5 w-full px-3 py-2.5 text-xs text-white/80 hover:text-white hover:bg-white/5 rounded-xl transition-colors text-left font-medium cursor-pointer"
                             >
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                              Toplanan Talepler
+                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-[#6366F1]">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                <polyline points="22,6 12,13 2,6"></polyline>
+                              </svg>
+                              <span>Toplanan Talepler</span>
                             </button>
-                            <div className="h-px bg-white/5 w-full"></div>
+
                             <Link
                               href={`/${project.slug}`}
                               target="_blank"
-                              className="flex items-center gap-2 w-full px-4 py-3 text-sm text-white/80 hover:bg-white/5 hover:text-white transition-colors"
+                              className="flex items-center gap-2.5 w-full px-3 py-2.5 text-xs text-white/80 hover:text-white hover:bg-white/5 rounded-xl transition-colors text-left font-medium"
                             >
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-                              Siteyi İncele
+                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/40">
+                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                <polyline points="15 3 21 3 21 9"></polyline>
+                                <line x1="10" y1="14" x2="21" y2="3"></line>
+                              </svg>
+                              <span>Siteyi İncele</span>
                             </Link>
+
                             <button
                               onClick={() => {
                                 setProjectToShare(project);
                                 setOpenDropdownId(null);
                               }}
-                              className="flex items-center gap-2 w-full px-4 py-3 text-sm text-white/80 hover:bg-white/5 hover:text-white transition-colors text-left cursor-pointer"
+                              className="flex items-center gap-2.5 w-full px-3 py-2.5 text-xs text-white/80 hover:text-white hover:bg-white/5 rounded-xl transition-colors text-left font-medium cursor-pointer"
                             >
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
-                              Paylaş & QR Kod
+                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/40">
+                                <circle cx="18" cy="5" r="3"></circle>
+                                <circle cx="6" cy="12" r="3"></circle>
+                                <circle cx="18" cy="19" r="3"></circle>
+                                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                              </svg>
+                              <span>Paylaş & QR Kod</span>
                             </button>
+
+                            {/* DÜZELTİLEN DIŞA AKTAR BUTONU: Asla 2 satıra kırılmaz, sağında temiz etiket bulunur */}
                             <button
                               onClick={() => {
                                 exportProjectAsHtml(project);
                                 setOpenDropdownId(null);
                               }}
-                              className="flex items-center gap-2 w-full px-4 py-3 text-sm text-emerald-400 hover:bg-white/5 hover:text-emerald-300 transition-colors text-left cursor-pointer font-medium"
+                              className="flex items-center justify-between w-full px-3 py-2.5 text-xs text-white/80 hover:text-white hover:bg-white/5 rounded-xl transition-colors text-left font-medium cursor-pointer group"
                             >
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <polyline points="16 18 22 12 16 6"></polyline>
-                                <polyline points="8 6 2 12 8 18"></polyline>
-                              </svg>
-                              Kodu Dışa Aktar (.html)
+                              <span className="flex items-center gap-2.5 truncate">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-emerald-400 group-hover:scale-110 transition-transform shrink-0">
+                                  <polyline points="16 18 22 12 16 6"></polyline>
+                                  <polyline points="8 6 2 12 8 18"></polyline>
+                                </svg>
+                                <span className="truncate">Kodu Dışa Aktar</span>
+                              </span>
+                              <span className="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20 ml-2 shrink-0">
+                                .html
+                              </span>
                             </button>
-                            <div className="h-px bg-white/5 w-full"></div>
+
+                            <div className="h-px bg-white/5 my-1 w-full"></div>
+
                             <button
                               onClick={() => {
                                 setProjectToDelete(project);
                                 setOpenDropdownId(null);
                               }}
-                              className="flex items-center gap-2 w-full px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors text-left cursor-pointer"
+                              className="flex items-center gap-2.5 w-full px-3 py-2.5 text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl transition-colors text-left font-medium cursor-pointer"
                             >
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7c-1 0-2-1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                              Kaldır
+                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-red-400">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7c-1 0-2-1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                              </svg>
+                              <span>Projeyi Kaldır</span>
                             </button>
                           </div>
                         )}
