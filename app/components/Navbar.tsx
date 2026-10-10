@@ -5,8 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { auth } from "@/firebase";
 import { onAuthStateChanged, signOut, User } from "firebase/auth";
-import Image from "next/image";
-import iconSvg from "@/app/icon.svg"; 
+import Logo from "./Logo";
 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -54,8 +53,8 @@ export default function Navbar() {
     }
   };
 
-const systemPrefixes = ["/create", "/about", "/login", "/dashboard", "/sss"];
-const isSystemRoute = pathname === "/" || systemPrefixes.some(prefix => pathname.startsWith(prefix));
+  const systemPrefixes = ["/create", "/about", "/login", "/dashboard", "/sss"];
+  const isSystemRoute = pathname === "/" || systemPrefixes.some(prefix => pathname.startsWith(prefix));
 
   if (!isSystemRoute) {
     return null;
@@ -74,11 +73,9 @@ const isSystemRoute = pathname === "/" || systemPrefixes.some(prefix => pathname
       <header className="fixed top-0 left-0 w-full z-[99999] bg-[#050505]/90 backdrop-blur-md border-b border-white/5 transition-all">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           
-          <Link href="/" className="flex items-center gap-3 relative z-[100000]" onClick={() => setIsMobileMenuOpen(false)}>
-            <Image src={iconSvg} alt="Launchify Logo" width={32} height={32} />
-            <span className="text-xl font-extrabold text-white font-heading tracking-tight">Launchify.</span>
-          </Link>
-
+          <div className="relative z-[100000]">
+            <Logo onClick={() => setIsMobileMenuOpen(false)} />
+          </div>
           <nav className="hidden md:flex items-center gap-8">
             {navLinks.map((link) => (
               <Link 
