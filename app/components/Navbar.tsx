@@ -41,8 +41,21 @@ export default function Navbar() {
     }
   };
 
-  const systemPrefixes = ["/create", "/about", "/login", "/dashboard"];
-  const isSystemRoute = pathname === "/" || systemPrefixes.some(prefix => pathname.startsWith(prefix));
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    setIsMobileMenuOpen(false);
+    if (href.startsWith("/#") && pathname === "/") {
+      e.preventDefault();
+      const targetId = href.replace("/#", "");
+      const elem = document.getElementById(targetId);
+      if (elem) {
+        elem.scrollIntoView({ behavior: "smooth" });
+        window.history.pushState(null, "", href);
+      }
+    }
+  };
+
+const systemPrefixes = ["/create", "/about", "/login", "/dashboard", "/sss"];
+const isSystemRoute = pathname === "/" || systemPrefixes.some(prefix => pathname.startsWith(prefix));
 
   if (!isSystemRoute) {
     return null;
@@ -51,8 +64,10 @@ export default function Navbar() {
   const navLinks = [
     { name: "Ana Sayfa", href: "/" },
     { name: "Özellikler", href: "/#ozellikler" },
+    { name: "SSS", href: "/#sss" },
     { name: "Platform Üret", href: "/create" },
     { name: "Hakkımızda", href: "/about" },
+    { name: "SSS", href: "/sss" },
   ];
 
   return (
@@ -70,6 +85,7 @@ export default function Navbar() {
               <Link 
                 key={link.name} 
                 href={link.href}
+                onClick={(e) => handleNavClick(e, link.href)}
                 className={`text-sm font-medium transition-colors hover:text-white ${isActive(link.href) ? "text-white" : "text-white/50"}`}
               >
                 {link.name}
@@ -85,7 +101,7 @@ export default function Navbar() {
                 </Link>
                 <button 
                   onClick={handleLogout}
-                  className="text-sm font-medium text-red-400/70 hover:text-red-400 transition-colors"
+                  className="text-sm font-medium text-red-400/70 hover:text-red-400 transition-colors cursor-pointer"
                 >
                   Çıkış Yap
                 </button>
@@ -108,7 +124,7 @@ export default function Navbar() {
           </div>
 
           <button 
-            className="md:hidden relative z-[100000] p-2 -mr-2 text-white/90 hover:text-white transition-transform active:scale-95"
+            className="md:hidden relative z-[100000] p-2 -mr-2 text-white/90 hover:text-white transition-transform active:scale-95 cursor-pointer"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label="Menüyü Aç/Kapat"
           >
@@ -133,7 +149,7 @@ export default function Navbar() {
             <Link 
               key={link.name} 
               href={link.href}
-              onClick={() => setIsMobileMenuOpen(false)}
+              onClick={(e) => handleNavClick(e, link.href)}
               className={`border-b border-white/10 pb-4 tracking-wide transition-colors ${isActive(link.href) ? "text-white" : "text-white/40 active:text-white/70"}`}
             >
               {link.name}
@@ -161,7 +177,7 @@ export default function Navbar() {
               </Link>
               <button 
                 onClick={handleLogout}
-                className="w-full py-4 mt-2 bg-red-500/10 border border-red-500/20 text-center text-red-400 font-bold rounded-xl active:bg-red-500/20 transition-colors"
+                className="w-full py-4 mt-2 bg-red-500/10 border border-red-500/20 text-center text-red-400 font-bold rounded-xl active:bg-red-500/20 transition-colors cursor-pointer"
               >
                 Çıkış Yap
               </button>

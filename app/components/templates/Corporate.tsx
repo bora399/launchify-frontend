@@ -1,21 +1,6 @@
 "use client";
 import React, { useState } from 'react';
 
-const DEFAULT_CORP_FAQS = [
-  {
-    q: "Kurumsal güvenlik ve KVKK uyumluluğu var mı?",
-    a: "Platformumuz endüstri standartlarında veri güvenliği, KVKK ve GDPR uyumlu şifrelenmiş sunucularda barındırılmaktadır."
-  },
-  {
-    q: "Mevcut sistemlerimizle entegre edilebilir mi?",
-    a: "Evet. API ve webhook desteğimiz sayesinde mevcut CRM ve veri tabanı çözümlerinize kolayca bağlanabilir."
-  },
-  {
-    q: "SLA ve teknik destek güvencesi nedir?",
-    a: "Tüm kurumsal müşterilerimize %99.9 çalışma süresi ve öncelikli teknik yardım hattı taahhüt edilmektedir."
-  }
-];
-
 export default function TemplateCorporate({ data }: { data: any }) {
   const accent = data?.accentColor || data?.aiConfig?.accentColor || '#0F172A';
   const demoUrl = data?.demoLink || '#';
@@ -23,10 +8,6 @@ export default function TemplateCorporate({ data }: { data: any }) {
 
   const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
-
-  const rawFaqs = data?.faqs || data?.aiConfig?.faqs || data?.aiConfig?.Faqs;
-  const faqs = rawFaqs && rawFaqs.length > 0 ? rawFaqs : DEFAULT_CORP_FAQS;
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,6 +35,7 @@ export default function TemplateCorporate({ data }: { data: any }) {
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 font-sans overflow-x-hidden">
+      {/* Navbar */}
       <nav className="bg-white border-b border-gray-200 px-4 sm:px-8 py-3.5 flex justify-between items-center sticky top-0 z-50">
         <div className="text-base sm:text-xl font-bold text-gray-950 flex items-center gap-2.5 truncate max-w-[200px] sm:max-w-none">
           <div style={{ backgroundColor: accent }} className="w-5 h-5 rounded-md shrink-0 shadow-sm"></div>
@@ -64,6 +46,7 @@ export default function TemplateCorporate({ data }: { data: any }) {
         </a>
       </nav>
 
+      {/* Hero */}
       <main className="max-w-6xl mx-auto px-4 sm:px-8 py-12 sm:py-20 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-[11px] font-bold uppercase mb-4 tracking-wide border border-blue-100">
@@ -89,6 +72,7 @@ export default function TemplateCorporate({ data }: { data: any }) {
             )}
           </div>
 
+          {/* B2B Güven Metrikleri */}
           <div className="grid grid-cols-3 gap-3 border-t border-gray-200 pt-5">
             <div>
               <p className="text-xl sm:text-2xl font-black text-gray-950">%99.9</p>
@@ -105,6 +89,7 @@ export default function TemplateCorporate({ data }: { data: any }) {
           </div>
         </div>
         
+        {/* Görsel Kart */}
         <div className="relative h-[280px] sm:h-[400px] w-full rounded-2xl overflow-hidden shadow-xl flex items-center justify-center bg-white border border-gray-200">
           <div style={{ backgroundColor: accent }} className="absolute top-0 right-0 w-48 h-48 rounded-full opacity-10 blur-3xl"></div>
           <div className="relative z-10 w-4/5 space-y-3">
@@ -119,6 +104,7 @@ export default function TemplateCorporate({ data }: { data: any }) {
         </div>
       </main>
 
+      {/* Features */}
       {data?.features && data.features.length > 0 && (
         <section className="py-14 sm:py-20 bg-white border-y border-gray-200">
           <div className="max-w-6xl mx-auto px-4 sm:px-8">
@@ -141,41 +127,7 @@ export default function TemplateCorporate({ data }: { data: any }) {
         </section>
       )}
 
-      <section className="py-14 sm:py-20 bg-gray-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-8">
-          <div className="text-center mb-10">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-950 mb-2">Sıkça Sorulan Sorular</h2>
-            <p className="text-gray-500 text-xs sm:text-sm">{data?.productName} hakkında merak edilen kurumsal detaylar.</p>
-          </div>
-
-          <div className="divide-y divide-gray-200 border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-sm">
-            {faqs.map((faq: any, idx: number) => {
-              const q = faq.question || faq.Question || faq.q;
-              const a = faq.answer || faq.Answer || faq.a;
-              const isOpen = openFaq === idx;
-
-              return (
-                <div key={idx} className="bg-white">
-                  <button
-                    type="button"
-                    onClick={() => setOpenFaq(isOpen ? null : idx)}
-                    className="w-full text-left p-4 sm:p-5 flex justify-between items-center text-xs sm:text-sm font-bold text-gray-900 cursor-pointer hover:bg-gray-50"
-                  >
-                    <span className="pr-4">{q}</span>
-                    <span className="text-gray-400 text-lg font-light shrink-0">{isOpen ? "−" : "+"}</span>
-                  </button>
-                  {isOpen && (
-                    <div className="px-4 sm:px-5 pb-5 text-gray-600 text-xs sm:text-sm leading-relaxed border-t border-gray-100 pt-3">
-                      {a}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
+      {/* Waitlist */}
       <section id="waitlist" className="py-14 sm:py-20 bg-gray-950 text-white relative overflow-hidden px-4">
         <div className="max-w-2xl mx-auto text-center relative z-10">
           <h2 className="text-2xl sm:text-3xl font-extrabold mb-3">Kurumsal Dönüşüme Başlayın</h2>
@@ -209,6 +161,7 @@ export default function TemplateCorporate({ data }: { data: any }) {
         </div>
       </section>
 
+      {/* Footer */}
       <footer className="bg-white border-t border-gray-200 py-6 px-4 sm:px-8 text-center text-xs text-gray-500 flex flex-col sm:flex-row justify-between items-center max-w-6xl mx-auto gap-2">
         <span>© 2026 {data?.productName} Kurumsal Çözümler.</span>
         <span>Powered by Launchify</span>

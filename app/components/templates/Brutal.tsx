@@ -1,21 +1,6 @@
 "use client";
 import React, { useState } from 'react';
 
-const DEFAULT_BRUTAL_FAQS = [
-  {
-    q: "Neden bu kadar iddialısınız?",
-    a: "Sıkıcı ve standart kurumsal şablonlardan bıktık. Dikkat çeken, cesur ve doğrudan sonuca götüren tasarımlar yapıyoruz."
-  },
-  {
-    q: "Spam mail atacak mısınız?",
-    a: "Sıfır spam. Sadece ürün çıktığında ve büyük güncellemelerde sana tek bir net mesaj atacağız."
-  },
-  {
-    q: "Kurulum süreci zor mu?",
-    a: "Tamamen sıfır efor. Butona basıyorsun ve hazır platforma ilk adımı atıyorsun."
-  }
-];
-
 export default function TemplateBrutal({ data }: { data: any }) {
   const accent = data?.accentColor || data?.aiConfig?.accentColor || '#FDE047'; 
   const demoUrl = data?.demoLink || '#';
@@ -23,10 +8,6 @@ export default function TemplateBrutal({ data }: { data: any }) {
 
   const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
-
-  const rawFaqs = data?.faqs || data?.aiConfig?.faqs || data?.aiConfig?.Faqs;
-  const faqs = rawFaqs && rawFaqs.length > 0 ? rawFaqs : DEFAULT_BRUTAL_FAQS;
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,7 +35,6 @@ export default function TemplateBrutal({ data }: { data: any }) {
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] text-black font-sans selection:bg-black selection:text-white overflow-x-hidden">
-      {/* Navbar */}
       <nav className="border-b-4 border-black bg-white px-4 sm:px-8 py-3.5 sm:py-4 flex justify-between items-center sticky top-0 z-50">
         <div className="text-xl sm:text-2xl font-black uppercase tracking-tighter truncate max-w-[200px] sm:max-w-none">
           {data?.productName || "Launchify"}*
@@ -117,38 +97,6 @@ export default function TemplateBrutal({ data }: { data: any }) {
         </section>
       )}
 
-      <section className="px-4 sm:px-8 md:px-12 py-14 sm:py-20 max-w-5xl mx-auto border-t-4 border-black">
-        <h2 className="text-2xl sm:text-4xl font-black uppercase mb-8 border-b-4 border-black pb-2 inline-block">
-          Soru Mu Var?
-        </h2>
-        
-        <div className="space-y-4">
-          {faqs.map((faq: any, idx: number) => {
-            const q = faq.question || faq.Question || faq.q;
-            const a = faq.answer || faq.Answer || faq.a;
-            const isOpen = openFaq === idx;
-
-            return (
-              <div key={idx} className="border-4 border-black bg-white shadow-[5px_5px_0px_#000]">
-                <button
-                  type="button"
-                  onClick={() => setOpenFaq(isOpen ? null : idx)}
-                  className="w-full text-left p-4 sm:p-5 font-black uppercase text-sm sm:text-lg flex justify-between items-center cursor-pointer"
-                >
-                  <span className="pr-4">{q}</span>
-                  <span className="text-xl sm:text-2xl font-black shrink-0">{isOpen ? "−" : "+"}</span>
-                </button>
-                {isOpen && (
-                  <div className="p-4 sm:p-5 border-t-4 border-black bg-[#FDE047]/30 font-bold text-xs sm:text-sm leading-relaxed">
-                    {a}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
       <section id="waitlist" className="px-4 sm:px-8 md:px-12 py-14 sm:py-20 bg-black text-white border-t-4 border-black">
         <div className="max-w-4xl mx-auto border-4 border-white p-6 sm:p-12 shadow-[-6px_6px_0px_#fff] relative">
           <div style={{ backgroundColor: accent }} className="absolute -top-4 -right-2 sm:-top-5 sm:-right-4 px-3 py-1 border-2 border-white text-black font-black uppercase text-[10px] sm:text-xs rotate-3">
@@ -189,7 +137,7 @@ export default function TemplateBrutal({ data }: { data: any }) {
       <footer className="bg-white text-black border-t-4 border-black px-4 sm:px-8 py-6">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3 text-center sm:text-left">
           <h2 className="text-xl font-black uppercase">{data?.productName || "Launchify"}*</h2>
-          <p className="font-bold text-xs uppercase">© 2026 Launchify Altyapısı.</p>
+          <p className="font-bold text-xs uppercase">© 2026 Tüm hakları saklıdır.</p>
         </div>
       </footer>
     </div>

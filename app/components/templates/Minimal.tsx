@@ -1,21 +1,6 @@
 "use client";
 import React, { useState } from 'react';
 
-const DEFAULT_MINIMAL_FAQS = [
-  {
-    q: "Tasarım felsefeniz nedir?",
-    a: "Gereksiz tüm süslemelerden arındırılmış, yalnızca amaca ve içerik netliğine odaklanan minimalist bir anlayış."
-  },
-  {
-    q: "Sayfa performansı nasıl?",
-    a: "Sıfır gereksiz kütüphane ve optimize edilmiş font mimarisi sayesinde anında yüklenir."
-  },
-  {
-    q: "Güncellemelerden nasıl haberdar olurum?",
-    a: "E-postanızı bıraktığınızda yalnızca en önemli dönüm noktalarında sade bir bülten alırsınız."
-  }
-];
-
 export default function TemplateMinimal({ data }: { data: any }) {
   const accent = data?.accentColor || data?.aiConfig?.accentColor || '#000000';
   const demoUrl = data?.demoLink || '#';
@@ -23,10 +8,6 @@ export default function TemplateMinimal({ data }: { data: any }) {
 
   const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
-
-  const rawFaqs = data?.faqs || data?.aiConfig?.faqs || data?.aiConfig?.Faqs;
-  const faqs = rawFaqs && rawFaqs.length > 0 ? rawFaqs : DEFAULT_MINIMAL_FAQS;
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,6 +35,7 @@ export default function TemplateMinimal({ data }: { data: any }) {
 
   return (
     <div className="min-h-screen bg-[#FCFCFC] text-gray-900 font-serif selection:bg-gray-200 overflow-x-hidden">
+      {/* Navbar */}
       <nav className="px-4 sm:px-8 md:px-12 py-5 sm:py-8 flex justify-between items-center max-w-5xl mx-auto border-b border-gray-100">
         <div className="text-base sm:text-lg tracking-[0.25em] uppercase font-light truncate max-w-[200px] sm:max-w-none">
           {data?.productName || "Launchify"}
@@ -63,6 +45,7 @@ export default function TemplateMinimal({ data }: { data: any }) {
         </a>
       </nav>
 
+      {/* Hero */}
       <main className="flex flex-col items-center justify-center pt-14 sm:pt-24 pb-16 sm:pb-24 text-center px-4 max-w-3xl mx-auto">
         <p className="text-[11px] font-sans tracking-[0.3em] uppercase text-gray-400 mb-6">
           01 — Giriş & Vizyon
@@ -81,6 +64,7 @@ export default function TemplateMinimal({ data }: { data: any }) {
         </a>
       </main>
 
+      {/* Features */}
       {data?.features && data.features.length > 0 && (
         <section className="max-w-4xl mx-auto px-4 sm:px-6 py-14 sm:py-20 border-t border-gray-100 font-sans">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-10">
@@ -102,41 +86,7 @@ export default function TemplateMinimal({ data }: { data: any }) {
         </section>
       )}
 
-      <section className="py-14 sm:py-20 px-4 sm:px-6 max-w-3xl mx-auto border-t border-gray-100 font-sans">
-        <p className="text-[11px] tracking-[0.3em] uppercase text-gray-400 text-center mb-2">
-          03 — Sorular
-        </p>
-        <h2 className="text-2xl sm:text-3xl font-light text-center mb-8 text-gray-950 font-serif">
-          Sık Sorulanlar
-        </h2>
-
-        <div className="space-y-4">
-          {faqs.map((faq: any, idx: number) => {
-            const q = faq.question || faq.Question || faq.q;
-            const a = faq.answer || faq.Answer || faq.a;
-            const isOpen = openFaq === idx;
-
-            return (
-              <div key={idx} className="border-b border-gray-200 pb-3">
-                <button
-                  type="button"
-                  onClick={() => setOpenFaq(isOpen ? null : idx)}
-                  className="w-full text-left py-2 flex justify-between items-center text-xs sm:text-sm font-medium text-gray-800 cursor-pointer"
-                >
-                  <span className="pr-4">{q}</span>
-                  <span className="text-gray-400 font-light text-xs shrink-0">{isOpen ? "Kapat" : "Aç"}</span>
-                </button>
-                {isOpen && (
-                  <p className="pt-2 text-gray-500 text-xs sm:text-sm font-light leading-relaxed">
-                    {a}
-                  </p>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
+      {/* Waitlist */}
       <section id="waitlist" className="py-16 sm:py-24 px-4 sm:px-6 max-w-xl mx-auto text-center border-t border-gray-100">
         <h2 className="text-2xl sm:text-3xl font-light mb-3 text-gray-950">Bizimle İletişimde Kalın</h2>
         <p className="text-gray-500 font-sans font-light mb-8 text-xs sm:text-sm">
@@ -168,6 +118,7 @@ export default function TemplateMinimal({ data }: { data: any }) {
         )}
       </section>
 
+      {/* Footer */}
       <footer className="py-8 text-center text-[10px] tracking-widest uppercase text-gray-400 font-sans px-4 border-t border-gray-50">
         <p>{data?.productName} © 2026 — Tasarımın Özü.</p>
       </footer>

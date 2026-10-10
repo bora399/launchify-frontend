@@ -1,21 +1,6 @@
 "use client";
 import React, { useState } from 'react';
 
-const DEFAULT_AURORA_FAQS = [
-  {
-    q: "Erken erişim programı nasıl işliyor?",
-    a: "E-posta adresinizi bıraktığınızda sistem sizi öncelikli listeye alır. Lansman günü özel davetiye ve kurucu avantajları ilk size iletilir."
-  },
-  {
-    q: "Verilerimiz ve gizliliğimiz nasıl korunuyor?",
-    a: "Tüm veriler uçtan uca şifrelenmiş bulut mimarisinde saklanır ve asla üçüncü taraflarla paylaşılmaz."
-  },
-  {
-    q: "Platformu kullanmak için teknik bilgi gerekiyor mu?",
-    a: "Hayır. Kodlama veya karmaşık sunucu ayarları gerekmeden tamamen hazır bir deneyim sunulur."
-  }
-];
-
 export default function TemplateAurora({ data }: { data: any }) {
   const accent = data?.accentColor || data?.aiConfig?.accentColor || '#3B82F6';
   const demoUrl = data?.demoLink || '#';
@@ -23,10 +8,6 @@ export default function TemplateAurora({ data }: { data: any }) {
   
   const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
-
-  const rawFaqs = data?.faqs || data?.aiConfig?.faqs || data?.aiConfig?.Faqs;
-  const faqs = rawFaqs && rawFaqs.length > 0 ? rawFaqs : DEFAULT_AURORA_FAQS;
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,10 +35,11 @@ export default function TemplateAurora({ data }: { data: any }) {
 
   return (
     <div className="min-h-screen bg-[#050505] text-white overflow-x-hidden relative font-sans selection:bg-purple-500/30 selection:text-white">
-      {/* Arka Plan Glow Işıkları */}
+      {/* Glow Efektleri */}
       <div className="fixed top-[-10%] left-[-10%] w-[320px] sm:w-[550px] h-[320px] sm:h-[550px] rounded-full bg-purple-600/20 blur-[130px] pointer-events-none"></div>
       <div className="fixed bottom-[-10%] right-[-10%] w-[300px] sm:w-[500px] h-[300px] sm:h-[500px] rounded-full bg-blue-600/15 blur-[130px] pointer-events-none"></div>
 
+      {/* Navbar */}
       <nav className="sticky top-0 z-50 bg-[#050505]/75 backdrop-blur-xl border-b border-white/5 px-4 sm:px-8 py-3.5 sm:py-4 flex justify-between items-center">
         <div className="text-base sm:text-xl font-bold tracking-wider flex items-center gap-2.5 truncate max-w-[200px] sm:max-w-none">
           <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-lg shrink-0 shadow-lg" style={{ backgroundColor: accent, boxShadow: `0 0 16px ${accent}90` }}></div>
@@ -71,7 +53,7 @@ export default function TemplateAurora({ data }: { data: any }) {
       <main className="flex flex-col items-center justify-center pt-16 sm:pt-28 pb-16 sm:pb-24 text-center px-4 relative z-10 max-w-4xl mx-auto">
         <div className="px-3.5 py-1.5 rounded-full border border-white/10 bg-white/5 text-[11px] sm:text-xs font-medium mb-6 sm:mb-8 text-gray-300 flex items-center gap-2 backdrop-blur-md shadow-inner">
           <span className="w-2 h-2 rounded-full animate-ping" style={{ backgroundColor: accent }}></span> 
-          <span>Yapay Zeka Destekli B2B Altyapı</span>
+          <span>Yapay Zeka Destekli Altyapı</span>
         </div>
 
         <h1 className="text-3xl sm:text-5xl md:text-7xl font-extrabold mb-6 sm:mb-8 bg-clip-text text-transparent bg-gradient-to-b from-white via-gray-100 to-gray-400 leading-[1.15] tracking-tight">
@@ -93,7 +75,7 @@ export default function TemplateAurora({ data }: { data: any }) {
           )}
         </div>
 
-        {/* Canlı Sosyal Kanıt Hapı */}
+        {/* Canlı Sosyal Kanıt */}
         <div className="mt-10 sm:mt-12 flex items-center gap-2.5 text-xs text-white/50 bg-white/[0.03] border border-white/5 px-4 py-2 rounded-full backdrop-blur-sm">
           <span className="flex h-2 w-2 relative">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -124,41 +106,6 @@ export default function TemplateAurora({ data }: { data: any }) {
         </section>
       )}
 
-      <section className="max-w-4xl mx-auto px-4 sm:px-6 py-14 sm:py-20 relative z-10">
-        <div className="text-center mb-10 sm:mb-14">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 tracking-tight">Sıkça Sorulan Sorular</h2>
-          <p className="text-gray-400 text-xs sm:text-sm">Aklınıza takılan sorular ve şeffaf yanıtlar.</p>
-        </div>
-
-        <div className="space-y-3">
-          {faqs.map((faq: any, idx: number) => {
-            const q = faq.question || faq.Question || faq.q;
-            const a = faq.answer || faq.Answer || faq.a;
-            const isOpen = openFaq === idx;
-
-            return (
-              <div key={idx} className="bg-white/[0.04] border border-white/10 rounded-2xl backdrop-blur-md overflow-hidden transition-all">
-                <button
-                  type="button"
-                  onClick={() => setOpenFaq(isOpen ? null : idx)}
-                  className="w-full text-left p-4 sm:p-6 flex justify-between items-center text-sm sm:text-base font-semibold text-white cursor-pointer hover:bg-white/[0.02]"
-                >
-                  <span className="pr-4">{q}</span>
-                  <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs shrink-0 bg-white/5 border border-white/10 text-gray-300">
-                    {isOpen ? "−" : "+"}
-                  </span>
-                </button>
-                {isOpen && (
-                  <div className="px-4 sm:px-6 pb-5 pt-1 text-gray-400 text-xs sm:text-sm leading-relaxed border-t border-white/5">
-                    {a}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
       <section id="waitlist" className="py-14 sm:py-24 relative z-10 px-4">
         <div className="max-w-3xl mx-auto relative">
           <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-blue-500/10 blur-3xl rounded-[2.5rem]"></div>
@@ -166,7 +113,7 @@ export default function TemplateAurora({ data }: { data: any }) {
           <div className="relative bg-white/[0.04] border border-white/10 p-6 sm:p-12 md:p-14 rounded-3xl backdrop-blur-xl text-center overflow-hidden">
             <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold mb-3 sm:mb-4 tracking-tight">{data?.productName} ile Başlayın</h2>
             <p className="text-gray-400 mb-8 max-w-md mx-auto text-xs sm:text-base">
-              Kontenjan dolmadan yerinizi ayırtın. Platform açıldığında ilk davetiyeyi size ulaştıralım.
+              Kontenjan dolmadan yerinizi ayırtın. Platform açıldığında ilk davetiyeyi size ulaştıracağız.
             </p>
             
             {isSubmitted ? (
@@ -203,7 +150,7 @@ export default function TemplateAurora({ data }: { data: any }) {
           <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: accent }}></div>
           {data?.productName}
         </div>
-        <p>© 2026 Tüm hakları saklıdır. <span className="text-gray-400 font-semibold">Launchify</span> altyapısıyla üretildi.</p>
+        <p>© 2026 Tüm hakları saklıdır.</p>
       </footer>
     </div>
   );

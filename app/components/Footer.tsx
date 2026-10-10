@@ -18,10 +18,18 @@ export default function Footer() {
     return () => unsubscribe();
   }, []);
 
-  const platformPages = ['/', '/create', '/about', '/dashboard'];
+  const platformPages = ['/', '/create', '/about', '/dashboard', '/sss'];
   if (!platformPages.includes(pathname)) {
     return null;
   }
+
+  const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
+    if (pathname === '/') {
+      e.preventDefault();
+      document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth' });
+      window.history.pushState(null, '', `/#${targetId}`);
+    }
+  };
 
   return (
     <footer className="border-t border-white/5 bg-[#000000] pt-16 pb-8 relative z-10 text-[#FAFAFA]">
@@ -43,26 +51,22 @@ export default function Footer() {
             </div>
           </div>
 
-          <div className="flex gap-16 text-sm font-medium" style={{ fontFamily: "'Manrope', sans-serif" }}>
+          <div className="flex flex-wrap gap-12 sm:gap-16 text-sm font-medium" style={{ fontFamily: "'Manrope', sans-serif" }}>
             
             <div className="flex flex-col gap-4 text-white/40">
               <h4 className="text-white font-semibold mb-2">Ürün</h4>
               <Link href="/create" className="hover:text-white transition-colors">Hemen Başla</Link>
               <Link 
                 href="/#ozellikler" 
-                onClick={(e) => {  
-                  if (window.location.pathname === '/') {    
-                    e.preventDefault();    
-                    document.getElementById('ozellikler')?.scrollIntoView({ behavior: 'smooth' });    
-                    window.history.pushState(null, '', '/#ozellikler');  
-                  }
-                }}
+                onClick={(e) => handleSmoothScroll(e, 'ozellikler')}
                 className="hover:text-white transition-colors"
               >
                 Özellikler
-              </Link>            
+              </Link>
+              <Link href="/sss" className="hover:text-white transition-colors">
+                Sıkça Sorulan Sorular (SSS)
+              </Link>
             </div>
-            
             <div className="flex flex-col gap-4 text-white/40">
               <h4 className="text-white font-semibold mb-2">Kurumsal</h4>
               <Link href="/about" className="hover:text-white transition-colors">Hakkımızda</Link>
