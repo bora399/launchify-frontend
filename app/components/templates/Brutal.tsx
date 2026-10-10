@@ -1,6 +1,21 @@
 "use client";
 import React, { useState } from 'react';
 
+const DEFAULT_BRUTAL_FAQS = [
+  {
+    q: "Neden bu kadar iddialısınız?",
+    a: "Sıkıcı ve standart kurumsal şablonlardan bıktık. Dikkat çeken, cesur ve doğrudan sonuca götüren tasarımlar yapıyoruz."
+  },
+  {
+    q: "Spam mail atacak mısınız?",
+    a: "Sıfır spam. Sadece ürün çıktığında ve büyük güncellemelerde sana tek bir net mesaj atacağız."
+  },
+  {
+    q: "Kurulum süreci zor mu?",
+    a: "Tamamen sıfır efor. Butona basıyorsun ve hazır platforma ilk adımı atıyorsun."
+  }
+];
+
 export default function TemplateBrutal({ data }: { data: any }) {
   const accent = data?.accentColor || data?.aiConfig?.accentColor || '#FDE047'; 
   const demoUrl = data?.demoLink || '#';
@@ -8,126 +23,173 @@ export default function TemplateBrutal({ data }: { data: any }) {
 
   const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
+
+  const rawFaqs = data?.faqs || data?.aiConfig?.faqs || data?.aiConfig?.Faqs;
+  const faqs = rawFaqs && rawFaqs.length > 0 ? rawFaqs : DEFAULT_BRUTAL_FAQS;
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email) {
-      try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://launchify-backend-3a7w.onrender.com";
-        const res = await fetch(`${apiUrl}/api/Waitlist`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            pageId: data.id,
-            email: email
-          })
-        });
+    if (!email) return;
 
-        if (res.ok) {
-          setIsSubmitted(true);
-          setEmail('');
-        } else {
-          console.error("Sunucu hatası: E-posta kaydedilemedi.");
-        }
-      } catch (error) {
-        console.error("Bağlantı hatası:", error);
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://launchify-backend-3a7w.onrender.com";
+      const res = await fetch(`${apiUrl}/api/Waitlist`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          pageId: data.id,
+          email: email
+        })
+      });
+
+      if (res.ok) {
+        setIsSubmitted(true);
+        setEmail('');
       }
+    } catch (error) {
+      console.error("Bağlantı hatası:", error);
     }
   };
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] text-black font-sans selection:bg-black selection:text-white overflow-x-hidden">
-      <nav className="border-b-4 border-black bg-white px-4 sm:px-8 md:px-12 py-4 sm:py-5 flex justify-between items-center sticky top-0 z-50">
+      {/* Navbar */}
+      <nav className="border-b-4 border-black bg-white px-4 sm:px-8 py-3.5 sm:py-4 flex justify-between items-center sticky top-0 z-50">
         <div className="text-xl sm:text-2xl font-black uppercase tracking-tighter truncate max-w-[200px] sm:max-w-none">
           {data?.productName || "Launchify"}*
         </div>
-        <a href="#waitlist" className="px-4 sm:px-6 py-2 sm:py-2.5 font-bold uppercase text-xs sm:text-sm border-2 border-black shadow-[3px_3px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all bg-white inline-block shrink-0">
+        <a href="#waitlist" className="px-4 sm:px-6 py-2 font-black uppercase text-xs sm:text-sm border-2 border-black shadow-[3px_3px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all bg-white shrink-0">
           Erken Erişim
         </a>
       </nav>
 
-      <main className="px-4 sm:px-8 md:px-12 py-12 sm:py-20 md:py-32 flex flex-col items-start max-w-7xl mx-auto">
-        <div className="inline-block border-2 border-black px-3 sm:px-4 py-1 mb-5 sm:mb-6 font-bold uppercase text-xs sm:text-sm bg-white shadow-[3px_3px_0px_rgba(0,0,0,1)]">
-          Kalıpları Yık 🚀
+      <main className="px-4 sm:px-8 md:px-12 py-12 sm:py-20 md:py-28 flex flex-col items-start max-w-6xl mx-auto">
+        <div className="flex flex-wrap gap-2 mb-6">
+          <div className="border-2 border-black px-3 py-1 font-black uppercase text-xs bg-[#FDE047] shadow-[2px_2px_0px_#000]">
+            ⚡ BETA V1.0
+          </div>
+          <div className="border-2 border-black px-3 py-1 font-black uppercase text-xs bg-white shadow-[2px_2px_0px_#000]">
+            %100 NO-BS
+          </div>
         </div>
+
         <h1 className="text-3xl sm:text-6xl md:text-8xl font-black uppercase leading-[1.05] tracking-tighter mb-6 sm:mb-8 max-w-5xl">
           {data?.aiGeneratedHeroTitle || data?.aiConfig?.aiGeneratedHeroTitle || "Kuralları Yıkan Yeni Nesil Çözüm."}
         </h1>
-        <p className="text-base sm:text-xl md:text-2xl font-medium max-w-3xl mb-8 sm:mb-12 border-l-4 sm:border-l-8 border-black pl-4 sm:pl-6 bg-white p-3 sm:p-4 shadow-[5px_5px_0px_rgba(0,0,0,1)]">
+
+        <p className="text-sm sm:text-lg md:text-xl font-bold max-w-3xl mb-8 sm:mb-10 border-l-4 sm:border-l-8 border-black pl-4 sm:pl-6 bg-white p-3 sm:p-4 shadow-[4px_4px_0px_#000]">
           {data?.aiGeneratedMarketingCopy || data?.aiConfig?.aiGeneratedMarketingCopy || "Sınırları zorla, kalıpların dışına çık ve potansiyelini serbest bırak."}
         </p>
-        <div className="flex flex-wrap gap-4 w-full sm:w-auto">
-          <a href="#waitlist" style={{ backgroundColor: accent }} className="w-full sm:w-auto text-center px-8 sm:px-10 py-4 sm:py-5 text-base sm:text-xl font-black uppercase border-4 border-black shadow-[6px_6px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all inline-block">
+
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+          <a href="#waitlist" style={{ backgroundColor: accent }} className="w-full sm:w-auto text-center px-8 sm:px-10 py-4 text-sm sm:text-lg font-black uppercase border-4 border-black shadow-[5px_5px_0px_#000] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all">
             {data?.callToActionText || data?.aiConfig?.callToActionText || "Harekete Geç"}
           </a>
         </div>
       </main>
 
-      <div className="border-y-4 border-black overflow-hidden flex whitespace-nowrap bg-black text-white py-3 sm:py-4 font-black uppercase text-lg sm:text-2xl tracking-widest">
+      {/* Marquee Bandı */}
+      <div className="border-y-4 border-black overflow-hidden flex whitespace-nowrap bg-black text-white py-3 font-black uppercase text-base sm:text-xl tracking-widest">
         <div className="animate-[marquee_20s_linear_infinite] flex items-center gap-6 sm:gap-10">
-          <span>{data?.productName}</span> <span>✦</span> <span>GÜCÜ HİSSET</span> <span>✦</span>
-          <span>{data?.productName}</span> <span>✦</span> <span>GÜCÜ HİSSET</span> <span>✦</span>
-          <span>{data?.productName}</span> <span>✦</span> <span>GÜCÜ HİSSET</span> <span>✦</span>
+          <span>{data?.productName}</span> <span>✦</span> <span>KURALLARI YIK</span> <span>✦</span>
+          <span>{data?.productName}</span> <span>✦</span> <span>SINIRLARI ZORLA</span> <span>✦</span>
+          <span>{data?.productName}</span> <span>✦</span> <span>KURALLARI YIK</span> <span>✦</span>
         </div>
       </div>
 
       {data?.features && data.features.length > 0 && (
-        <section className="px-4 sm:px-8 md:px-12 py-16 sm:py-24 max-w-7xl mx-auto">
-          <h2 className="text-3xl sm:text-5xl font-black uppercase mb-8 sm:mb-12 border-b-4 border-black pb-3 sm:pb-4 inline-block">Neden Biz?</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+        <section className="px-4 sm:px-8 md:px-12 py-14 sm:py-20 max-w-6xl mx-auto">
+          <h2 className="text-2xl sm:text-4xl font-black uppercase mb-8 border-b-4 border-black pb-2 inline-block">Neden Biz?</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6">
             {data.features.map((feature: any, idx: number) => (
-              <div key={idx} className="border-4 border-black bg-white p-6 sm:p-8 shadow-[8px_8px_0px_rgba(0,0,0,1)] flex flex-col">
-                <div style={{ backgroundColor: accent }} className="w-12 h-12 sm:w-14 sm:h-14 border-2 border-black flex items-center justify-center font-black text-xl sm:text-2xl mb-5 sm:mb-6 shadow-[3px_3px_0px_rgba(0,0,0,1)]">
-                  {idx + 1}
+              <div key={idx} className="border-4 border-black bg-white p-6 shadow-[6px_6px_0px_#000] flex flex-col justify-between">
+                <div>
+                  <div style={{ backgroundColor: accent }} className="w-10 h-10 border-2 border-black flex items-center justify-center font-black text-lg mb-4 shadow-[2px_2px_0px_#000]">
+                    {idx + 1}
+                  </div>
+                  <h3 className="text-lg sm:text-xl font-black uppercase mb-2">{feature.title}</h3>
+                  <p className="font-medium text-xs sm:text-sm leading-relaxed text-gray-800">{feature.description}</p>
                 </div>
-                <h3 className="text-xl sm:text-2xl font-black uppercase mb-3">{feature.title}</h3>
-                <p className="font-medium text-sm sm:text-lg leading-relaxed">{feature.description}</p>
               </div>
             ))}
           </div>
         </section>
       )}
 
+      <section className="px-4 sm:px-8 md:px-12 py-14 sm:py-20 max-w-5xl mx-auto border-t-4 border-black">
+        <h2 className="text-2xl sm:text-4xl font-black uppercase mb-8 border-b-4 border-black pb-2 inline-block">
+          Soru Mu Var?
+        </h2>
+        
+        <div className="space-y-4">
+          {faqs.map((faq: any, idx: number) => {
+            const q = faq.question || faq.Question || faq.q;
+            const a = faq.answer || faq.Answer || faq.a;
+            const isOpen = openFaq === idx;
+
+            return (
+              <div key={idx} className="border-4 border-black bg-white shadow-[5px_5px_0px_#000]">
+                <button
+                  type="button"
+                  onClick={() => setOpenFaq(isOpen ? null : idx)}
+                  className="w-full text-left p-4 sm:p-5 font-black uppercase text-sm sm:text-lg flex justify-between items-center cursor-pointer"
+                >
+                  <span className="pr-4">{q}</span>
+                  <span className="text-xl sm:text-2xl font-black shrink-0">{isOpen ? "−" : "+"}</span>
+                </button>
+                {isOpen && (
+                  <div className="p-4 sm:p-5 border-t-4 border-black bg-[#FDE047]/30 font-bold text-xs sm:text-sm leading-relaxed">
+                    {a}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
       <section id="waitlist" className="px-4 sm:px-8 md:px-12 py-14 sm:py-20 bg-black text-white border-t-4 border-black">
-        <div className="max-w-4xl mx-auto border-4 border-white p-6 sm:p-10 md:p-16 shadow-[-8px_8px_0px_rgba(255,255,255,1)] sm:shadow-[-16px_16px_0px_rgba(255,255,255,1)] relative">
-          <div style={{ backgroundColor: accent }} className="absolute -top-4 -right-2 sm:-top-6 sm:-right-6 px-3 py-1 sm:px-4 sm:py-2 border-2 border-white text-black font-black uppercase text-xs sm:text-sm rotate-3 sm:rotate-6">
-            Sınırlı Kontenjan!
+        <div className="max-w-4xl mx-auto border-4 border-white p-6 sm:p-12 shadow-[-6px_6px_0px_#fff] relative">
+          <div style={{ backgroundColor: accent }} className="absolute -top-4 -right-2 sm:-top-5 sm:-right-4 px-3 py-1 border-2 border-white text-black font-black uppercase text-[10px] sm:text-xs rotate-3">
+            KONTENJAN SINIRLI!
           </div>
-          <h2 className="text-2xl sm:text-4xl md:text-6xl font-black uppercase mb-4 sm:mb-6">{data?.productName} BAŞLIYOR</h2>
-          <p className="text-sm sm:text-xl font-medium mb-6 sm:mb-10 max-w-2xl text-gray-300">
-            Sıradanlığa veda etmeye hazırsan e-posta adresini bırak. Sistem açıldığında ilk sana haber vereceğiz.
+
+          <h2 className="text-2xl sm:text-4xl md:text-5xl font-black uppercase mb-3">{data?.productName} BAŞLIYOR</h2>
+          <p className="text-xs sm:text-base font-bold mb-8 max-w-xl text-gray-300">
+            E-posta adresini bırak, sistem açıldığı anda ilk bildirim senin gelen kutuna düşsün.
           </p>
           
           {isSubmitted ? (
-            <div className="bg-white text-black border-4 border-white p-4 sm:p-6 font-black uppercase text-sm sm:text-xl inline-block">
-              🚀 ARAMIZA HOŞ GELDİN! LİSTEYE EKLENDİN.
+            <div className="bg-white text-black border-4 border-white p-4 font-black uppercase text-xs sm:text-sm inline-block">
+              🚀 LİSTEYE ALINDIN! YAKINDA GÖRÜŞÜRÜZ.
             </div>
           ) : (
-            <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3">
               <input 
                 type="email" 
                 required
                 value={email} 
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="E-POSTA ADRESİN" 
-                className="w-full sm:flex-1 bg-transparent border-4 border-white text-white px-4 sm:px-6 py-3.5 sm:py-5 text-sm sm:text-xl font-bold uppercase placeholder:text-gray-500 focus:outline-none focus:bg-white/10"
+                className="w-full sm:flex-1 bg-transparent border-4 border-white text-white px-4 py-3.5 text-xs sm:text-base font-bold uppercase placeholder:text-gray-500 focus:outline-none focus:bg-white/10"
               />
               <button 
                 type="submit" 
                 style={{ backgroundColor: accent }} 
-                className="w-full sm:w-auto px-6 sm:px-10 py-3.5 sm:py-5 border-4 border-white text-black text-sm sm:text-xl font-black uppercase hover:invert transition-all shrink-0 cursor-pointer"
+                className="w-full sm:w-auto px-8 py-3.5 border-4 border-white text-black text-xs sm:text-base font-black uppercase hover:invert transition-all shrink-0 cursor-pointer shadow-[3px_3px_0px_#fff]"
               >
-                {data?.callToActionText || data?.aiConfig?.callToActionText || "BANA HABER VER"}
+                {data?.callToActionText || data?.aiConfig?.callToActionText || "BANA BİLDİR"}
               </button>
             </form>
           )}
         </div>
       </section>
 
-      <footer className="bg-white text-black border-t-4 border-black px-4 sm:px-8 md:px-12 py-8 sm:py-12">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 sm:gap-6 text-center sm:text-left">
-          <h2 className="text-2xl sm:text-4xl font-black uppercase tracking-tighter">{data?.productName || "Launchify"}*</h2>
-          <p className="font-bold text-xs sm:text-base uppercase">© 2026 Kuralları biz koyarız.</p>
+      <footer className="bg-white text-black border-t-4 border-black px-4 sm:px-8 py-6">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3 text-center sm:text-left">
+          <h2 className="text-xl font-black uppercase">{data?.productName || "Launchify"}*</h2>
+          <p className="font-bold text-xs uppercase">© 2026 Launchify Altyapısı.</p>
         </div>
       </footer>
     </div>

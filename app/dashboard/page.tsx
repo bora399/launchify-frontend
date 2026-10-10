@@ -17,6 +17,7 @@ import {
 import { createPortal } from "react-dom";
 import ShareModal from "../components/ShareModal";
 import EditModal from "../components/EditModal";
+import { exportProjectAsHtml } from "../utils/exportHtml";
 
 const BRAND_COLOR = "#6366F1";
 
@@ -100,7 +101,6 @@ export default function DashboardPage() {
           const projData = await projRes.json();
           setProjects(projData);
 
-          // Her proje için lead sayılarını arka planda çekip conversion rate hesaplayalım
           projData.forEach(async (p: any) => {
             try {
               const lRes = await fetch(`${apiUrl}/api/Waitlist/${p.id}`);
@@ -735,6 +735,19 @@ export default function DashboardPage() {
                             >
                               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
                               Paylaş & QR Kod
+                            </button>
+                            <button
+                              onClick={() => {
+                                exportProjectAsHtml(project);
+                                setOpenDropdownId(null);
+                              }}
+                              className="flex items-center gap-2 w-full px-4 py-3 text-sm text-emerald-400 hover:bg-white/5 hover:text-emerald-300 transition-colors text-left cursor-pointer font-medium"
+                            >
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <polyline points="16 18 22 12 16 6"></polyline>
+                                <polyline points="8 6 2 12 8 18"></polyline>
+                              </svg>
+                              Kodu Dışa Aktar (.html)
                             </button>
                             <div className="h-px bg-white/5 w-full"></div>
                             <button
