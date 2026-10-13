@@ -7,8 +7,8 @@ export default function TemplateAurora({ data }: { data: any }) {
   const target = data?.demoLink ? '_blank' : '_self';
   
   const [email, setEmail] = useState('');
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [activeTab, setActiveTab] = useState(0);
+  const [honeypot, setHoneypot] = useState('');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'duplicate' | 'error'>('idle');
 
   const features = data?.features || data?.aiConfig?.features || [
     { title: "Yapay Zeka Mimarisi", description: "Karmaşık iş akışlarını otomatik analiz edip saniyeler içinde çalışır hale getirir." },
@@ -20,35 +20,47 @@ export default function TemplateAurora({ data }: { data: any }) {
     e.preventDefault();
     if (!email) return;
 
+    setStatus('loading');
+
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://launchify-backend-3a7w.onrender.com";
       const res = await fetch(`${apiUrl}/api/Waitlist`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          pageId: data.id,
-          email: email
+          pageId: data?.id || data?.Id,
+          email: email.trim().toLowerCase(),
+          honeypot: honeypot
         })
       });
 
+      if (res.status === 409) {
+        setStatus('duplicate');
+        return;
+      }
+
       if (res.ok) {
-        setIsSubmitted(true);
+        setStatus('success');
         setEmail('');
+      } else {
+        setStatus('error');
       }
     } catch (error) {
       console.error("Bağlantı hatası:", error);
+      setStatus('error');
     }
   };
 
   return (
     <div className="min-h-screen bg-[#030303] text-white overflow-x-hidden relative font-sans selection:bg-[#6366F1]/40 selection:text-white">
-      {/* Arka Plan Ambient Mesh Işıkları */}
+      {/* Mesh Glow Işıkları */}
       <div 
         className="fixed top-[-15%] left-[-10%] w-[400px] sm:w-[700px] h-[400px] sm:h-[700px] rounded-full blur-[140px] pointer-events-none opacity-30"
         style={{ backgroundColor: accent }}
       ></div>
       <div className="fixed bottom-[-15%] right-[-10%] w-[350px] sm:w-[600px] h-[350px] sm:h-[600px] rounded-full bg-purple-600/20 blur-[150px] pointer-events-none"></div>
 
+      {/* Grid Dokusu */}
       <div 
         className="fixed inset-0 opacity-[0.03] pointer-events-none"
         style={{
@@ -88,9 +100,7 @@ export default function TemplateAurora({ data }: { data: any }) {
         </div>
       </header>
 
-      {/* Hero */}
       <main className="relative z-10 max-w-5xl mx-auto px-4 pt-16 sm:pt-28 pb-16 text-center">
-        {/* Üst Hap Rozet */}
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/10 bg-white/[0.03] text-[11px] sm:text-xs font-medium text-white/80 mb-6 backdrop-blur-md shadow-inner">
           <span className="w-2 h-2 rounded-full animate-ping" style={{ backgroundColor: accent }}></span>
           <span>Gelecek Nesil Bulut Mimarisi</span>
@@ -131,7 +141,7 @@ export default function TemplateAurora({ data }: { data: any }) {
               <span className="w-2.5 h-2.5 rounded-full bg-red-500/70"></span>
               <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/70"></span>
               <span className="w-2.5 h-2.5 rounded-full bg-green-500/70"></span>
-              <span className="ml-3 text-[11px] text-white/40 font-mono hidden sm:inline">{data?.productName?.toLowerCase() || "app"}.internal.cluster/v1</span>
+              <span className="ml-3 text-[11px] text-white/40 font-mono hidden sm:inline">{data?.productName?.toLowerCase() || "app"}.cluster/v1</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -158,27 +168,6 @@ export default function TemplateAurora({ data }: { data: any }) {
           </div>
         </div>
       </main>
-
-      <section className="border-y border-white/[0.06] bg-white/[0.01] py-8 sm:py-10 relative z-10 px-4">
-        <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-          <div>
-            <p className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">10x</p>
-            <p className="text-xs text-white/40 mt-1 uppercase tracking-wider">Hızlı Kurulum</p>
-          </div>
-          <div>
-            <p className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">&lt; 20ms</p>
-            <p className="text-xs text-white/40 mt-1 uppercase tracking-wider">Yanıt Süresi</p>
-          </div>
-          <div>
-            <p className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">0 Efor</p>
-            <p className="text-xs text-white/40 mt-1 uppercase tracking-wider">Sunucusuz Altyapı</p>
-          </div>
-          <div>
-            <p className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">256-Bit</p>
-            <p className="text-xs text-white/40 mt-1 uppercase tracking-wider">Uçtan Uca Şifreleme</p>
-          </div>
-        </div>
-      </section>
 
       <section className="max-w-6xl mx-auto px-4 sm:px-6 py-20 relative z-10">
         <div className="text-center mb-14">
@@ -234,33 +223,65 @@ export default function TemplateAurora({ data }: { data: any }) {
               {data?.productName} Dünyasına İlk Adımı Atın
             </h2>
             <p className="text-white/50 text-xs sm:text-sm max-w-md mx-auto mb-8">
-              Erken erişim kontenjanımız sınırlıdır. Sisteme ilk girenlerden olmak ve özel avantajlardan faydalanmak için e-postanızı bırakın.
+              Erken erişim kontenjanımız sınırlıdır. Sisteme ilk girenlerden olmak ve avantajlardan yararlanmak için e-postanızı bırakın.
             </p>
 
-            {isSubmitted ? (
-              <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-4 rounded-2xl text-sm font-semibold inline-flex items-center gap-2">
+            {status === 'success' && (
+              <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-4 rounded-2xl text-sm font-semibold inline-flex items-center gap-2 animate-in fade-in zoom-in-95">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
                 Talebiniz başarıyla alındı! İlk davetiye size ulaştırılacak.
               </div>
-            ) : (
-              <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-2.5 max-w-md mx-auto">
+            )}
+
+            {status === 'duplicate' && (
+              <div className="bg-amber-500/10 border border-amber-500/20 text-amber-300 p-4 rounded-2xl text-sm font-semibold inline-flex items-center gap-2 animate-in fade-in zoom-in-95">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                Bu e-posta adresi zaten bekleme listesinde kayıtlı! Sıranız güvende.
+              </div>
+            )}
+
+            {status === 'error' && (
+              <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-2xl text-sm font-semibold inline-flex items-center gap-2 mb-4">
+                Bir sorun oluştu. Lütfen tekrar deneyin.
+              </div>
+            )}
+
+            {status !== 'success' && (
+              <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-2.5 max-w-md mx-auto mt-2">
+                {/* Honeypot Input */}
+                <input
+                  type="text"
+                  name="b_phone_verification"
+                  value={honeypot}
+                  onChange={(e) => setHoneypot(e.target.value)}
+                  tabIndex={-1}
+                  autoComplete="off"
+                  aria-hidden="true"
+                  style={{ display: 'none', position: 'absolute', left: '-9999px' }}
+                />
+
                 <input 
                   type="email" 
                   required
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (status === 'duplicate' || status === 'error') setStatus('idle');
+                  }}
                   placeholder="İş e-posta adresinizi girin..." 
                   className="w-full bg-white/[0.04] border border-white/15 text-white px-4 py-3.5 rounded-xl text-sm outline-none focus:border-white/40 placeholder:text-white/30"
                 />
                 <button 
                   type="submit" 
+                  disabled={status === 'loading'}
                   style={{ backgroundColor: accent }}
-                  className="w-full sm:w-auto px-7 py-3.5 rounded-xl font-bold text-sm text-white hover:opacity-90 active:scale-95 transition-all whitespace-nowrap cursor-pointer shadow-lg"
+                  className="w-full sm:w-auto px-7 py-3.5 rounded-xl font-bold text-sm text-white hover:opacity-90 active:scale-95 transition-all whitespace-nowrap cursor-pointer shadow-lg disabled:opacity-50"
                 >
-                  {data?.callToActionText || data?.aiConfig?.callToActionText || "Kayıt Ol"}
+                  {status === 'loading' ? 'Kaydediliyor...' : (data?.callToActionText || data?.aiConfig?.callToActionText || "Kayıt Ol")}
                 </button>
               </form>
             )}
+
             <p className="text-white/30 text-[11px] mt-4">Kredi kartı gerekmez. Sıfır spam garantisi.</p>
           </div>
         </div>

@@ -7,7 +7,8 @@ export default function TemplateMinimal({ data }: { data: any }) {
   const target = data?.demoLink ? '_blank' : '_self';
 
   const [email, setEmail] = useState('');
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [honeypot, setHoneypot] = useState('');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'duplicate' | 'error'>('idle');
 
   const features = data?.features || data?.aiConfig?.features || [
     { title: "Gereksiz Her Şeyden Arınmış", description: "Yalnızca amacınıza hizmet eden, dikkat dağıtmayan zarif bir kullanıcı deneyimi." },
@@ -19,23 +20,34 @@ export default function TemplateMinimal({ data }: { data: any }) {
     e.preventDefault();
     if (!email) return;
 
+    setStatus('loading');
+
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://launchify-backend-3a7w.onrender.com";
       const res = await fetch(`${apiUrl}/api/Waitlist`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          pageId: data.id,
-          email: email
+          pageId: data?.id || data?.Id,
+          email: email.trim().toLowerCase(),
+          honeypot: honeypot
         })
       });
 
+      if (res.status === 409) {
+        setStatus('duplicate');
+        return;
+      }
+
       if (res.ok) {
-        setIsSubmitted(true);
+        setStatus('success');
         setEmail('');
+      } else {
+        setStatus('error');
       }
     } catch (error) {
       console.error("Bağlantı hatası:", error);
+      setStatus('error');
     }
   };
 
@@ -55,6 +67,7 @@ export default function TemplateMinimal({ data }: { data: any }) {
         </a>
       </nav>
 
+      {/* Hero */}
       <main className="max-w-3xl mx-auto px-6 pt-20 sm:pt-32 pb-20 text-center">
         <span className="text-[11px] font-sans tracking-[0.35em] uppercase text-zinc-400 block mb-6">
           MANİFESTO — 01
@@ -102,26 +115,56 @@ export default function TemplateMinimal({ data }: { data: any }) {
           Sadece {data?.productName} ile ilgili en önemli gelişmelerden haberdar olmak için e-postanızı bırakın.
         </p>
 
-        {isSubmitted ? (
-          <div className="text-xs font-sans tracking-[0.2em] uppercase text-zinc-600 border-b border-zinc-300 pb-2 inline-block">
+        {status === 'success' && (
+          <div className="text-xs font-sans tracking-[0.2em] uppercase text-zinc-600 border-b border-zinc-300 pb-2 inline-block animate-in fade-in">
             İlginiz için teşekkür ederiz. Kaydınız alındı.
           </div>
-        ) : (
-          <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row items-center gap-3 font-sans border-b border-zinc-300 pb-2">
+        )}
+
+        {status === 'duplicate' && (
+          <div className="text-xs font-sans tracking-[0.2em] uppercase text-amber-700 border-b border-amber-400 pb-2 inline-block animate-in fade-in">
+            Bu e-posta adresi zaten kayıtlı. Sıranız aktif.
+          </div>
+        )}
+
+        {status === 'error' && (
+          <div className="text-xs font-sans tracking-[0.2em] uppercase text-red-600 border-b border-red-300 pb-2 inline-block mb-4">
+            Bir sorun oluştu. Lütfen tekrar deneyiniz.
+          </div>
+        )}
+
+        {status !== 'success' && (
+          <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row items-center gap-3 font-sans border-b border-zinc-300 pb-2 mt-4">
+            {/* Honeypot Input */}
+            <input
+              type="text"
+              name="b_phone_verification"
+              value={honeypot}
+              onChange={(e) => setHoneypot(e.target.value)}
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden="true"
+              style={{ display: 'none', position: 'absolute', left: '-9999px' }}
+            />
+
             <input 
               type="email" 
               required
               value={email} 
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (status === 'duplicate' || status === 'error') setStatus('idle');
+              }}
               placeholder="E-posta adresiniz..." 
               className="w-full bg-transparent text-zinc-950 px-2 py-3 focus:outline-none placeholder:text-zinc-400 text-sm font-light"
             />
             <button 
               type="submit" 
+              disabled={status === 'loading'}
               style={{ color: accent }} 
-              className="w-full sm:w-auto text-xs font-semibold uppercase tracking-[0.2em] hover:opacity-60 transition-opacity py-2 shrink-0 cursor-pointer"
+              className="w-full sm:w-auto text-xs font-semibold uppercase tracking-[0.2em] hover:opacity-60 transition-opacity py-2 shrink-0 cursor-pointer disabled:opacity-50"
             >
-              Gönder
+              {status === 'loading' ? 'Gönderiliyor...' : 'Gönder'}
             </button>
           </form>
         )}

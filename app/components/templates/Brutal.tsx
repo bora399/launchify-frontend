@@ -7,7 +7,8 @@ export default function TemplateBrutal({ data }: { data: any }) {
   const target = data?.demoLink ? '_blank' : '_self';
 
   const [email, setEmail] = useState('');
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [honeypot, setHoneypot] = useState('');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'duplicate' | 'error'>('idle');
 
   const features = data?.features || data?.aiConfig?.features || [
     { title: "Gereksiz Süreçleri Yok Et", description: "Karmaşık bürokrasiye ve haftalarca süren onay süreçlerine son verin." },
@@ -19,23 +20,34 @@ export default function TemplateBrutal({ data }: { data: any }) {
     e.preventDefault();
     if (!email) return;
 
+    setStatus('loading');
+
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://launchify-backend-3a7w.onrender.com";
       const res = await fetch(`${apiUrl}/api/Waitlist`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          pageId: data.id,
-          email: email
+          pageId: data?.id || data?.Id,
+          email: email.trim().toLowerCase(),
+          honeypot: honeypot
         })
       });
 
+      if (res.status === 409) {
+        setStatus('duplicate');
+        return;
+      }
+
       if (res.ok) {
-        setIsSubmitted(true);
+        setStatus('success');
         setEmail('');
+      } else {
+        setStatus('error');
       }
     } catch (error) {
       console.error("Bağlantı hatası:", error);
+      setStatus('error');
     }
   };
 
@@ -157,26 +169,56 @@ export default function TemplateBrutal({ data }: { data: any }) {
             İlk dalgada erişim kazanmak için e-posta adresini bırak. Sistem açıldığı anda ilk bildirim sana gelecek.
           </p>
 
-          {isSubmitted ? (
-            <div className="bg-white text-black border-4 border-white p-4 font-black uppercase text-sm inline-block">
+          {status === 'success' && (
+            <div className="bg-white text-black border-4 border-white p-4 font-black uppercase text-sm inline-block animate-in fade-in zoom-in-95">
               🚀 LİSTEYE ALINDIN! YAKINDA GÖRÜŞMEK ÜZERE.
             </div>
-          ) : (
-            <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3">
+          )}
+
+          {status === 'duplicate' && (
+            <div className="bg-[#FDE047] text-black border-4 border-black p-4 font-black uppercase text-sm inline-block shadow-[4px_4px_0px_#fff] animate-in fade-in zoom-in-95">
+              ⚠️ BU E-POSTA ZATEN LİSTEDE VAR! SIRAN CEPTE, MERAK ETME.
+            </div>
+          )}
+
+          {status === 'error' && (
+            <div className="bg-red-500 text-white border-4 border-white p-3 font-black uppercase text-xs inline-block mb-4">
+              HATA OLUŞTU! TEKRAR DENE.
+            </div>
+          )}
+
+          {status !== 'success' && (
+            <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3 mt-4">
+              {/* Honeypot Input */}
+              <input
+                type="text"
+                name="b_phone_verification"
+                value={honeypot}
+                onChange={(e) => setHoneypot(e.target.value)}
+                tabIndex={-1}
+                autoComplete="off"
+                aria-hidden="true"
+                style={{ display: 'none', position: 'absolute', left: '-9999px' }}
+              />
+
               <input 
                 type="email" 
                 required
                 value={email} 
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (status === 'duplicate' || status === 'error') setStatus('idle');
+                }}
                 placeholder="E-POSTA ADRESİNİZ" 
                 className="w-full sm:flex-1 bg-transparent border-4 border-white text-white px-4 py-4 text-sm font-bold uppercase placeholder:text-gray-500 focus:outline-none focus:bg-white/10"
               />
               <button 
                 type="submit" 
+                disabled={status === 'loading'}
                 style={{ backgroundColor: accent }} 
-                className="px-8 py-4 border-4 border-white text-black text-sm font-black uppercase hover:invert transition-all cursor-pointer shadow-[4px_4px_0px_#fff]"
+                className="px-8 py-4 border-4 border-white text-black text-sm font-black uppercase hover:invert transition-all cursor-pointer shadow-[4px_4px_0px_#fff] disabled:opacity-50"
               >
-                {data?.callToActionText || data?.aiConfig?.callToActionText || "BİLDİRİM AL"}
+                {status === 'loading' ? 'BEKLEYİN...' : (data?.callToActionText || data?.aiConfig?.callToActionText || "BİLDİRİM AL")}
               </button>
             </form>
           )}

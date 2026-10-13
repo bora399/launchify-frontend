@@ -7,7 +7,8 @@ export default function TemplateCorporate({ data }: { data: any }) {
   const target = data?.demoLink ? '_blank' : '_self';
 
   const [email, setEmail] = useState('');
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [honeypot, setHoneypot] = useState('');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'duplicate' | 'error'>('idle');
 
   const features = data?.features || data?.aiConfig?.features || [
     { title: "Kurumsal Düzeyde Güvenlik", description: "SOC2 Type II, ISO 27001 ve KVKK standartlarında tam veri koruması." },
@@ -19,23 +20,34 @@ export default function TemplateCorporate({ data }: { data: any }) {
     e.preventDefault();
     if (!email) return;
 
+    setStatus('loading');
+
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://launchify-backend-3a7w.onrender.com";
       const res = await fetch(`${apiUrl}/api/Waitlist`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          pageId: data.id,
-          email: email
+          pageId: data?.id || data?.Id,
+          email: email.trim().toLowerCase(),
+          honeypot: honeypot
         })
       });
 
+      if (res.status === 409) {
+        setStatus('duplicate');
+        return;
+      }
+
       if (res.ok) {
-        setIsSubmitted(true);
+        setStatus('success');
         setEmail('');
+      } else {
+        setStatus('error');
       }
     } catch (error) {
       console.error("Bağlantı hatası:", error);
+      setStatus('error');
     }
   };
 
@@ -93,6 +105,7 @@ export default function TemplateCorporate({ data }: { data: any }) {
             )}
           </div>
 
+          {/* Rozetler */}
           <div className="flex flex-wrap gap-6 pt-6 border-t border-slate-200 text-xs text-slate-500 font-medium">
             <span className="flex items-center gap-1.5">🔒 256-Bit SSL Şifreleme</span>
             <span className="flex items-center gap-1.5">⚡ %99.99 SLA Garantisi</span>
@@ -169,26 +182,56 @@ export default function TemplateCorporate({ data }: { data: any }) {
             Şirketiniz için özel konfigürasyon ve erken erişim davetiyesi almak için kurumsal e-postanızı bırakın.
           </p>
 
-          {isSubmitted ? (
-            <div className="bg-slate-900 border border-slate-800 text-emerald-400 p-4 rounded-xl text-sm font-semibold">
-              Talebiniz kurumsal müşteri temsilcimize iletildi.
+          {status === 'success' && (
+            <div className="bg-slate-900 border border-slate-800 text-emerald-400 p-4 rounded-xl text-sm font-semibold animate-in fade-in zoom-in-95">
+              Talebiniz kurumsal müşteri temsilcimize iletildi. En kısa sürede iletişime geçilecektir.
             </div>
-          ) : (
-            <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto">
+          )}
+
+          {status === 'duplicate' && (
+            <div className="bg-slate-900 border border-amber-500/30 text-amber-300 p-4 rounded-xl text-sm font-semibold animate-in fade-in zoom-in-95">
+              Bu kurumsal e-posta adresi ile daha önce kayıt oluşturulmuş. Temsilcimiz sıranızı saklı tutmaktadır.
+            </div>
+          )}
+
+          {status === 'error' && (
+            <div className="bg-red-950/50 border border-red-500/30 text-red-400 p-4 rounded-xl text-sm font-semibold mb-4">
+              İletişim sırasında bir hata oluştu. Lütfen tekrar deneyin.
+            </div>
+          )}
+
+          {status !== 'success' && (
+            <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto mt-4">
+              {/* Honeypot Input */}
+              <input
+                type="text"
+                name="b_phone_verification"
+                value={honeypot}
+                onChange={(e) => setHoneypot(e.target.value)}
+                tabIndex={-1}
+                autoComplete="off"
+                aria-hidden="true"
+                style={{ display: 'none', position: 'absolute', left: '-9999px' }}
+              />
+
               <input 
                 type="email" 
                 required
                 value={email} 
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (status === 'duplicate' || status === 'error') setStatus('idle');
+                }}
                 placeholder="ad.soyad@sirketiniz.com" 
                 className="w-full bg-white text-slate-950 px-4 py-3.5 rounded-lg text-sm outline-none font-medium"
               />
               <button 
                 type="submit" 
+                disabled={status === 'loading'}
                 style={{ backgroundColor: accent }} 
-                className="w-full sm:w-auto px-6 py-3.5 text-white rounded-lg font-bold text-sm whitespace-nowrap cursor-pointer hover:opacity-90"
+                className="w-full sm:w-auto px-6 py-3.5 text-white rounded-lg font-bold text-sm whitespace-nowrap cursor-pointer hover:opacity-90 disabled:opacity-50"
               >
-                {data?.callToActionText || data?.aiConfig?.callToActionText || "Bize Ulaşın"}
+                {status === 'loading' ? 'İletiliyor...' : (data?.callToActionText || data?.aiConfig?.callToActionText || "Bize Ulaşın")}
               </button>
             </form>
           )}
