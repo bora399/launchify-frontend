@@ -34,6 +34,7 @@ export default function DashboardPage() {
 
   const [projects, setProjects] = useState<any[]>([]);
   const [projectsLoading, setProjectsLoading] = useState(true);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   const [remainingCredits, setRemainingCredits] = useState<number | null>(null);
 
@@ -91,42 +92,76 @@ export default function DashboardPage() {
   }, [selectedProjectForLeads, projectToDelete, projectToEdit]);
 
   useEffect(() => {
+    if (!user?.uid) return;
+
+    const projectsCacheKey = `launchify_projects_${user.uid}`;
+    const creditsCacheKey = `launchify_credits_${user.uid}`;
+    const leadsCountCacheKey = `launchify_leads_count_${user.uid}`;
+
+    try {
+      const cachedProjects = localStorage.getItem(projectsCacheKey);
+      const cachedCredits = localStorage.getItem(creditsCacheKey);
+      const cachedLeadsCount = localStorage.getItem(leadsCountCacheKey);
+
+      if (cachedProjects) {
+        setProjects(JSON.parse(cachedProjects));
+        setProjectsLoading(false); // Spinner'ı anında kapat!
+      }
+      if (cachedCredits !== null) {
+        setRemainingCredits(JSON.parse(cachedCredits));
+      }
+      if (cachedLeadsCount) {
+        setProjectLeadsCount(JSON.parse(cachedLeadsCount));
+      }
+    } catch (e) {
+      console.warn("Önbellek okunamadı:", e);
+    }
+
     const fetchData = async () => {
-      if (!user?.uid) return;
+      setIsSyncing(true);
       try {
-        const projRes = await fetch(
-          `${apiUrl}/api/LandingPages/user/${user.uid}`,
-        );
-        if (projRes.ok) {
-          const projData = await projRes.json();
-          setProjects(projData);
+        const [projRes, userRes] = await Promise.all([
+          fetch(`${apiUrl}/api/LandingPages/user/${user.uid}`),
+          fetch(`${apiUrl}/api/User/${user.uid}`),
+        ]);
 
-          projData.forEach(async (p: any) => {
-            try {
-              const lRes = await fetch(`${apiUrl}/api/Waitlist/${p.id}`);
-              if (lRes.ok) {
-                const lData = await lRes.json();
-                setProjectLeadsCount((prev) => ({
-                  ...prev,
-                  [p.id]: Array.isArray(lData) ? lData.length : 0,
-                }));
-              }
-            } catch {}
-          });
-        }
-
-        const userRes = await fetch(`${apiUrl}/api/User/${user.uid}`);
         if (userRes.ok) {
           const userData = await userRes.json();
           setRemainingCredits(userData.remainingCredits);
+          localStorage.setItem(creditsCacheKey, JSON.stringify(userData.remainingCredits));
+        }
+
+        if (projRes.ok) {
+          const projData = await projRes.json();
+          setProjects(projData);
+          localStorage.setItem(projectsCacheKey, JSON.stringify(projData));
+
+          const countsEntries = await Promise.all(
+            projData.map(async (p: any) => {
+              try {
+                const lRes = await fetch(`${apiUrl}/api/Waitlist/${p.id}`);
+                if (lRes.ok) {
+                  const lData = await lRes.json();
+                  return [p.id, Array.isArray(lData) ? lData.length : 0] as const;
+                }
+              } catch {}
+              return [p.id, 0] as const;
+            })
+          );
+
+          const countsMap = Object.fromEntries(countsEntries);
+          setProjectLeadsCount(countsMap);
+          localStorage.setItem(leadsCountCacheKey, JSON.stringify(countsMap));
         }
       } catch (error) {
         console.error("Bağlantı hatası:", error);
       } finally {
         setProjectsLoading(false);
+        setIsSyncing(false);
       }
     };
-    if (user) fetchData();
+
+    fetchData();
   }, [user, apiUrl]);
 
   const handleDeleteProject = async () => {
@@ -142,8 +177,18 @@ export default function DashboardPage() {
       );
 
       if (res.ok) {
-        setProjects(projects.filter((p) => p.id !== projectToDelete.id));
-        setRemainingCredits((prev) => (prev !== null ? prev + 1 : prev));
+        const updatedProjects = projects.filter((p) => p.id !== projectToDelete.id);
+        setProjects(updatedProjects);
+        localStorage.setItem(`launchify_projects_${user.uid}`, JSON.stringify(updatedProjects));
+
+        setRemainingCredits((prev) => {
+          const next = prev !== null ? prev + 1 : prev;
+          if (next !== null) {
+            localStorage.setItem(`launchify_credits_${user.uid}`, JSON.stringify(next));
+          }
+          return next;
+        });
+
         setProjectToDelete(null);
       } else {
         alert("Proje silinirken bir hata oluştu.");
@@ -165,10 +210,13 @@ export default function DashboardPage() {
       if (res.ok) {
         const data = await res.json();
         setLeads(data);
-        setProjectLeadsCount((prev) => ({
-          ...prev,
-          [project.id]: data.length,
-        }));
+        setProjectLeadsCount((prev) => {
+          const updated = { ...prev, [project.id]: data.length };
+          if (user?.uid) {
+            localStorage.setItem(`launchify_leads_count_${user.uid}`, JSON.stringify(updated));
+          }
+          return updated;
+        });
       } else {
         setLeads([]);
       }
@@ -235,94 +283,102 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-[#050505] text-[#FAFAFA] font-sans selection:bg-white/20 relative overflow-hidden pt-32 pb-20">
-      {/* Proje Silme Modalı (Portal ile Sayfanın En Üstüne Çıkarıldı) */}
-{mounted &&
-  projectToDelete &&
-  createPortal(
-    <div className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
-      {/* Arka plan tıklama */}
-      <div 
-        className="fixed inset-0" 
-        onClick={() => !isDeleting && setProjectToDelete(null)} 
-      />
+      {/* Proje Silme Modalı */}
+      {mounted &&
+        projectToDelete &&
+        createPortal(
+          <div className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
+            <div
+              className="fixed inset-0"
+              onClick={() => !isDeleting && setProjectToDelete(null)}
+            />
 
-      <div className="relative z-10 bg-[#111111] border border-white/10 rounded-2xl sm:rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-        <div className="w-12 h-12 bg-red-500/10 text-red-500 rounded-2xl flex items-center justify-center mb-5 border border-red-500/20">
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M3 6h18"></path>
-            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
-          </svg>
-        </div>
+            <div className="relative z-10 bg-[#111111] border border-white/10 rounded-2xl sm:rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+              <div className="w-12 h-12 bg-red-500/10 text-red-500 rounded-2xl flex items-center justify-center mb-5 border border-red-500/20">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M3 6h18"></path>
+                  <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                  <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                </svg>
+              </div>
 
-        <h3 className="text-xl font-bold mb-2 font-heading text-white">
-          Projeyi Kaldır
-        </h3>
+              <h3 className="text-xl font-bold mb-2 font-heading text-white">
+                Projeyi Kaldır
+              </h3>
 
-        <p className="text-white/60 text-sm mb-6 leading-relaxed">
-          <strong className="text-white">
-            {projectToDelete.productName || projectToDelete.slug}
-          </strong>{" "}
-          adlı projeyi kalıcı olarak silmek istediğinize emin misiniz? Bu
-          işlem geri alınamaz ve{" "}
-          <strong className="text-emerald-400">
-            1 krediniz hesabınıza iade edilecektir.
-          </strong>
-        </p>
+              <p className="text-white/60 text-sm mb-6 leading-relaxed">
+                <strong className="text-white">
+                  {projectToDelete.productName || projectToDelete.slug}
+                </strong>{" "}
+                adlı projeyi kalıcı olarak silmek istediğinize emin misiniz? Bu
+                işlem geri alınamaz ve{" "}
+                <strong className="text-emerald-400">
+                  1 krediniz hesabınıza iade edilecektir.
+                </strong>
+              </p>
 
-            <div className="flex items-center gap-3 w-full">
-              <button
-                type="button"
-                onClick={() => setProjectToDelete(null)}
-                disabled={isDeleting}
-                className="flex-1 py-3 px-4 bg-white/5 border border-white/10 rounded-xl text-white/70 hover:text-white font-medium hover:bg-white/10 transition-colors disabled:opacity-50 text-sm cursor-pointer"
-              >
-                İptal Et
-              </button>
-              <button
-                type="button"
-                onClick={handleDeleteProject}
-                disabled={isDeleting}
-                className="flex-1 py-3 px-4 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-50 text-sm shadow-lg shadow-red-500/20 cursor-pointer"
-              >
-                {isDeleting ? (
-                  <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                ) : (
-                  "Evet, Kaldır"
-                )}
-              </button>
+              <div className="flex items-center gap-3 w-full">
+                <button
+                  type="button"
+                  onClick={() => setProjectToDelete(null)}
+                  disabled={isDeleting}
+                  className="flex-1 py-3 px-4 bg-white/5 border border-white/10 rounded-xl text-white/70 hover:text-white font-medium hover:bg-white/10 transition-colors disabled:opacity-50 text-sm cursor-pointer"
+                >
+                  İptal Et
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDeleteProject}
+                  disabled={isDeleting}
+                  className="flex-1 py-3 px-4 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-50 text-sm shadow-lg shadow-red-500/20 cursor-pointer"
+                >
+                  {isDeleting ? (
+                    <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                  ) : (
+                    "Evet, Kaldır"
+                  )}
+                </button>
+              </div>
             </div>
-          </div>
-        </div>,
-        document.body
-      )}
+          </div>,
+          document.body,
+        )}
 
       {mounted &&
         selectedProjectForLeads &&
         createPortal(
           <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 sm:p-6">
-            <div className="fixed inset-0" onClick={() => setSelectedProjectForLeads(null)} />
+            <div
+              className="fixed inset-0"
+              onClick={() => setSelectedProjectForLeads(null)}
+            />
 
             <div className="relative z-10 bg-[#111111] border border-white/10 rounded-3xl p-6 sm:p-8 max-w-2xl w-full shadow-2xl animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[85vh]">
               <div className="flex justify-between items-start mb-6 shrink-0">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-xl font-bold font-heading text-white">Toplanan Talepler (Leads)</h3>
+                    <h3 className="text-xl font-bold font-heading text-white">
+                      Toplanan Talepler (Leads)
+                    </h3>
                     <span className="px-2.5 py-0.5 rounded-full bg-[#6366F1]/10 text-[#6366F1] text-xs font-bold border border-[#6366F1]/20">
                       {leads.length} Kayıt
                     </span>
                   </div>
                   <p className="text-white/40 text-xs">
-                    <strong className="text-white/70">{selectedProjectForLeads.productName || selectedProjectForLeads.slug}</strong> projesine kayıt olan potansiyel müşteriler.
+                    <strong className="text-white/70">
+                      {selectedProjectForLeads.productName ||
+                        selectedProjectForLeads.slug}
+                    </strong>{" "}
+                    projesine kayıt olan potansiyel müşteriler.
                   </p>
                 </div>
                 <button
@@ -330,7 +386,17 @@ export default function DashboardPage() {
                   className="p-2 text-white/40 hover:text-white bg-white/5 hover:bg-white/10 rounded-xl transition-colors cursor-pointer"
                   title="Kapat"
                 >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
                 </button>
               </div>
 
@@ -342,32 +408,58 @@ export default function DashboardPage() {
                 ) : leads.length === 0 ? (
                   <div className="text-center py-14 bg-white/[0.02] border border-dashed border-white/5 rounded-2xl">
                     <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center mx-auto mb-3 text-white/30">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                        <polyline points="22,6 12,13 2,6"></polyline>
+                      </svg>
                     </div>
-                    <p className="text-white/60 text-sm font-medium">Henüz toplanan e-posta yok</p>
-                    <p className="text-white/30 text-xs mt-1">Ziyaretçiler form doldurdukça burada listelenecek.</p>
+                    <p className="text-white/60 text-sm font-medium">
+                      Henüz toplanan e-posta yok
+                    </p>
+                    <p className="text-white/30 text-xs mt-1">
+                      Ziyaretçiler form doldurdukça burada listelenecek.
+                    </p>
                   </div>
                 ) : (
                   <div className="border border-white/5 rounded-2xl overflow-x-auto bg-white/[0.01]">
                     <table className="w-full text-left text-xs sm:text-sm text-gray-300 min-w-[280px]">
                       <thead className="border-b border-white/10 text-[11px] sm:text-xs text-white/40 uppercase bg-white/[0.02] sticky top-0 backdrop-blur-md">
                         <tr>
-                          <th className="py-2.5 px-3 sm:py-3 sm:px-4 font-semibold">E-posta</th>
-                          <th className="py-2.5 px-3 sm:py-3 sm:px-4 text-right font-semibold">Kayıt Tarihi</th>
+                          <th className="py-2.5 px-3 sm:py-3 sm:px-4 font-semibold">
+                            E-posta
+                          </th>
+                          <th className="py-2.5 px-3 sm:py-3 sm:px-4 text-right font-semibold">
+                            Kayıt Tarihi
+                          </th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-white/5">
                         {leads.map((lead) => (
-                          <tr key={lead.id} className="hover:bg-white/[0.03] transition-colors">
-                            <td className="py-2.5 px-3 sm:py-3 sm:px-4 font-medium text-white break-all">{lead.email}</td>
+                          <tr
+                            key={lead.id}
+                            className="hover:bg-white/[0.03] transition-colors"
+                          >
+                            <td className="py-2.5 px-3 sm:py-3 sm:px-4 font-medium text-white break-all">
+                              {lead.email}
+                            </td>
                             <td className="py-2.5 px-3 sm:py-3 sm:px-4 text-right text-white/40 text-[11px] sm:text-xs whitespace-nowrap">
-                              {new Date(lead.createdAt).toLocaleDateString("tr-TR", {
-                                day: "2-digit",
-                                month: "short",
-                                year: "numeric",
-                                hour: "2-digit",
-                                minute: "2-digit"
-                              })}
+                              {new Date(lead.createdAt).toLocaleDateString(
+                                "tr-TR",
+                                {
+                                  day: "2-digit",
+                                  month: "short",
+                                  year: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                },
+                              )}
                             </td>
                           </tr>
                         ))}
@@ -389,7 +481,18 @@ export default function DashboardPage() {
                     onClick={handleDownloadCSV}
                     className="px-5 py-2.5 bg-[#6366F1] hover:bg-[#5558E6] text-white rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-lg shadow-[#6366F1]/20 cursor-pointer"
                   >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                    >
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="7 10 12 15 17 10"></polyline>
+                      <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
                     CSV İndir
                   </button>
                 )}
@@ -413,9 +516,16 @@ export default function DashboardPage() {
           onClose={() => setProjectToEdit(null)}
           project={projectToEdit}
           onUpdated={(updated) => {
-            setProjects(
-              projects.map((p) => (p.id === updated.id ? updated : p)),
+            const updatedList = projects.map((p) =>
+              p.id === updated.id ? updated : p,
             );
+            setProjects(updatedList);
+            if (user?.uid) {
+              localStorage.setItem(
+                `launchify_projects_${user.uid}`,
+                JSON.stringify(updatedList),
+              );
+            }
           }}
         />
       )}
@@ -439,15 +549,35 @@ export default function DashboardPage() {
       <main className="max-w-7xl mx-auto px-6 relative z-10">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6 bg-[#0A0A0A]/50 p-6 rounded-2xl border border-white/5 backdrop-blur-sm">
           <div>
-            <h1 className="text-3xl font-bold font-heading mb-2">Projelerim</h1>
+            <div className="flex items-center gap-3 mb-2">
+              <h1 className="text-3xl font-bold font-heading">Projelerim</h1>
+              {isSyncing && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-white/5 text-white/40 border border-white/5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#6366F1] animate-ping"></span>
+                  Senkronize ediliyor
+                </span>
+              )}
+            </div>
             <p className="text-white/50 text-sm">
-              <span className="text-white/80 mr-1 font-medium">{user?.email}</span> hesabına ait projeleri yönetiyorsunuz.
+              <span className="text-white/80 mr-1 font-medium">
+                {user?.email}
+              </span>{" "}
+              hesabına ait projeleri yönetiyorsunuz.
             </p>
           </div>
           <div className="flex items-center gap-3 w-full md:w-auto flex-wrap">
             {remainingCredits !== null && (
               <div className="px-4 py-2.5 bg-[#6366F1]/10 border border-[#6366F1]/20 text-[#6366F1] text-sm font-bold rounded-xl flex items-center gap-2">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                >
+                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                </svg>
                 {remainingCredits} Kredi Kaldı
               </div>
             )}
@@ -478,11 +608,23 @@ export default function DashboardPage() {
         ) : projects.length === 0 ? (
           <div className="py-20 text-center bg-[#0A0A0A]/30 border border-dashed border-white/10 rounded-3xl backdrop-blur-sm">
             <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mx-auto mb-4 text-white/30">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="23" x2="12" y2="15"></line></svg>
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="23" x2="12" y2="15"></line>
+              </svg>
             </div>
             <h3 className="text-xl font-bold mb-2">Henüz projeniz yok</h3>
             <p className="text-white/40 text-sm mb-6 max-w-md mx-auto">
-              İlk B2B Landing Page'inizi yapay zeka destekli altyapımızla dakikalar içinde oluşturun.
+              İlk B2B Landing Page&apos;inizi yapay zeka destekli altyapımızla
+              dakikalar içinde oluşturun.
             </p>
             <Link
               href="/create"
@@ -493,9 +635,7 @@ export default function DashboardPage() {
           </div>
         ) : (
           <div className="space-y-12">
-            
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              
               <div className="bg-[#0A0A0A] border border-white/10 rounded-2xl p-6 shadow-xl relative overflow-hidden backdrop-blur-xl">
                 <div className="absolute top-0 left-0 w-1 h-full bg-[#6366F1]"></div>
                 <p className="text-white/50 text-xs font-bold uppercase tracking-wider mb-2">
@@ -530,7 +670,6 @@ export default function DashboardPage() {
                   %{conversionRate}
                 </h3>
               </div>
-
             </div>
 
             {/* GRAFİK */}
@@ -617,15 +756,16 @@ export default function DashboardPage() {
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {projects.map((project) => (
-                    <div
-                      key={project.id || project.slug}
-                      className={`bg-[#0A0A0A] border border-white/10 rounded-3xl p-6 hover:border-white/20 transition-all group relative backdrop-blur-xl hover:shadow-[0_0_30px_rgba(255,255,255,0.03)] ${
-                        openDropdownId === project.id ? "z-40" : "z-10"
-                      }`}
-                    >
-                      <div className="absolute inset-0 rounded-3xl overflow-hidden pointer-events-none -z-10">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-bl-full group-hover:bg-blue-500/20 transition-colors"></div>
-                      </div> <div className="flex justify-between items-start mb-6">
+                  <div
+                    key={project.id || project.slug}
+                    className={`bg-[#0A0A0A] border border-white/10 rounded-3xl p-6 hover:border-white/20 transition-all group relative backdrop-blur-xl hover:shadow-[0_0_30px_rgba(255,255,255,0.03)] ${
+                      openDropdownId === project.id ? "z-40" : "z-10"
+                    }`}
+                  >
+                    <div className="absolute inset-0 rounded-3xl overflow-hidden pointer-events-none -z-10">
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-bl-full group-hover:bg-blue-500/20 transition-colors"></div>
+                    </div>
+                    <div className="flex justify-between items-start mb-6">
                       <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center font-bold text-white/80 border border-white/10 shadow-inner group-hover:scale-105 transition-transform uppercase">
                         {project.productName
                           ? project.productName.charAt(0)
@@ -671,11 +811,12 @@ export default function DashboardPage() {
                       <span className="capitalize">
                         Şablon: {project.templateType || "Bilinmiyor"}
                       </span>
-                      {projectLeadsCount[project.id] !== undefined && projectLeadsCount[project.id] > 0 && (
-                        <span className="text-amber-400/90 font-semibold bg-amber-400/10 px-2 py-0.5 rounded-md border border-amber-400/20">
-                          🔥 {projectLeadsCount[project.id]} Talep
-                        </span>
-                      )}
+                      {projectLeadsCount[project.id] !== undefined &&
+                        projectLeadsCount[project.id] > 0 && (
+                          <span className="text-amber-400/90 font-semibold bg-amber-400/10 px-2 py-0.5 rounded-md border border-amber-400/20">
+                            🔥 {projectLeadsCount[project.id]} Talep
+                          </span>
+                        )}
                     </div>
 
                     <div className="flex items-center gap-3 pt-4 border-t border-white/5">
@@ -712,31 +853,46 @@ export default function DashboardPage() {
 
                         {openDropdownId === project.id && (
                           <div className="absolute right-0 bottom-full mb-2 w-52 bg-[#141414] border border-white/10 rounded-2xl shadow-2xl z-50 animate-in fade-in slide-from-bottom-2 duration-150 p-1.5 backdrop-blur-xl">
-                            
                             <button
                               onClick={() => handleOpenLeads(project)}
                               className="flex items-center gap-2.5 w-full px-3 py-2.5 text-xs text-white/80 hover:text-white hover:bg-white/5 rounded-xl transition-colors text-left font-medium cursor-pointer"
                             >
-                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-[#6366F1] shrink-0">
+                              <svg
+                                width="15"
+                                height="15"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                className="text-[#6366F1] shrink-0"
+                              >
                                 <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
                                 <polyline points="22,6 12,13 2,6"></polyline>
                               </svg>
                               <span>Toplanan Talepler</span>
                             </button>
-                                                
+
                             <Link
                               href={`/${project.slug}`}
                               target="_blank"
                               className="flex items-center gap-2.5 w-full px-3 py-2.5 text-xs text-white/80 hover:text-white hover:bg-white/5 rounded-xl transition-colors text-left font-medium"
                             >
-                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/40 shrink-0">
+                              <svg
+                                width="15"
+                                height="15"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                className="text-white/40 shrink-0"
+                              >
                                 <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
                                 <polyline points="15 3 21 3 21 9"></polyline>
                                 <line x1="10" y1="14" x2="21" y2="3"></line>
                               </svg>
                               <span>Siteyi İncele</span>
                             </Link>
-                                                
+
                             <button
                               onClick={() => {
                                 setProjectToShare(project);
@@ -744,17 +900,34 @@ export default function DashboardPage() {
                               }}
                               className="flex items-center gap-2.5 w-full px-3 py-2.5 text-xs text-white/80 hover:text-white hover:bg-white/5 rounded-xl transition-colors text-left font-medium cursor-pointer"
                             >
-                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/40 shrink-0">
+                              <svg
+                                width="15"
+                                height="15"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                className="text-white/40 shrink-0"
+                              >
                                 <circle cx="18" cy="5" r="3"></circle>
                                 <circle cx="6" cy="12" r="3"></circle>
                                 <circle cx="18" cy="19" r="3"></circle>
-                                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-                                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                                <line
+                                  x1="8.59"
+                                  y1="13.51"
+                                  x2="15.42"
+                                  y2="17.49"
+                                ></line>
+                                <line
+                                  x1="15.41"
+                                  y1="6.51"
+                                  x2="8.59"
+                                  y2="10.49"
+                                ></line>
                               </svg>
                               <span>Paylaş & QR Kod</span>
                             </button>
-                            
-                            {/* TERTEMİZ, DİĞERLERİYLE 1:1 UYUMLU İNDİRME BUTONU */}
+
                             <button
                               onClick={() => {
                                 exportProjectAsHtml(project);
@@ -762,15 +935,23 @@ export default function DashboardPage() {
                               }}
                               className="flex items-center gap-2.5 w-full px-3 py-2.5 text-xs text-white/80 hover:text-white hover:bg-white/5 rounded-xl transition-colors text-left font-medium cursor-pointer"
                             >
-                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/40 shrink-0">
+                              <svg
+                                width="15"
+                                height="15"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                className="text-white/40 shrink-0"
+                              >
                                 <polyline points="16 18 22 12 16 6"></polyline>
                                 <polyline points="8 6 2 12 8 18"></polyline>
                               </svg>
                               <span>HTML Olarak İndir</span>
                             </button>
-                            
+
                             <div className="h-px bg-white/5 my-1 w-full"></div>
-                            
+
                             <button
                               onClick={() => {
                                 setProjectToDelete(project);
@@ -778,7 +959,15 @@ export default function DashboardPage() {
                               }}
                               className="flex items-center gap-2.5 w-full px-3 py-2.5 text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl transition-colors text-left font-medium cursor-pointer"
                             >
-                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-red-400 shrink-0">
+                              <svg
+                                width="15"
+                                height="15"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                className="text-red-400 shrink-0"
+                              >
                                 <polyline points="3 6 5 6 21 6"></polyline>
                                 <path d="M19 6v14a2 2 0 0 1-2 2H7c-1 0-2-1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                               </svg>
