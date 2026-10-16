@@ -8,7 +8,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import Link from "next/link";
 import * as signalR from "@microsoft/signalr";
 
-const BRAND_COLOR = "#6366F1";
+const BRAND_COLOR = "#a49af5";
 
 const TEMPLATES = [
   {
@@ -18,9 +18,9 @@ const TEMPLATES = [
     previewClass: "bg-black relative overflow-hidden",
     previewVibe: (
       <>
-        <div className="absolute top-[-20%] left-[-20%] w-full h-full rounded-full bg-purple-600/50 blur-[20px]"></div>
-        <div className="absolute bottom-[-20%] right-[-20%] w-full h-full rounded-full bg-blue-600/50 blur-[20px]"></div>
-        <div className="absolute inset-2 border border-white/20 bg-white/10 backdrop-blur-md rounded-md"></div>
+        <span className="absolute top-[-20%] left-[-20%] w-full h-full rounded-full bg-purple-600/50 blur-[20px]"></span>
+        <span className="absolute bottom-[-20%] right-[-20%] w-full h-full rounded-full bg-blue-600/50 blur-[20px]"></span>
+        <span className="absolute inset-2 border border-white/20 bg-white/10 backdrop-blur-md rounded-md"></span>
       </>
     )
   },
@@ -30,10 +30,10 @@ const TEMPLATES = [
     desc: "Sert sınırlar, asimetrik gölgeler, cesur renkler. Trend ve dikkat çekici projeler için.",
     previewClass: "bg-[#FDE047] border-2 border-black",
     previewVibe: (
-      <div className="w-full h-full p-2 flex flex-col justify-between">
-        <div className="w-3/4 h-2 bg-black"></div>
-        <div className="w-1/2 h-6 border-2 border-black bg-white shadow-[2px_2px_0px_rgba(0,0,0,1)]"></div>
-      </div>
+      <span className="w-full h-full p-2 flex flex-col justify-between">
+        <span className="block w-3/4 h-2 bg-black"></span>
+        <span className="block w-1/2 h-6 border-2 border-black bg-white shadow-[2px_2px_0px_rgba(0,0,0,1)]"></span>
+      </span>
     )
   },
   {
@@ -42,11 +42,11 @@ const TEMPLATES = [
     desc: "Geniş boşluklar, zarif tipografi ve sadelik. Kreatif ajans ve portfolyolar için.",
     previewClass: "bg-white",
     previewVibe: (
-      <div className="w-full h-full p-3 flex flex-col items-center justify-center gap-2">
-        <div className="w-1/3 h-1 bg-gray-300"></div>
-        <div className="w-2/3 h-1 bg-gray-200"></div>
-        <div className="w-1/2 h-1 bg-gray-200"></div>
-      </div>
+      <span className="w-full h-full p-3 flex flex-col items-center justify-center gap-2">
+        <span className="block w-1/3 h-1 bg-gray-300"></span>
+        <span className="block w-2/3 h-1 bg-gray-200"></span>
+        <span className="block w-1/2 h-1 bg-gray-200"></span>
+      </span>
     )
   },
   {
@@ -55,15 +55,15 @@ const TEMPLATES = [
     desc: "Güven veren açık tonlar, net yapılar. Kurumsal çözümler ve B2B platformlar için.",
     previewClass: "bg-gray-100",
     previewVibe: (
-      <div className="w-full h-full flex flex-col">
-        <div className="w-full h-3 bg-white shadow-sm flex items-center px-1">
-          <div className="w-2 h-2 rounded-sm bg-slate-800"></div>
-        </div>
-        <div className="flex-1 flex gap-1 p-1 items-center justify-center">
-          <div className="w-1/2 h-4/5 bg-white rounded-sm shadow-sm"></div>
-          <div className="w-1/2 h-4/5 bg-slate-200 rounded-sm"></div>
-        </div>
-      </div>
+      <span className="w-full h-full flex flex-col">
+        <span className="w-full h-3 bg-white shadow-sm flex items-center px-1">
+          <span className="block w-2 h-2 rounded-sm bg-slate-800"></span>
+        </span>
+        <span className="flex-1 flex gap-1 p-1 items-center justify-center">
+          <span className="block w-1/2 h-4/5 bg-white rounded-sm shadow-sm"></span>
+          <span className="block w-1/2 h-4/5 bg-slate-200 rounded-sm"></span>
+        </span>
+      </span>
     )
   }
 ];
@@ -246,35 +246,14 @@ export default function CreateProject() {
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] text-[#FAFAFA] font-sans selection:bg-[#6366F1]/30 selection:text-white relative overflow-x-hidden">
-      <style dangerouslySetInnerHTML={{__html: `
-        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600&family=Outfit:wght@400;500;700;800&display=swap');
-        .font-heading { font-family: 'Outfit', sans-serif; }
-        .font-body { font-family: 'Manrope', sans-serif; }
-        .dark-grid-pattern {
-          background-size: 50px 50px;
-          background-image:
-            linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-        }
-      `}} />
-
-      <div className="fixed inset-0 dark-grid-pattern pointer-events-none z-0"></div>
-      <div className="fixed top-[10%] left-1/2 -translate-x-1/2 w-[600px] h-[500px] opacity-20 blur-[120px] rounded-full pointer-events-none" style={{ backgroundColor: BRAND_COLOR }}></div>
-
-      <div className="relative z-10 w-full max-w-4xl mx-auto px-6 pt-24 pb-24">
-        <div className="mb-12 text-center">
-          <h1 className="text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-4 font-heading">
-            Sistemi Başlat
-          </h1>
-          <p className="text-white/50 font-body text-lg max-w-2xl mx-auto">
-            Ürününüzün temel parametrelerini girin, görsel karakteri seçin; gerisini yapay zekaya bırakın.
-          </p>
-        </div>
-
-        <div className="bg-[#111111]/80 backdrop-blur-xl rounded-3xl border border-white/10 p-8 md:p-12 shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#6366F1] to-transparent opacity-50"></div>
-
+    <div className="create-page">
+      <main className="create-container">
+        <div className="help-breadcrumb"><Link href="/">Launchify</Link><span aria-hidden="true">/</span><span>Sayfa oluştur</span></div>
+        <header className="create-intro">
+          <div><span className="help-section-label">Yeni bir sayfa</span><h1>Ürününüzle<br /><span>başlayalım.</span></h1><p>Birkaç bilgi ve bir tasarım seçimi. İlk sayfanız için gerekenler bu kadar.</p></div>
+          <div className="create-intro-note"><span>Size ait bir başlangıç</span><p>Hazırlanan metinleri ve renkleri daha sonra panelinizden düzenleyebilirsiniz.</p>{remainingCredits !== null && <span className="create-credit">{remainingCredits} oluşturma krediniz kaldı</span>}</div>
+        </header>
+        <div className="create-form-panel relative">
           {isOutOfCredits && (
             <div className="absolute inset-0 z-50 bg-[#050505]/80 backdrop-blur-md flex flex-col items-center justify-center text-center p-8">
               <div className="w-16 h-16 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mb-6 border border-red-500/20 shadow-[0_0_30px_-5px_rgba(239,68,68,0.3)]">
@@ -282,7 +261,7 @@ export default function CreateProject() {
               </div>
               <h2 className="text-3xl font-bold font-heading mb-3">Krediniz Tükendi</h2>
               <p className="text-white/50 max-w-md mb-8">
-                Tanımlanan ücretsiz proje oluşturma hakkınızı doldurdunuz. Daha fazla Landing Page üretmek için bizimle iletişime geçin veya paketinizi yükseltin.
+                Ücretsiz oluşturma kredilerinizi kullandınız. Panelinizden bir projeyi kaldırdığınızda 1 kredi geri alabilir, yeni bir sayfa oluşturabilirsiniz.
               </p>
               <Link href="/dashboard" className="px-8 py-3 bg-white text-black font-bold rounded-xl hover:bg-gray-200 transition-colors">
                 Panele Dön
@@ -297,51 +276,51 @@ export default function CreateProject() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className={`space-y-10 font-body relative z-10 ${isOutOfCredits ? 'opacity-30 pointer-events-none blur-sm' : ''}`}>
+          <form onSubmit={handleSubmit} className={`create-form space-y-10 relative z-10 ${isOutOfCredits ? 'opacity-30 pointer-events-none blur-sm' : ''}`}>
             <div>
-              <label htmlFor="productName" className="block text-xs font-bold uppercase tracking-widest text-white/60 mb-3 cursor-pointer">Ürün / Platform Adı</label>
+              <label htmlFor="productName" className="block text-xs font-bold uppercase tracking-widest text-white/60 mb-3 cursor-pointer">Ürün adı</label>
               <input id="productName" required type="text" name="productName" onChange={handleChange} maxLength={60} disabled={isLoading}
                 className="w-full bg-white/5 border border-white/10 text-white rounded-xl focus:bg-white/10 focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1] block p-4 outline-none transition-all placeholder:text-white/20 disabled:opacity-50"
                 placeholder="Örn: Launchify SaaS" />
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-widest text-white/60 mb-4">Tasarım Karakteri (Şablon)</label>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <label className="block text-xs font-bold uppercase tracking-widest text-white/60 mb-4">Sayfanızın tasarımı</label>
+              <div role="group" aria-label="Sayfanızın tasarımı" className="create-template-grid grid grid-cols-1 md:grid-cols-2 gap-4">
                 {TEMPLATES.map((template) => (
-                  <div
+                  <button type="button" aria-pressed={formData.templateType === template.id} disabled={isLoading || isOutOfCredits}
                     key={template.id}
                     onClick={() => !isLoading && selectTemplate(template.id)}
-                    className={`group cursor-pointer p-4 rounded-2xl border transition-all duration-300 flex items-start gap-4 ${
+                    className={`create-template group relative text-left cursor-pointer p-4 rounded-2xl border transition-all duration-300 flex items-start gap-4 ${
                       formData.templateType === template.id
                         ? 'border-[#6366F1] bg-[#6366F1]/10 ring-1 ring-[#6366F1]'
                         : 'border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20'
                     } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
-                    <div className={`shrink-0 w-20 h-20 rounded-xl overflow-hidden ${template.previewClass} relative shadow-inner`}>
+                    <span aria-hidden="true" className={`create-template-preview block shrink-0 w-20 h-20 rounded-xl overflow-hidden ${template.previewClass} relative shadow-inner`}>
                       {template.previewVibe}
-                    </div>
-                    <div className="flex flex-col justify-center h-full">
-                      <h3 className={`font-bold text-lg transition-colors ${formData.templateType === template.id ? 'text-[#6366F1]' : 'text-white group-hover:text-white/90'}`}>
+                    </span>
+                    <span className="create-template-copy flex flex-col justify-center h-full">
+                      <span className={`create-template-name font-bold text-lg transition-colors ${formData.templateType === template.id ? 'text-[#6366F1]' : 'text-white group-hover:text-white/90'}`}>
                         {template.name}
-                      </h3>
-                      <p className="text-white/40 text-xs mt-1 leading-relaxed">
+                      </span>
+                      <span className="text-white/40 text-xs mt-1 leading-relaxed">
                         {template.desc}
-                      </p>
-                    </div>
+                      </span>
+                    </span>
                     {formData.templateType === template.id && (
-                      <div className="absolute top-4 right-4 text-[#6366F1]">
+                      <span className="create-template-check absolute top-3 right-3 text-[#6366F1]" aria-hidden="true">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                      </div>
+                      </span>
                     )}
-                  </div>
+                  </button>
                 ))}
               </div>
             </div>
 
             <div>
               <label htmlFor="productDescription" className="block text-xs font-bold uppercase tracking-widest text-white/60 mb-3 flex items-center justify-between cursor-pointer">
-                <span>Ürün Özellikleri (AI Briefi)</span>
+                <span>Ürününüz ne yapıyor?</span>
                 <span className="text-[10px] text-white/30">{formData.productDescription.length}/1000</span>
               </label>
               <textarea id="productDescription" required name="productDescription" rows={4} onChange={handleChange} maxLength={1000} disabled={isLoading}
@@ -351,7 +330,7 @@ export default function CreateProject() {
 
             <div className="grid md:grid-cols-2 gap-8">
               <div>
-                <label htmlFor="contactEmail" className="block text-xs font-bold uppercase tracking-widest text-white/60 mb-3 cursor-pointer">Kurumsal E-Posta</label>
+                <label htmlFor="contactEmail" className="block text-xs font-bold uppercase tracking-widest text-white/60 mb-3 cursor-pointer">İletişim e-postası</label>
                 <input id="contactEmail" required type="email" name="contactEmail" onChange={handleChange} maxLength={100} disabled={isLoading}
                   className="w-full bg-white/5 border border-white/10 text-white rounded-xl focus:bg-white/10 focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1] block p-4 outline-none transition-all placeholder:text-white/20 disabled:opacity-50"
                   placeholder="ornek@sirket.com" />
@@ -369,7 +348,7 @@ export default function CreateProject() {
 
             <div className="pt-6 border-t border-white/10">
               <button type="submit" disabled={isLoading || isCreditChecking || isOutOfCredits}
-                className="w-full text-white font-bold text-lg py-5 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 hover:scale-[1.02] flex justify-center items-center gap-3 shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]"
+                className="create-submit w-full text-white font-bold text-lg py-5 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 hover:scale-[1.02] flex justify-center items-center gap-3 shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]"
                 style={{ backgroundColor: BRAND_COLOR }}
               >
                 {isCreditChecking ? (
@@ -384,7 +363,7 @@ export default function CreateProject() {
                   </>
                 ) : (
                   <>
-                    Platformu İnşa Et
+                    Sayfamı oluştur
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
                   </>
                 )}
@@ -392,12 +371,12 @@ export default function CreateProject() {
             </div>
 
             {isLoading && (
-              <div className="mt-6 bg-[#0a0a0a] border border-white/10 rounded-xl p-6 font-mono text-sm h-64 overflow-hidden shadow-[0_10px_40px_-10px_rgba(0,0,0,0.8)] relative animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col">
+              <div role="status" aria-live="polite" className="create-progress mt-6 bg-[#0a0a0a] border border-white/10 rounded-xl p-6 font-mono text-sm h-64 overflow-hidden shadow-[0_10px_40px_-10px_rgba(0,0,0,0.8)] relative animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col">
                 <div className="w-full h-8 flex items-center gap-2 mb-4">
                   <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
                   <div className="w-3 h-3 rounded-full bg-yellow-500/80"></div>
                   <div className="w-3 h-3 rounded-full bg-green-500/80"></div>
-                  <span className="ml-2 text-xs text-white/40 font-sans tracking-widest uppercase">Launchify AI Terminal</span>
+                  <span className="ml-2 text-xs text-white/40 font-sans tracking-widest uppercase">Sayfanız hazırlanıyor</span>
                 </div>
 
                 <div className="w-full bg-white/5 rounded-full h-1.5 mb-4 overflow-hidden relative">
@@ -435,7 +414,7 @@ export default function CreateProject() {
             )}
           </form>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
