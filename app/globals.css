@@ -530,3 +530,18 @@ a, button, input, textarea, select { -webkit-tap-highlight-color: transparent; }
 }
 
 .create-form label[for="productDescription"], .create-form label[for="contactEmail"], .create-form label[for="demoLink"] { display:flex;align-items:center;justify-content:space-between;gap:12px; }
+
+/* Sorting is limited to the grip; links and project actions keep their normal input. */
+.workspace-sort-hint { margin:-12px 0 22px;color:#9389a5;font-size:11px;line-height:1.8; }
+.workspace-sort-item { position:relative;min-width:0; }
+.workspace-sort-item > .workspace-project { height:100%; }
+.workspace-sort-item .workspace-preview-top { padding-right:25px; }
+.workspace-sort-item .workspace-preview-top > span:last-child { display:none; }
+.workspace-drag-handle { position:absolute;top:24px;right:24px;z-index:50;display:grid;place-items:center;width:30px;height:30px;border:1px solid #b9a7de30;border-radius:6px;background:#111018e6;color:#bcb0d4;cursor:grab;touch-action:none;user-select:none; }
+.workspace-drag-handle:hover, .workspace-drag-handle:focus-visible { background:#292135;color:#f0e7ff; }
+.workspace-drag-handle:focus-visible { outline:2px solid #b9a5ef;outline-offset:3px; }
+.workspace-sort-item.is-dragging { z-index:60;opacity:.88;will-change:transform; }
+.workspace-sort-item.is-dragging .workspace-project { box-shadow:0 18px 50px #0009;border-color:#b9a5ef; }
+.workspace-sort-item.is-dragging .workspace-drag-handle { cursor:grabbing; }
+.workspace-sort-item.is-drop-target::after { content:"";position:absolute;inset:-5px;pointer-events:none;border:2px dashed #b9a5ef;border-radius:15px; }
+@media(max-width:767px) { .workspace-drag-handle { top:22px;right:22px;width:34px;height:34px; } }

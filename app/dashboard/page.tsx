@@ -16,6 +16,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { createPortal } from "react-dom";
+import SortableProjectGrid from "../components/SortableProjectGrid";
 import ShareModal from "../components/ShareModal";
 import EditModal from "../components/EditModal";
 import { exportProjectAsHtml } from "../utils/exportHtml";
@@ -741,8 +742,7 @@ export default function DashboardPage() {
               <h2 className="text-xl font-bold font-heading mb-6">
                 Sayfalarınız
               </h2>
-              <div className="workspace-project-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {projects.map((project) => (
+              <SortableProjectGrid key={user?.uid} projects={projects} userId={user?.uid} renderProject={(project) => (
                   <div
                     key={project.id || project.slug}
                     className={`workspace-project bg-[#0A0A0A] border border-white/10 rounded-3xl p-6 hover:border-white/20 transition-all group relative backdrop-blur-xl hover:shadow-[0_0_30px_rgba(255,255,255,0.03)] ${
@@ -971,8 +971,7 @@ export default function DashboardPage() {
                       </div>
                     </div>
                   </div>
-                ))}
-              </div>
+                )} />
             </div>
           </div>
         )}
