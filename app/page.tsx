@@ -39,11 +39,19 @@ export default function LaunchifyHome() {
 
       <section id="ozellikler" className="launch-features launch-container">
         <div className="launch-section-heading"><div><span className="launch-section-number">01 / Nasıl çalışır?</span><h2>Anlatın. Düzenleyin.<br />Yayınlayın.</h2></div><p>Tek bir sayfayla anlatın, paylaşın<br />ve ürününüze olan ilgiyi ölçün.</p></div>
-        <div className="launch-feature-grid">
-          {[{ number: "01", icon: "↳", title: "Fikrinizi anlatın", copy: "Ürününüzü kısaca açıklayın. Yapay zeka başlıklarınızı ve tanıtım metinlerinizi hazırlasın." },
-            { number: "02", icon: "Aa", title: "Kendi tarzınızı seçin", copy: "Dört farklı şablon arasından seçim yapın. Metinleri ve renkleri markanıza göre düzenleyin." },
-            { number: "03", icon: "↗", title: "İlk ilginizi ölçün", copy: "Bağlantınızı paylaşın, bekleme listesi kayıtlarını toplayın ve ziyaretleri panelinizden takip edin." }].map(item => (
-            <article className="launch-feature" key={item.number}><div className="launch-feature-top"><span aria-hidden="true">{item.icon}</span><span>{item.number}</span></div><h3>{item.title}</h3><p>{item.copy}</p></article>
+        <div className="launch-feature-grid launch-feature-grid--detailed">
+          {[{ number: "01", type: "brief", title: "Ürününüzü anlatın.", copy: "Ürün açıklamanızdan başlıklar, tanıtım metinleri ve özellikler hazırlayın.", detail: "Ürün bilgisi → Sayfa içeriği" },
+            { number: "02", type: "design", title: "Görünümü size uysun.", copy: "Dört şablondan birini seçin. Başlık, metin ve renkleri editörünüzde düzenleyin.", detail: "Aurora · Brutal · Corporate · Minimal" },
+            { number: "03", type: "audience", title: "İlgiyi takip edin.", copy: "Sayfanızı paylaşın, ziyaretleri ve kayıtları panelinizde görün. Bekleme listenizi CSV olarak indirin.", detail: "Ziyaretler → Kayıtlar → Dönüşüm" }].map(item => (
+            <article className="launch-feature launch-feature-detailed" key={item.number}>
+              <div className={`launch-feature-visual launch-feature-visual--${item.type}`} aria-hidden="true">
+                {item.type === "brief" ? <><div className="feature-brief-input"><span>Ürününüz ne yapıyor?</span><i /><i /><i /></div><div className="feature-brief-output"><span>Başlık</span><strong>İlk sayfanız,<br />sizin kelimelerinizle.</strong><i /></div></>
+                  : item.type === "design" ? <><span className="feature-type">Aa</span><div className="feature-colors"><i /><i /><i /><i /></div><div className="feature-layout"><span /><span /><span /></div></>
+                  : <><div className="feature-audience-symbol"><svg width="100" height="55" viewBox="0 0 100 55" fill="none"><path d="M5 46 25 34l20 6 24-26 25-9" stroke="currentColor" strokeWidth="2"/><path d="m86 5 8 0 0 8" stroke="currentColor" strokeWidth="2"/></svg></div><div className="feature-audience-list"><span /><span /><span /></div></>}
+              </div>
+              <div className="launch-feature-top"><span>{item.number}</span><span>{item.type === "brief" ? "İçerik" : item.type === "design" ? "Tasarım" : "Takip"}</span></div>
+              <h3>{item.title}</h3><p>{item.copy}</p><div className="launch-feature-detail">{item.detail}</div>
+            </article>
           ))}
         </div>
       </section>

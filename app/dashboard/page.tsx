@@ -1,7 +1,7 @@
 "use client";
 import { authenticatedFetch } from "@/app/utils/authenticatedFetch";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { auth } from "@/firebase";
 import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import { useRouter } from "next/navigation";
@@ -20,7 +20,7 @@ import ShareModal from "../components/ShareModal";
 import EditModal from "../components/EditModal";
 import { exportProjectAsHtml } from "../utils/exportHtml";
 
-const BRAND_COLOR = "#6366F1";
+const BRAND_COLOR = "#a49af5";
 
 interface WaitlistEntry {
   id: string;
@@ -283,7 +283,7 @@ export default function DashboardPage() {
     );
 
   return (
-    <div className="min-h-screen bg-[#050505] text-[#FAFAFA] font-sans selection:bg-white/20 relative overflow-hidden pt-32 pb-20">
+    <div className="workspace-page min-h-screen bg-[#08090d] text-[#FAFAFA] font-sans relative pt-32 pb-20">
       {/* Proje Silme Modalı */}
       {mounted &&
         projectToDelete &&
@@ -294,7 +294,8 @@ export default function DashboardPage() {
               onClick={() => !isDeleting && setProjectToDelete(null)}
             />
 
-            <div className="relative z-10 bg-[#111111] border border-white/10 rounded-2xl sm:rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div role="dialog" aria-modal="true" aria-label="Projeyi kaldır"
+              className="workspace-dialog relative z-10 bg-[#111111] border border-white/10 rounded-2xl sm:rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl animate-in fade-in zoom-in-95 duration-200">
               <div className="w-12 h-12 bg-red-500/10 text-red-500 rounded-2xl flex items-center justify-center mb-5 border border-red-500/20">
                 <svg
                   width="24"
@@ -357,13 +358,14 @@ export default function DashboardPage() {
       {mounted &&
         selectedProjectForLeads &&
         createPortal(
-          <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 sm:p-6">
+          <div className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 sm:p-6">
             <div
               className="fixed inset-0"
               onClick={() => setSelectedProjectForLeads(null)}
             />
 
-            <div className="relative z-10 bg-[#111111] border border-white/10 rounded-3xl p-6 sm:p-8 max-w-2xl w-full shadow-2xl animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[85vh]">
+            <div role="dialog" aria-modal="true" aria-label="Toplanan talepler"
+              className="workspace-dialog relative z-10 bg-[#111111] border border-white/10 rounded-3xl p-6 sm:p-8 max-w-2xl w-full shadow-2xl animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[85vh]">
               <div className="flex justify-between items-start mb-6 shrink-0">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
@@ -531,27 +533,11 @@ export default function DashboardPage() {
         />
       )}
 
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-        .dark-grid-pattern {
-          background-size: 50px 50px;
-          background-image:
-            linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-        }
-      `,
-        }}
-      />
-      <div className="absolute inset-0 dark-grid-pattern pointer-events-none z-0"></div>
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/5 rounded-full blur-[120px] pointer-events-none"></div>
-      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-600/5 rounded-full blur-[120px] pointer-events-none"></div>
-
-      <main className="max-w-7xl mx-auto px-6 relative z-10">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6 bg-[#0A0A0A]/50 p-6 rounded-2xl border border-white/5 backdrop-blur-sm">
+      <main className="workspace-container relative z-10">
+        <div className="workspace-header flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
           <div>
-            <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-3xl font-bold font-heading">Projelerim</h1>
+            <div className="workspace-heading-row flex items-center gap-3 mb-2">
+              <h1 className="workspace-title">Projelerim</h1>
               {isSyncing && (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-white/5 text-white/40 border border-white/5">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#6366F1] animate-ping"></span>
@@ -568,7 +554,7 @@ export default function DashboardPage() {
           </div>
           <div className="flex items-center gap-3 w-full md:w-auto flex-wrap">
             {remainingCredits !== null && (
-              <div className="px-4 py-2.5 bg-[#6366F1]/10 border border-[#6366F1]/20 text-[#6366F1] text-sm font-bold rounded-xl flex items-center gap-2">
+              <div className="workspace-credits px-4 py-2.5 border text-sm rounded-xl flex items-center gap-2">
                 <svg
                   width="16"
                   height="16"
@@ -591,10 +577,10 @@ export default function DashboardPage() {
             </button>
             <Link
               href="/create"
-              className="px-5 py-2.5 text-white text-sm font-semibold rounded-xl hover:scale-105 transition-all flex items-center gap-2"
+              className="workspace-create px-5 py-2.5 text-sm font-semibold rounded-xl transition-all flex items-center gap-2"
               style={{
-                backgroundColor: "#6366F1",
-                boxShadow: "0 0 20px -5px #6366F1",
+                backgroundColor: "#a49af5",
+                color: "#19132d",
               }}
             >
               + Yeni Proje
@@ -607,7 +593,7 @@ export default function DashboardPage() {
             <span className="w-8 h-8 border-2 border-[#6366F1]/50 border-t-[#6366F1] rounded-full animate-spin"></span>
           </div>
         ) : projects.length === 0 ? (
-          <div className="py-20 text-center bg-[#0A0A0A]/30 border border-dashed border-white/10 rounded-3xl backdrop-blur-sm">
+          <div className="workspace-empty py-20 text-center border border-dashed border-white/10 rounded-3xl">
             <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mx-auto mb-4 text-white/30">
               <svg
                 width="24"
@@ -636,11 +622,11 @@ export default function DashboardPage() {
           </div>
         ) : (
           <div className="space-y-12">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="workspace-metrics grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               <div className="bg-[#0A0A0A] border border-white/10 rounded-2xl p-6 shadow-xl relative overflow-hidden backdrop-blur-xl">
                 <div className="absolute top-0 left-0 w-1 h-full bg-[#6366F1]"></div>
                 <p className="text-white/50 text-xs font-bold uppercase tracking-wider mb-2">
-                  Toplam Platform
+                  Toplam sayfa
                 </p>
                 <h3 className="text-4xl font-heading font-extrabold">
                   {projects.length}
@@ -674,13 +660,13 @@ export default function DashboardPage() {
             </div>
 
             {/* GRAFİK */}
-            <div className="bg-[#0A0A0A] border border-white/10 rounded-3xl p-6 md:p-8 shadow-2xl relative overflow-hidden backdrop-blur-xl">
+            <div className="workspace-chart bg-[#0A0A0A] border border-white/10 rounded-3xl p-6 md:p-8 relative overflow-hidden">
               <div className="mb-6">
                 <h2 className="text-xl font-bold font-heading">
-                  Trafik Analizi
+                  Proje ziyaretleri
                 </h2>
                 <p className="text-white/40 text-sm">
-                  Projelerinizin anlık görüntülenme metrikleri
+                  Sayfalarınızın toplam ziyaret sayılarını karşılaştırın.
                 </p>
               </div>
               <div className="h-[250px] w-full">
@@ -735,7 +721,7 @@ export default function DashboardPage() {
                         borderRadius: "12px",
                         color: "#fff",
                       }}
-                      itemStyle={{ color: "#6366F1", fontWeight: "bold" }}
+                      itemStyle={{ color: "#b5abff", fontWeight: "500" }}
                     />
                     <Area
                       type="monotone"
@@ -753,18 +739,22 @@ export default function DashboardPage() {
 
             <div>
               <h2 className="text-xl font-bold font-heading mb-6">
-                Aktif Platformlar
+                Sayfalarınız
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="workspace-project-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {projects.map((project) => (
                   <div
                     key={project.id || project.slug}
-                    className={`bg-[#0A0A0A] border border-white/10 rounded-3xl p-6 hover:border-white/20 transition-all group relative backdrop-blur-xl hover:shadow-[0_0_30px_rgba(255,255,255,0.03)] ${
+                    className={`workspace-project bg-[#0A0A0A] border border-white/10 rounded-3xl p-6 hover:border-white/20 transition-all group relative backdrop-blur-xl hover:shadow-[0_0_30px_rgba(255,255,255,0.03)] ${
                       openDropdownId === project.id ? "z-40" : "z-10"
                     }`}
                   >
-                    <div className="absolute inset-0 rounded-3xl overflow-hidden pointer-events-none -z-10">
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-bl-full group-hover:bg-blue-500/20 transition-colors"></div>
+                    <div className={`workspace-preview workspace-preview--${String(project.templateType || "aurora").toLowerCase()}`}
+                      style={{ "--preview-accent": project.aiConfig?.accentColor || "#a49af5" } as CSSProperties} aria-hidden="true">
+                      <div className="workspace-preview-top"><span>{project.productName || project.slug}</span><span>↗</span></div>
+                      <div className="workspace-preview-type">{project.aiConfig?.aiGeneratedHeroTitle || project.productName || project.slug}</div>
+                      <div className="workspace-preview-art"><span /><i /></div>
+                      <span className="workspace-preview-label">{project.templateType || "Aurora"}</span>
                     </div>
                     <div className="flex justify-between items-start mb-6">
                       <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center font-bold text-white/80 border border-white/10 shadow-inner group-hover:scale-105 transition-transform uppercase">
@@ -815,7 +805,7 @@ export default function DashboardPage() {
                       {projectLeadsCount[project.id] !== undefined &&
                         projectLeadsCount[project.id] > 0 && (
                           <span className="text-amber-400/90 font-semibold bg-amber-400/10 px-2 py-0.5 rounded-md border border-amber-400/20">
-                            🔥 {projectLeadsCount[project.id]} Talep
+                            {projectLeadsCount[project.id]} Talep
                           </span>
                         )}
                     </div>
@@ -838,6 +828,8 @@ export default function DashboardPage() {
                           }
                           className={`p-2.5 hover:text-white transition-colors rounded-xl border border-white/5 cursor-pointer ${openDropdownId === project.id ? "bg-white/10 text-white" : "bg-white/5 text-white/40 hover:bg-white/10"}`}
                           title="Ayarlar"
+                          aria-label={`${project.productName || project.slug} işlemleri`}
+                          aria-expanded={openDropdownId === project.id}
                         >
                           <svg
                             width="18"
