@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import Logo from './Logo';
-import { usePathname } from 'next/navigation';
+import Logo from "./Logo";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { auth } from "@/firebase";
 import { onAuthStateChanged, User } from "firebase/auth";
@@ -11,78 +11,49 @@ export default function Footer() {
   const pathname = usePathname();
   const [user, setUser] = useState<User | null>(null);
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-    });
-    return () => unsubscribe();
-  }, []);
+  useEffect(() => onAuthStateChanged(auth, setUser), []);
 
-  const platformPages = ['/', '/create', '/about', '/dashboard', '/sss'];
-  if (!platformPages.includes(pathname)) {
-    return null;
-  }
+  const platformPages = ["/", "/create", "/about", "/dashboard", "/sss"];
+  if (!platformPages.includes(pathname)) return null;
 
-  const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
-    if (pathname === '/') {
-      e.preventDefault();
-      document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth' });
-      window.history.pushState(null, '', `/#${targetId}`);
+  const handleSmoothScroll = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    if (pathname === "/") {
+      event.preventDefault();
+      document.getElementById("ozellikler")?.scrollIntoView({ behavior: "smooth" });
+      window.history.pushState(null, "", "/#ozellikler");
     }
   };
 
   return (
-    <footer className="border-t border-white/5 bg-[#000000] pt-16 pb-8 relative z-10 text-[#FAFAFA]">
-      <div className="max-w-7xl mx-auto px-6">
-        
-        <div className="flex flex-col md:flex-row justify-between items-start gap-10 mb-16">
-          
-          <div className="max-w-sm">
-            <div className="mb-6">
-              <Logo />
-            </div>
-            
-            <p className="text-sm text-white/40 leading-relaxed mb-6" style={{ fontFamily: "'Manrope', sans-serif" }}>
-              Fikirlerinizi saniyeler içinde dönüşüm odaklı, profesyonel web sayfalarına dönüştüren B2B Landing Page motoru.
-            </p>
-            <div className="flex gap-4" style={{ fontFamily: "'Manrope', sans-serif" }}>
-              <a href="https://github.com/bora399" target="_blank" rel="noopener noreferrer" className="text-white/40 hover:text-white transition-colors">GitHub ↗</a>
-              <a href="https://tr.linkedin.com/in/bora-saltık-14314820b" target="_blank" rel="noopener noreferrer" className="text-white/40 hover:text-white transition-colors">LinkedIn ↗</a>
-            </div>
+    <footer className="site-footer">
+      <div className="site-footer-inner">
+        <div className="site-footer-main">
+          <div className="site-footer-brand">
+            <Logo />
+            <p>Ürününüz için bir tanıtım sayfası hazırlayın. Bağlantınızı paylaşın, bekleme listenizi ve ziyaretlerinizi tek yerden takip edin.</p>
           </div>
-
-          <div className="flex flex-wrap gap-12 sm:gap-16 text-sm font-medium" style={{ fontFamily: "'Manrope', sans-serif" }}>
-            
-            <div className="flex flex-col gap-4 text-white/40">
-              <h4 className="text-white font-semibold mb-2">Ürün</h4>
-              <Link href="/create" className="hover:text-white transition-colors">Hemen Başla</Link>
-              <Link 
-                href="/#ozellikler" 
-                onClick={(e) => handleSmoothScroll(e, 'ozellikler')}
-                className="hover:text-white transition-colors"
-              >
-                Özellikler
-              </Link>
-              <Link href="/sss" className="hover:text-white transition-colors">
-                Sıkça Sorulan Sorular (SSS)
-              </Link>
-            </div>
-            <div className="flex flex-col gap-4 text-white/40">
-              <h4 className="text-white font-semibold mb-2">Kurumsal</h4>
-              <Link href="/about" className="hover:text-white transition-colors">Hakkımızda</Link>
-            </div>
-
-            <div className="flex flex-col gap-4 text-white/40">
-              <h4 className="text-white font-semibold mb-2">Hesap</h4>
-              {!user ? (
-                <Link href="/login" className="hover:text-white transition-colors">Giriş Yap</Link>
-              ) : (
-                <Link href="/dashboard" className="hover:text-white transition-colors">Panelim</Link>
-              )}
-            </div>
-
+          <nav className="site-footer-column" aria-label="Ürün bağlantıları">
+            <h2>Ürün</h2>
+            <Link href="/create">Sayfa oluştur <span aria-hidden="true">↗</span></Link>
+            <Link href="/#ozellikler" onClick={handleSmoothScroll}>Özellikler</Link>
+            <Link href="/sss">Sıkça sorulan sorular</Link>
+          </nav>
+          <nav className="site-footer-column" aria-label="Launchify hakkında">
+            <h2>Launchify</h2>
+            <Link href="/about">Hakkımızda</Link>
+          </nav>
+          <nav className="site-footer-column" aria-label="Hesap bağlantıları">
+            <h2>Hesap</h2>
+            {user ? <Link href="/dashboard">Panelim <span aria-hidden="true">↗</span></Link>
+              : <Link href="/login">Giriş yap <span aria-hidden="true">↗</span></Link>}
+          </nav>
+        </div>
+        <div className="site-footer-bottom">
+          <p>© {new Date().getFullYear()} Launchify</p>
+          <div className="site-footer-social" aria-label="Sosyal bağlantılar">
+            <a href="https://github.com/bora399" target="_blank" rel="noopener noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+            <a href="https://tr.linkedin.com/in/bora-saltık-14314820b" target="_blank" rel="noopener noreferrer">LinkedIn <span aria-hidden="true">↗</span></a>
           </div>
-          
         </div>
       </div>
     </footer>

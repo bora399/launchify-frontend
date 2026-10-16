@@ -1,33 +1,61 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { auth } from "@/firebase";
 import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import Logo from "./Logo";
 
+const navLinks = [
+  { name: "Ana Sayfa", href: "/" },
+  { name: "Özellikler", href: "/#ozellikler" },
+  { name: "Sayfa Oluştur", href: "/create" },
+  { name: "Hakkımızda", href: "/about" },
+  { name: "SSS", href: "/sss" },
+];
+
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const menuButton = useRef<HTMLButtonElement>(null);
+  const menuPanel = useRef<HTMLElement>(null);
   const pathname = usePathname();
-  const router = useRouter(); 
+  const router = useRouter();
 
-  const isActive = (path: string) => pathname === path;
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-    });
-    return () => unsubscribe();
-  }, []);
+  useEffect(() => onAuthStateChanged(auth, setUser), []);
 
   useEffect(() => {
-    if (isMobileMenuOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
+    if (!isMobileMenuOpen) return;
+    const desktop = window.matchMedia("(min-width: 1180px)");
+    const closeOnDesktop = () => { if (desktop.matches) setIsMobileMenuOpen(false); };
+    desktop.addEventListener("change", closeOnDesktop);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsMobileMenuOpen(false);
+        menuButton.current?.focus();
+      }
+      if (event.key === "Tab") {
+        const links = menuPanel.current?.querySelectorAll<HTMLElement>("a, button");
+        const first = menuButton.current;
+        const last = links?.[links.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last?.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first?.focus();
+        }
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      desktop.removeEventListener("change", closeOnDesktop);
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", handleKeyDown);
+    };
   }, [isMobileMenuOpen]);
 
   const handleLogout = async () => {
@@ -40,159 +68,75 @@ export default function Navbar() {
     }
   };
 
-  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+  const handleNavClick = (event: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     setIsMobileMenuOpen(false);
     if (href.startsWith("/#") && pathname === "/") {
-      e.preventDefault();
-      const targetId = href.replace("/#", "");
-      const elem = document.getElementById(targetId);
-      if (elem) {
-        elem.scrollIntoView({ behavior: "smooth" });
-        window.history.pushState(null, "", href);
-      }
+      event.preventDefault();
+      document.getElementById(href.replace("/#", ""))?.scrollIntoView({ behavior: "smooth" });
+      window.history.pushState(null, "", href);
     }
   };
 
   const systemPrefixes = ["/create", "/about", "/login", "/dashboard", "/sss"];
   const isSystemRoute = pathname === "/" || systemPrefixes.some(prefix => pathname.startsWith(prefix));
+  if (!isSystemRoute) return null;
 
-  if (!isSystemRoute) {
-    return null;
-  }
-
-  const navLinks = [
-    { name: "Ana Sayfa", href: "/" },
-    { name: "Özellikler", href: "/#ozellikler" },
-    { name: "Sayfa Oluştur", href: "/create" },
-    { name: "Hakkımızda", href: "/about" },
-    { name: "SSS", href: "/sss" },
-  ];
+  const accountLinks = (
+    <>
+      {user ? (
+        <>
+          <Link href="/dashboard" onClick={() => setIsMobileMenuOpen(false)} className="site-account-link">Panelim</Link>
+          <button type="button" onClick={handleLogout} className="site-logout">Çıkış Yap</button>
+          <Link href="/create" onClick={() => setIsMobileMenuOpen(false)} className="site-nav-action">Projeyi Başlat <span aria-hidden="true">↗</span></Link>
+        </>
+      ) : (
+        <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="site-nav-action">Giriş Yap <span aria-hidden="true">↗</span></Link>
+      )}
+    </>
+  );
 
   return (
     <>
-      <header className="fixed top-0 left-0 w-full z-[99999] bg-[#08090d]/85 backdrop-blur-xl border-b border-white/[0.07] transition-all">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          
-          <div className="relative z-[100000]">
+      <header className="site-header">
+        <div className="site-header-inner">
+          <div className="site-header-brand">
             <Logo onClick={() => setIsMobileMenuOpen(false)} />
           </div>
-          <nav className="hidden lg:flex items-center gap-6">
-            {navLinks.map((link) => (
-              <Link 
-                key={link.name} 
-                href={link.href}
-                onClick={(e) => handleNavClick(e, link.href)}
-                className={`text-sm font-medium transition-colors hover:text-white ${isActive(link.href) ? "text-white" : "text-white/50"}`}
-              >
+          <nav className="site-desktop-nav" aria-label="Ana gezinme">
+            {navLinks.map(link => (
+              <Link key={link.href} href={link.href} onClick={event => handleNavClick(event, link.href)}
+                aria-current={pathname === link.href ? "page" : undefined}
+                className={pathname === link.href ? "site-nav-link is-active" : "site-nav-link"}>
                 {link.name}
               </Link>
             ))}
           </nav>
-
-          <div className="hidden lg:flex items-center gap-5">
-            {user ? (
-              <>
-                <Link href="/dashboard" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
-                  Panelim
-                </Link>
-                <button 
-                  onClick={handleLogout}
-                  className="text-sm font-medium text-red-400/70 hover:text-red-400 transition-colors cursor-pointer"
-                >
-                  Çıkış Yap
-                </button>
-                <Link 
-                  href="/create" 
-                  className="px-5 py-2.5 text-white text-sm font-semibold rounded-xl hover:scale-105 transition-all flex items-center gap-2 ml-2"
-                  style={{ backgroundColor: "#6366F1", boxShadow: "0 0 20px -5px rgba(99,102,241,0.5)" }}
-                >
-                  Projeyi Başlat <span className="text-lg leading-none">→</span>
-                </Link>
-              </>
-            ) : (
-              <Link 
-                href="/login" 
-                className="px-5 py-2.5 bg-white text-black text-sm font-bold rounded-xl hover:bg-gray-200 transition-colors"
-              >
-                Giriş Yap
-              </Link>
-            )}
-          </div>
-
-          <button 
-            className="lg:hidden relative z-[100000] p-2 -mr-2 text-white/90 hover:text-white transition-transform active:scale-95 cursor-pointer"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            aria-label="Menüyü Aç/Kapat"
-            aria-expanded={isMobileMenuOpen}
-            aria-controls="mobile-navigation"
-          >
-            {isMobileMenuOpen ? (
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-            ) : (
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-            )}
+          <div className="site-desktop-account">{accountLinks}</div>
+          <button ref={menuButton} type="button" className="site-menu-toggle"
+            onClick={() => setIsMobileMenuOpen(open => !open)}
+            aria-label={isMobileMenuOpen ? "Menüyü kapat" : "Menüyü aç"}
+            aria-expanded={isMobileMenuOpen} aria-controls="mobile-navigation">
+            <span>{isMobileMenuOpen ? "Kapat" : "Menü"}</span>
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true">
+              {isMobileMenuOpen ? <path d="m6 6 12 12M6 18 18 6" /> : <path d="M4 8h16M4 16h16" />}
+            </svg>
           </button>
         </div>
       </header>
-
-      <div
-        id="mobile-navigation"
-        inert={!isMobileMenuOpen}
-        className={`fixed inset-0 bg-[#050505] z-[99998] flex flex-col pt-28 px-6 lg:hidden transition-all duration-300 ease-in-out ${
-          isMobileMenuOpen ? "opacity-100 pointer-events-auto translate-y-0" : "opacity-0 pointer-events-none -translate-y-4"
-        }`}
-      >
-        <div className="absolute inset-0 opacity-30 pointer-events-none" style={{ backgroundImage: 'linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
-        
-        <div className="relative z-10 flex flex-col gap-6 text-xl font-bold font-heading">
-          {navLinks.map((link) => (
-            <Link 
-              key={link.name} 
-              href={link.href}
-              onClick={(e) => handleNavClick(e, link.href)}
-              className={`border-b border-white/10 pb-4 tracking-wide transition-colors ${isActive(link.href) ? "text-white" : "text-white/40 active:text-white/70"}`}
-            >
-              {link.name}
+      <nav ref={menuPanel} id="mobile-navigation" aria-label="Mobil gezinme"
+        inert={!isMobileMenuOpen} className={`site-mobile-nav ${isMobileMenuOpen ? "is-open" : ""}`}>
+        <div className="site-mobile-links">
+          {navLinks.map((link, index) => (
+            <Link key={link.href} href={link.href} onClick={event => handleNavClick(event, link.href)}
+              aria-current={pathname === link.href ? "page" : undefined}
+              className={pathname === link.href ? "is-active" : undefined}>
+              <span className="site-mobile-number" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
+              <span>{link.name}</span><span className="site-mobile-arrow" aria-hidden="true">↗</span>
             </Link>
           ))}
         </div>
-
-        <div className="relative z-10 mt-10 flex flex-col gap-4">
-          {user ? (
-            <>
-              <Link 
-                href="/dashboard" 
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="w-full py-4 bg-white/5 border border-white/10 text-center text-white font-bold rounded-xl hover:bg-white/10 active:bg-white/20 transition-colors"
-              >
-                Panelim
-              </Link>
-              <Link 
-                href="/create" 
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="w-full py-4 text-white text-center font-bold rounded-xl flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
-                style={{ backgroundColor: "#6366F1", boxShadow: "0 0 30px -10px rgba(99,102,241,0.5)" }}
-              >
-                Projeyi Başlat <span className="text-xl leading-none">→</span>
-              </Link>
-              <button 
-                onClick={handleLogout}
-                className="w-full py-4 mt-2 bg-red-500/10 border border-red-500/20 text-center text-red-400 font-bold rounded-xl active:bg-red-500/20 transition-colors cursor-pointer"
-              >
-                Çıkış Yap
-              </button>
-            </>
-          ) : (
-            <Link 
-              href="/login" 
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="w-full py-4 bg-white text-black text-center font-extrabold rounded-xl text-lg active:scale-[0.98] transition-transform"
-            >
-              Giriş Yap
-            </Link>
-          )}
-        </div>
-      </div>
+        <div className="site-mobile-account">{accountLinks}</div>
+      </nav>
     </>
   );
 }
