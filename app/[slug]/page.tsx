@@ -37,7 +37,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     const data = await res.json();
     
     return {
-      title: `${data.productName || data.ProductName} | Launchify Generated`,
+      title: data.productName || data.ProductName || "Tanıtım sayfası",
     };
   } catch {
     return { title: 'Platform Bulunamadı | Launchify' };
@@ -104,7 +104,7 @@ export default async function SlugPage({ params }: { params: Promise<{ slug: str
       <AnalyticsTracker projectId={projectData.id!} />
       {renderTemplate()}
 
-      <aside aria-label="Platform bilgisi" className="fixed bottom-3 right-3 sm:bottom-4 sm:right-4 z-[9999]">
+      <aside aria-label="Platform bilgisi" className="product-attribution">
         <Link 
           href="/" 
           target="_blank" 
@@ -115,7 +115,7 @@ export default async function SlugPage({ params }: { params: Promise<{ slug: str
             ⚡
           </span>
           <span className="text-white/60 group-hover:text-white transition-colors">
-            Created with <strong className="text-white font-bold">Launchify</strong>
+            <strong className="text-white font-bold">Launchify</strong>
           </span>
           <span className="text-white/40 group-hover:text-[#6366F1] group-hover:translate-x-0.5 transition-all text-[10px]">
             ↗
