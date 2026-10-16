@@ -1,19 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
 
 const BRAND_COLOR = "#6366F1";
 
 export default function LaunchifyHome() {
-  const [isScrolled, setIsScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   return (
     <div className="min-h-screen bg-[#050505] text-[#FAFAFA] font-sans selection:bg-[#6366F1]/30 selection:text-white relative overflow-x-hidden">
       
@@ -49,11 +40,11 @@ export default function LaunchifyHome() {
         <section className="max-w-7xl mx-auto px-6 text-center mb-32">
           <h1 className="font-heading text-5xl md:text-7xl lg:text-[6.5rem] font-black tracking-tighter leading-[1.05] text-white mb-8 max-w-5xl mx-auto">
             Fikirlerinizi saniyeler içinde <br className="hidden md:block"/>
-            <span className="gradient-text">koda dökün.</span>
+            <span className="gradient-text">tanıtım sayfasına dönüştürün.</span>
           </h1>
           
           <p className="font-body text-xl md:text-2xl text-white/50 mb-12 max-w-3xl mx-auto leading-relaxed">
-            Sadece ne yapmak istediğinizi anlatın. Gemini AI destekli motorumuz, dönüşüm odaklı B2B arayüzünüzü ve .NET tabanlı altyapınızı anında inşa etsin.
+            Ürününüzü anlatın, şablonunuzu seçin. Yapay zeka tanıtım metinlerinizi hazırlasın; sayfanızı paylaşın, bekleme listesi toplayın ve ziyaretlerinizi takip edin.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -68,7 +59,7 @@ export default function LaunchifyHome() {
               href="#ozellikler"
               className="px-8 py-4 bg-white/5 border border-white/10 text-white rounded-xl font-medium text-lg hover:bg-white/10 transition-colors w-full sm:w-auto"
             >
-              Mimariyi İncele
+              Özellikleri İncele
             </a>
           </div>
         </section>
@@ -78,7 +69,7 @@ export default function LaunchifyHome() {
               Teknoloji değil, sonuç üretiyoruz.
             </h2>
             <p className="text-white/50 text-xl font-body max-w-2xl">
-              Karmaşık yazılım süreçleriyle zaman kaybetmeyin. Siz sadece iş modelinize odaklanın, Launchify sizin için büyüme motorunu inşa etsin.
+              Fikrinizi anlatın, dört şablondan birini seçin ve metinlerinizi düzenleyin. Paylaşılabilir bir tanıtım sayfasıyla ürününüze olan ilgiyi ölçün.
             </p>
           </div>
           
@@ -90,7 +81,7 @@ export default function LaunchifyHome() {
                 </div>
                 <h3 className="text-2xl font-bold text-white font-heading mb-4">Sıfır Teknik Yük</h3>
                 <p className="text-white/50 font-body text-base leading-relaxed">
-                  Haftalar süren geliştirme süreçlerini unutun. Fikrinizi sisteme girin; güvenli, hatasız ve kurumsal standartlarda bir platform saniyeler içinde yayına girsin.
+                  Kod yazmadan ürününüz için bir tanıtım sayfası hazırlayın. Başlığınızı, açıklamanızı ve renklerinizi düzenleyip sayfanızı bir bağlantıyla paylaşın.
                 </p>
               </div>
             </div>
@@ -132,7 +123,7 @@ export default function LaunchifyHome() {
                 Geleceği ertelemeyin.
               </h2>
               <p className="text-xl text-white/50 mb-10 font-body">
-                Kendi B2B SaaS platformunuzu kurmak sadece saniyelerinizi alacak. Kurumsal tasarım ve güçlü altyapı bir tık uzağınızda.
+                Ürününüz için bir tanıtım sayfası hazırlayın, bağlantınızı paylaşın ve ilk bekleme listesi kayıtlarınızı toplamaya başlayın.
               </p>
               <Link 
                 href="/create"

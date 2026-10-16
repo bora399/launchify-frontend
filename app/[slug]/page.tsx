@@ -72,8 +72,6 @@ export default async function SlugPage({ params }: { params: Promise<{ slug: str
         features: ai.features || ai.Features || []
       };
 
-      fetch(`${apiUrl}/api/analytics/${projectId}/visit`, { method: 'POST' })
-        .catch(err => console.error("Analitik kaydedilemedi:", err));
     }
   } catch (error) {
     console.error("Veri çekilirken hata oluştu:", error);
