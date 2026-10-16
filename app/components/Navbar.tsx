@@ -63,20 +63,20 @@ export default function Navbar() {
   const navLinks = [
     { name: "Ana Sayfa", href: "/" },
     { name: "Özellikler", href: "/#ozellikler" },
-    { name: "Platform Üret", href: "/create" },
+    { name: "Sayfa Oluştur", href: "/create" },
     { name: "Hakkımızda", href: "/about" },
     { name: "SSS", href: "/sss" },
   ];
 
   return (
     <>
-      <header className="fixed top-0 left-0 w-full z-[99999] bg-[#050505]/90 backdrop-blur-md border-b border-white/5 transition-all">
+      <header className="fixed top-0 left-0 w-full z-[99999] bg-[#08090d]/85 backdrop-blur-xl border-b border-white/[0.07] transition-all">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           
           <div className="relative z-[100000]">
             <Logo onClick={() => setIsMobileMenuOpen(false)} />
           </div>
-          <nav className="hidden md:flex items-center gap-8">
+          <nav className="hidden lg:flex items-center gap-6">
             {navLinks.map((link) => (
               <Link 
                 key={link.name} 
@@ -89,7 +89,7 @@ export default function Navbar() {
             ))}
           </nav>
 
-          <div className="hidden md:flex items-center gap-5">
+          <div className="hidden lg:flex items-center gap-5">
             {user ? (
               <>
                 <Link href="/dashboard" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
@@ -120,9 +120,11 @@ export default function Navbar() {
           </div>
 
           <button 
-            className="md:hidden relative z-[100000] p-2 -mr-2 text-white/90 hover:text-white transition-transform active:scale-95 cursor-pointer"
+            className="lg:hidden relative z-[100000] p-2 -mr-2 text-white/90 hover:text-white transition-transform active:scale-95 cursor-pointer"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label="Menüyü Aç/Kapat"
+            aria-expanded={isMobileMenuOpen}
+            aria-controls="mobile-navigation"
           >
             {isMobileMenuOpen ? (
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
@@ -133,8 +135,10 @@ export default function Navbar() {
         </div>
       </header>
 
-      <div 
-        className={`fixed inset-0 bg-[#050505] z-[99998] flex flex-col pt-28 px-6 md:hidden transition-all duration-300 ease-in-out ${
+      <div
+        id="mobile-navigation"
+        inert={!isMobileMenuOpen}
+        className={`fixed inset-0 bg-[#050505] z-[99998] flex flex-col pt-28 px-6 lg:hidden transition-all duration-300 ease-in-out ${
           isMobileMenuOpen ? "opacity-100 pointer-events-auto translate-y-0" : "opacity-0 pointer-events-none -translate-y-4"
         }`}
       >

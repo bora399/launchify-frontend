@@ -1,4 +1,5 @@
 "use client";
+import { authenticatedFetch } from "@/app/utils/authenticatedFetch";
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -94,12 +95,21 @@ export default function CreateProject() {
 
   useEffect(() => {
     const connection = new signalR.HubConnectionBuilder()
-      .withUrl(`${apiUrl}/generationHub`)
+      .withUrl(`${apiUrl}/generationHub`, {
+        accessTokenFactory: async () => {
+          const user = auth.currentUser;
+          return user ? user.getIdToken() : "";
+        },
+      })
       .withAutomaticReconnect()
       .build();
 
-    connection.start()
+    let disposed = false;
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (!user || disposed || connection.state !== signalR.HubConnectionState.Disconnected) return;
+      connection.start()
       .then(async () => {
+        if (disposed) { await connection.stop(); return; }
         console.log("SignalR Hub Bağlantısı Başarılı!");
         const id = await connection.invoke("GetConnectionId");
         setConnectionId(id);
@@ -118,9 +128,12 @@ export default function CreateProject() {
         });
       })
       .catch(err => console.error("SignalR Bağlantı Hatası:", err));
+    });
 
     return () => {
-      connection.stop();
+      disposed = true;
+      unsubscribe();
+      void connection.stop();
     };
   }, [apiUrl]);
 
@@ -130,7 +143,7 @@ export default function CreateProject() {
         setUserId(user.uid);
 
         try {
-          const res = await fetch(`${apiUrl}/api/User/${user.uid}`);
+          const res = await authenticatedFetch(`${apiUrl}/api/User/${user.uid}`);
           if (res.ok) {
             const data = await res.json();
             setRemainingCredits(data.remainingCredits);
@@ -176,7 +189,7 @@ export default function CreateProject() {
     setProgress(5);
 
     try {
-      const response = await fetch(`${apiUrl}/api/LandingPages/create`, {
+      const response = await authenticatedFetch(`${apiUrl}/api/LandingPages/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

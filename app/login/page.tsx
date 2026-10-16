@@ -1,4 +1,5 @@
 "use client";
+import { authenticatedFetch } from "@/app/utils/authenticatedFetch";
 
 import { useState, useEffect } from "react";
 import { signInWithPopup, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink } from "firebase/auth";
@@ -18,13 +19,15 @@ export default function LoginPage() {
 
   const syncUserWithBackend = async (user: any) => {
     try {
-      await fetch(`${apiUrl}/api/User/sync`, {
+      const response = await authenticatedFetch(`${apiUrl}/api/User/sync`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ uid: user.uid, email: user.email })
+        body: JSON.stringify({ uid: user.uid, email: user.email ?? "" })
       });
+      if (!response.ok) throw new Error("Hesap bilgileri eşitlenemedi.");
     } catch (err) {
       console.error("Backend senkronizasyon hatası:", err);
+      throw err;
     }
   };
 
@@ -99,7 +102,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] flex items-center justify-center relative overflow-hidden font-sans px-4">
+    <div className="min-h-screen bg-[#050505] flex items-center justify-center relative overflow-hidden font-sans px-4 pt-28 pb-12">
       <style dangerouslySetInnerHTML={{__html: `
         .dark-grid-pattern {
           background-size: 50px 50px;
@@ -113,7 +116,7 @@ export default function LoginPage() {
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-[100px]"></div>
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-[100px]"></div>
 
-      <div className="relative z-10 w-full max-w-md p-8 bg-[#0A0A0A] border border-white/10 rounded-3xl shadow-2xl backdrop-blur-xl">
+      <div className="relative z-10 w-full max-w-md p-7 sm:p-10 bg-[#101018] border border-white/[0.12] rounded-3xl shadow-2xl backdrop-blur-xl">
         <div className="text-center mb-8 flex flex-col items-center">
           
           <div className="mb-6 flex justify-center">
@@ -154,8 +157,10 @@ export default function LoginPage() {
         ) : (
           <form onSubmit={handleSendLink} className="space-y-4 mb-6">
             <div>
-              <label className="block text-xs font-medium text-white/50 mb-1 ml-1">Email Adresi</label>
+              <label htmlFor="login-email" className="block text-xs font-medium text-white/70 mb-2 ml-1">E-posta adresi</label>
               <input 
+                id="login-email"
+                autoComplete="email"
                 type="email" 
                 required
                 value={email}

@@ -1,4 +1,5 @@
 "use client";
+import { authenticatedFetch } from "@/app/utils/authenticatedFetch";
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -134,7 +135,7 @@ export default function EditModal({ isOpen, onClose, project, onUpdated }: EditM
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://launchify-backend-3a7w.onrender.com";
 
     try {
-      const res = await fetch(`${apiUrl}/api/LandingPages/ai-assist`, {
+      const res = await authenticatedFetch(`${apiUrl}/api/LandingPages/ai-assist`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -177,7 +178,7 @@ export default function EditModal({ isOpen, onClose, project, onUpdated }: EditM
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://launchify-backend-3a7w.onrender.com";
 
     try {
-      const res = await fetch(`${apiUrl}/api/LandingPages/${project.id}`, {
+      const res = await authenticatedFetch(`${apiUrl}/api/LandingPages/${project.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

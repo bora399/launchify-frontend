@@ -1,4 +1,5 @@
 "use client";
+import { authenticatedFetch } from "@/app/utils/authenticatedFetch";
 
 import { useEffect, useState } from "react";
 import { auth } from "@/firebase";
@@ -121,8 +122,8 @@ export default function DashboardPage() {
       setIsSyncing(true);
       try {
         const [projRes, userRes] = await Promise.all([
-          fetch(`${apiUrl}/api/LandingPages/user/${user.uid}`),
-          fetch(`${apiUrl}/api/User/${user.uid}`),
+          authenticatedFetch(`${apiUrl}/api/LandingPages/user/${user.uid}`),
+          authenticatedFetch(`${apiUrl}/api/User/${user.uid}`),
         ]);
 
         if (userRes.ok) {
@@ -139,7 +140,7 @@ export default function DashboardPage() {
           const countsEntries = await Promise.all(
             projData.map(async (p: any) => {
               try {
-                const lRes = await fetch(`${apiUrl}/api/Waitlist/${p.id}`);
+                const lRes = await authenticatedFetch(`${apiUrl}/api/Waitlist/${p.id}`);
                 if (lRes.ok) {
                   const lData = await lRes.json();
                   return [p.id, Array.isArray(lData) ? lData.length : 0] as const;
@@ -169,8 +170,8 @@ export default function DashboardPage() {
     setIsDeleting(true);
 
     try {
-      const res = await fetch(
-        `${apiUrl}/api/LandingPages/${projectToDelete.id}?userId=${user.uid}`,
+      const res = await authenticatedFetch(
+        `${apiUrl}/api/LandingPages/${projectToDelete.id}`,
         {
           method: "DELETE",
         },
@@ -206,7 +207,7 @@ export default function DashboardPage() {
     setLeadsLoading(true);
 
     try {
-      const res = await fetch(`${apiUrl}/api/Waitlist/${project.id}`);
+      const res = await authenticatedFetch(`${apiUrl}/api/Waitlist/${project.id}`);
       if (res.ok) {
         const data = await res.json();
         setLeads(data);
