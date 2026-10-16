@@ -529,4 +529,4 @@ a, button, input, textarea, select { -webkit-tap-highlight-color: transparent; }
   .create-form :is(input,textarea) { font-size:16px; }
 }
 
-.create-form label[for="productDescription"], .create-form label[for="demoLink"] { display:flex;align-items:center;justify-content:space-between;gap:12px; }
+.create-form label[for="productDescription"], .create-form label[for="contactEmail"], .create-form label[for="demoLink"] { display:flex;align-items:center;justify-content:space-between;gap:12px; }

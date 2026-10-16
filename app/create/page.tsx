@@ -199,8 +199,8 @@ export default function CreateProject() {
           ProductName: formData.productName,
           ThemeType: formData.templateType,
           TemplateType: formData.templateType,
-          ContactEmail: formData.contactEmail,
-          DemoLink: formData.demoLink === "" ? null : formData.demoLink,
+          ContactEmail: formData.contactEmail.trim() || null,
+          DemoLink: formData.demoLink.trim() || null,
           ProductDescription: formData.productDescription,
           UserId: userId,
           ConnectionId: connectionId || null
@@ -330,8 +330,8 @@ export default function CreateProject() {
 
             <div className="grid md:grid-cols-2 gap-8">
               <div>
-                <label htmlFor="contactEmail" className="block text-xs font-bold uppercase tracking-widest text-white/60 mb-3 cursor-pointer">İletişim e-postası</label>
-                <input id="contactEmail" required type="email" name="contactEmail" onChange={handleChange} maxLength={100} disabled={isLoading}
+                <label htmlFor="contactEmail" className="block text-xs font-bold uppercase tracking-widest text-white/60 mb-3 flex items-center justify-between cursor-pointer"><span>İletişim e-postası</span><span className="text-[10px] text-white/30 border border-white/10 px-2 py-0.5 rounded-full">Opsiyonel</span></label>
+                <input id="contactEmail" type="email" name="contactEmail" onChange={handleChange} maxLength={100} disabled={isLoading}
                   className="w-full bg-white/5 border border-white/10 text-white rounded-xl focus:bg-white/10 focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1] block p-4 outline-none transition-all placeholder:text-white/20 disabled:opacity-50"
                   placeholder="ornek@sirket.com" />
               </div>
