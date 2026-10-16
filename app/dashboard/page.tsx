@@ -36,6 +36,8 @@ export default function DashboardPage() {
 
   const [projects, setProjects] = useState<any[]>([]);
   const [projectsLoading, setProjectsLoading] = useState(true);
+  const [exportingProjectId, setExportingProjectId] = useState<string | null>(null);
+  const [exportError, setExportError] = useState("");
   const [isSyncing, setIsSyncing] = useState(false);
 
   const [remainingCredits, setRemainingCredits] = useState<number | null>(null);
@@ -742,6 +744,7 @@ export default function DashboardPage() {
               <h2 className="text-xl font-bold font-heading mb-6">
                 Sayfalarınız
               </h2>
+              {exportError && <p role="alert" className="mb-5 text-sm text-red-300">{exportError}</p>}
               <SortableProjectGrid key={user?.uid} projects={projects} userId={user?.uid} renderProject={(project) => (
                   <div
                     key={project.id || project.slug}
@@ -922,9 +925,19 @@ export default function DashboardPage() {
                             </button>
 
                             <button
-                              onClick={() => {
-                                exportProjectAsHtml(project);
-                                setOpenDropdownId(null);
+                              disabled={exportingProjectId !== null}
+                              onClick={async () => {
+                                if (exportingProjectId !== null) return;
+                                setExportingProjectId(project.id || project.slug);
+                                setExportError("");
+                                try {
+                                  await exportProjectAsHtml(project);
+                                  setOpenDropdownId(null);
+                                } catch (error) {
+                                  setExportError(error instanceof Error ? error.message : "HTML indirilemedi. Lütfen tekrar deneyin.");
+                                } finally {
+                                  setExportingProjectId(null);
+                                }
                               }}
                               className="flex items-center gap-2.5 w-full px-3 py-2.5 text-xs text-white/80 hover:text-white hover:bg-white/5 rounded-xl transition-colors text-left font-medium cursor-pointer"
                             >
@@ -940,7 +953,7 @@ export default function DashboardPage() {
                                 <polyline points="16 18 22 12 16 6"></polyline>
                                 <polyline points="8 6 2 12 8 18"></polyline>
                               </svg>
-                              <span>HTML Olarak İndir</span>
+                              <span>{exportingProjectId === (project.id || project.slug) ? "HTML hazırlanıyor…" : "HTML Olarak İndir"}</span>
                             </button>
 
                             <div className="h-px bg-white/5 my-1 w-full"></div>
