@@ -33,6 +33,8 @@ export default function RootLayout({
   return (
     <html lang="tr" className="scroll-smooth">
       <body className={`${inter.className} flex flex-col min-h-screen bg-[#050505] text-[#FAFAFA] selection:bg-[#6366F1]/30 selection:text-white overflow-x-hidden`}>
+        <div className="site-ambient" aria-hidden="true"><span /><span /></div>
+        <div className="site-noise bg-noise" aria-hidden="true" />
         <Navbar />
         <main className="flex-grow flex flex-col relative z-10">
           {children}

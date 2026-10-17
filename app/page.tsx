@@ -12,7 +12,7 @@ export default function LaunchifyHome() {
     <div className="launch-home">
       <section className="launch-hero launch-container">
         <div className="launch-intro">
-          <h1>Ürününüzü anlatan<br /><span>bir sayfa hazırlayın.</span></h1>
+          <h1><span className="editorial-word">Ürününüzü</span> anlatan<br />bir sayfa hazırlayın.</h1>
           <p>Bir açıklama yazın, şablonunuzu seçin ve metinleri kendinize göre düzenleyin. Sayfanızı paylaşın; kimlerin ilgilendiğini panelinizden görün.</p>
           <div className="launch-actions">
             <Link href="/create" className="launch-primary">Ücretsiz Deneyin <span aria-hidden="true">↗</span></Link>
@@ -21,7 +21,7 @@ export default function LaunchifyHome() {
           <div className="launch-benefits"><span>✓ Kod yazmadan</span><span>✓ 4 farklı şablon</span><span>✓ 3 başlangıç kredisi</span></div>
         </div>
         <div className="launch-showcase" aria-label="Örnek tanıtım sayfası taslağı">
-          <div className="launch-print-mark" aria-hidden="true">L / 01</div>
+          <div className="launch-print-mark" aria-hidden="true">Launchify / Taslak</div>
           <div className="launch-browser">
             <div className="launch-browser-bar"><span className="launch-dots" aria-hidden="true">● ● ●</span><span>Tanıtım sayfanız</span><span className="launch-preview-label">ÖRNEK TASLAK</span></div>
             <div className="launch-demo">
@@ -30,26 +30,26 @@ export default function LaunchifyHome() {
               <h2>Notlar, kararlar,<br />sonraki adımlar.<br /><em>Hepsi bir yerde.</em></h2>
               <p>Ekibinizin fikirlerini bir araya getiren<br />daha sakin bir çalışma alanı.</p>
               <span className="launch-demo-cta">Erken erişime katıl <span aria-hidden="true">↗</span></span>
-              <div className="launch-demo-footer"><span>01 / Birlikte düşün.</span><span>02 / Kolayca ilerle.</span></div>
+              <div className="launch-demo-footer"><span>Birlikte düşün.</span><span>Kolayca ilerle.</span></div>
             </div>
           </div>
-          <p className="launch-preview-caption"><span>01 / Aurora</span> Metinleri ve renkleri size göre değişir.</p>
+          <p className="launch-preview-caption"><span>Aurora</span> Metinleri ve renkleri size göre değişir.</p>
         </div>
       </section>
 
       <section id="ozellikler" className="launch-features launch-container">
-        <div className="launch-section-heading"><div><span className="launch-section-number">01 / Nasıl çalışır?</span><h2>Anlatın. Düzenleyin.<br />Yayınlayın.</h2></div><p>Tek bir sayfayla anlatın, paylaşın<br />ve ürününüze olan ilgiyi ölçün.</p></div>
+        <div className="launch-section-heading"><div><span className="launch-section-label">Nasıl çalışır?</span><h2>Anlatın. Düzenleyin.<br />Yayınlayın.</h2></div><p>Tek bir sayfayla anlatın, paylaşın<br />ve ürününüze olan ilgiyi ölçün.</p></div>
         <div className="launch-feature-grid launch-feature-grid--detailed">
-          {[{ number: "01", type: "brief", title: "Ürününüzü anlatın.", copy: "Ürün açıklamanızdan başlıklar, tanıtım metinleri ve özellikler hazırlayın.", detail: "Ürün bilgisi → Sayfa içeriği" },
-            { number: "02", type: "design", title: "Görünümü size uysun.", copy: "Dört şablondan birini seçin. Başlık, metin ve renkleri editörünüzde düzenleyin.", detail: "Aurora · Brutal · Corporate · Minimal" },
-            { number: "03", type: "audience", title: "İlgiyi takip edin.", copy: "Sayfanızı paylaşın, ziyaretleri ve kayıtları panelinizde görün. Bekleme listenizi CSV olarak indirin.", detail: "Ziyaretler → Kayıtlar → Dönüşüm" }].map(item => (
-            <article className="launch-feature launch-feature-detailed" key={item.number}>
+          {[{ type: "brief", title: "Ürününüzü anlatın.", copy: "Ürün açıklamanızdan başlıklar, tanıtım metinleri ve özellikler hazırlayın.", detail: "Ürün bilgisi → Sayfa içeriği" },
+            { type: "design", title: "Görünümü size uysun.", copy: "Dört şablondan birini seçin. Başlık, metin ve renkleri editörünüzde düzenleyin.", detail: "Aurora · Brutal · Corporate · Minimal" },
+            { type: "audience", title: "İlgiyi takip edin.", copy: "Sayfanızı paylaşın, ziyaretleri ve kayıtları panelinizde görün. Bekleme listenizi CSV olarak indirin.", detail: "Ziyaretler → Kayıtlar → Dönüşüm" }].map(item => (
+            <article className="launch-feature launch-feature-detailed" key={item.type}>
               <div className={`launch-feature-visual launch-feature-visual--${item.type}`} aria-hidden="true">
                 {item.type === "brief" ? <><div className="feature-brief-input"><span>Ürününüz ne yapıyor?</span><i /><i /><i /></div><div className="feature-brief-output"><span>Başlık</span><strong>İlk sayfanız,<br />sizin kelimelerinizle.</strong><i /></div></>
                   : item.type === "design" ? <><span className="feature-type">Aa</span><div className="feature-colors"><i /><i /><i /><i /></div><div className="feature-layout"><span /><span /><span /></div></>
                   : <><div className="feature-audience-symbol"><svg width="100" height="55" viewBox="0 0 100 55" fill="none"><path d="M5 46 25 34l20 6 24-26 25-9" stroke="currentColor" strokeWidth="2"/><path d="m86 5 8 0 0 8" stroke="currentColor" strokeWidth="2"/></svg></div><div className="feature-audience-list"><span /><span /><span /></div></>}
               </div>
-              <div className="launch-feature-top"><span>{item.number}</span><span>{item.type === "brief" ? "İçerik" : item.type === "design" ? "Tasarım" : "Takip"}</span></div>
+              <div className="launch-feature-top"><span className="launch-feature-badge">{item.type === "brief" ? "İçerik" : item.type === "design" ? "Tasarım" : "Takip"}</span><span aria-hidden="true">{item.type === "brief" ? "↳" : item.type === "design" ? "Aa" : "↗"}</span></div>
               <h3>{item.title}</h3><p>{item.copy}</p><div className="launch-feature-detail">{item.detail}</div>
             </article>
           ))}
@@ -57,7 +57,7 @@ export default function LaunchifyHome() {
       </section>
 
       <section className="launch-templates launch-container" aria-labelledby="templates-title">
-        <div className="launch-section-heading"><div><span className="launch-section-number">02 / Şablonlar</span><h2 id="templates-title">Aynı ürün. Dört farklı ifade.</h2></div><Link href="/create" className="launch-text-link">Şablonunuzu seçin ↗</Link></div>
+        <div className="launch-section-heading"><div><span className="launch-section-label">Şablonlar</span><h2 id="templates-title">Aynı ürün. Dört farklı ifade.</h2></div><Link href="/create" className="launch-text-link">Şablonunuzu seçin ↗</Link></div>
         <div className="launch-template-grid">{templates.map(template => (
           <article className="launch-template" key={template.name}>
             <div className={`launch-mini launch-mini-${template.tone}`} aria-hidden="true"><div className="launch-mini-nav"><span /><i /><i /></div><div className="launch-mini-body"><span className="launch-mini-kicker" /><strong>Bir fikrin var.<br />Dünyayla paylaş.</strong><span className="launch-mini-line" /><span className="launch-mini-button">Başlayalım ↗</span></div></div>
@@ -67,7 +67,7 @@ export default function LaunchifyHome() {
       </section>
 
       <section className="launch-container launch-final">
-        <div><span className="launch-section-number">03 / Yayına geçin</span><h2>Sayfanızı hazırlayın.<br /><span>Bağlantınızı paylaşın.</span></h2><p>İlk tanıtım sayfanızı hazırlayın. Hikâyenizi paylaşmaya başlayın.</p></div>
+        <div><span className="launch-section-label">Yayına geçin</span><h2>Sayfanızı hazırlayın.<br /><span>Bağlantınızı paylaşın.</span></h2><p>İlk tanıtım sayfanızı hazırlayın. Hikâyenizi paylaşmaya başlayın.</p></div>
         <Link href="/create" className="launch-primary">Projeyi Başlat <span aria-hidden="true">↗</span></Link>
       </section>
     </div>

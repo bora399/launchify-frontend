@@ -2,17 +2,17 @@ import Link from "next/link";
 
 const steps = [
   {
-    number: "01",
+    badge: "Ürün bilgisi",
     title: "Ürününüzü anlatın.",
     copy: "Kime hitap ettiğinizi ve hangi problemi çözdüğünüzü yazın. İlk sayfanız bu bilgilerle şekillensin.",
   },
   {
-    number: "02",
+    badge: "Tasarım",
     title: "Kendinize göre düzenleyin.",
     copy: "Dört şablondan birini seçin. Hazırlanan başlıkları, metinleri ve renkleri ürününüze göre düzenleyin.",
   },
   {
-    number: "03",
+    badge: "Yayın",
     title: "Paylaşın, ilgiyi görün.",
     copy: "Sayfanızın bağlantısını paylaşın. Ziyaretleri ve bekleme listesi kayıtlarını panelinizden takip edin.",
   },
@@ -74,8 +74,8 @@ export default function AboutPage() {
           </div>
           <div className="about-step-grid">
             {steps.map((step) => (
-              <article className="about-step" key={step.number}>
-                <span>{step.number}</span>
+              <article className="about-step" key={step.badge}>
+                <span className="about-step-badge">{step.badge}</span>
                 <h3>{step.title}</h3>
                 <p>{step.copy}</p>
               </article>

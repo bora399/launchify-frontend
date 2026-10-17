@@ -102,20 +102,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] flex items-center justify-center relative overflow-hidden font-sans px-4 pt-28 pb-12">
-      <style dangerouslySetInnerHTML={{__html: `
-        .dark-grid-pattern {
-          background-size: 50px 50px;
-          background-image:
-            linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-        }
-      `}} />
-      <div className="absolute inset-0 dark-grid-pattern pointer-events-none z-0"></div>
-
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-[100px]"></div>
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-[100px]"></div>
-
+    <div className="login-page min-h-screen bg-[#050505] flex items-center justify-center relative overflow-hidden font-sans px-4 pt-28 pb-12">
       <div className="relative z-10 w-full max-w-md p-7 sm:p-10 bg-[#101018] border border-white/[0.12] rounded-3xl shadow-2xl backdrop-blur-xl">
         <div className="text-center mb-8 flex flex-col items-center">
           

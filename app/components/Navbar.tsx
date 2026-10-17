@@ -126,11 +126,10 @@ export default function Navbar() {
       <nav ref={menuPanel} id="mobile-navigation" aria-label="Mobil gezinme"
         inert={!isMobileMenuOpen} className={`site-mobile-nav ${isMobileMenuOpen ? "is-open" : ""}`}>
         <div className="site-mobile-links">
-          {navLinks.map((link, index) => (
+          {navLinks.map(link => (
             <Link key={link.href} href={link.href} onClick={event => handleNavClick(event, link.href)}
               aria-current={pathname === link.href ? "page" : undefined}
               className={pathname === link.href ? "is-active" : undefined}>
-              <span className="site-mobile-number" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
               <span>{link.name}</span><span className="site-mobile-arrow" aria-hidden="true">↗</span>
             </Link>
           ))}
