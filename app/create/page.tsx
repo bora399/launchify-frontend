@@ -246,8 +246,9 @@ export default function CreateProject() {
   }
 
   return (
-    <div className="create-page">
-      <main className="create-container">
+    <div className="create-page relative">
+      <div aria-hidden="true" className="page-top-light" />
+      <main className="create-container relative z-10">
         <div className="help-breadcrumb"><Link href="/">Launchify</Link><span aria-hidden="true">/</span><span>Sayfa oluştur</span></div>
         <header className="create-intro">
           <div><span className="help-section-label">Yeni bir sayfa</span><h1>Ürününüzle<br /><span>başlayalım.</span></h1><p>Birkaç bilgi ve bir tasarım seçimi. İlk sayfanız için gerekenler bu kadar.</p></div>
@@ -280,7 +281,7 @@ export default function CreateProject() {
             <div>
               <label htmlFor="productName" className="block text-xs font-bold uppercase tracking-widest text-white/60 mb-3 cursor-pointer">Ürün adı</label>
               <input id="productName" required type="text" name="productName" onChange={handleChange} maxLength={60} disabled={isLoading}
-                className="w-full bg-white/5 border border-white/10 text-white rounded-xl focus:bg-white/10 focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1] block p-4 outline-none transition-all placeholder:text-white/20 disabled:opacity-50"
+                className="w-full bg-white/5 border border-white/10 text-white rounded-xl focus:bg-white/10 focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/10 focus:outline-none block p-4 outline-none transition-all duration-200 placeholder:text-white/20 disabled:opacity-50"
                 placeholder="Örn: Launchify SaaS" />
             </div>
 
@@ -293,8 +294,8 @@ export default function CreateProject() {
                     onClick={() => !isLoading && selectTemplate(template.id)}
                     className={`create-template group relative text-left cursor-pointer p-4 rounded-2xl border transition-all duration-300 flex items-start gap-4 ${
                       formData.templateType === template.id
-                        ? 'border-[#6366F1] bg-[#6366F1]/10 ring-1 ring-[#6366F1]'
-                        : 'border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20'
+                        ? 'border-indigo-500/50 bg-indigo-500/[0.06] ring-1 ring-indigo-500/40'
+                        : 'border-white/10 bg-white/[0.02] hover:bg-white/[0.02] hover:border-white/20'
                     } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     <span aria-hidden="true" className={`create-template-preview block shrink-0 w-20 h-20 rounded-xl overflow-hidden ${template.previewClass} relative shadow-inner`}>
@@ -324,7 +325,7 @@ export default function CreateProject() {
                 <span className="text-[10px] text-white/30">{formData.productDescription.length}/1000</span>
               </label>
               <textarea id="productDescription" required name="productDescription" rows={4} onChange={handleChange} maxLength={1000} disabled={isLoading}
-                className="w-full bg-white/5 border border-white/10 text-white rounded-xl focus:bg-white/10 focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1] block p-4 outline-none resize-none transition-all placeholder:text-white/20 leading-relaxed disabled:opacity-50"
+                className="w-full bg-white/5 border border-white/10 text-white rounded-xl focus:bg-white/10 focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/10 focus:outline-none block p-4 outline-none resize-none transition-all duration-200 placeholder:text-white/20 leading-relaxed disabled:opacity-50"
                 placeholder="Platformunuz hangi problemi çözüyor? Hedef kitleye sağladığı temel fayda nedir?" />
             </div>
 
@@ -332,7 +333,7 @@ export default function CreateProject() {
               <div>
                 <label htmlFor="contactEmail" className="block text-xs font-bold uppercase tracking-widest text-white/60 mb-3 flex items-center justify-between cursor-pointer"><span>İletişim e-postası</span><span className="text-[10px] text-white/30 border border-white/10 px-2 py-0.5 rounded-full">Opsiyonel</span></label>
                 <input id="contactEmail" type="email" name="contactEmail" onChange={handleChange} maxLength={100} disabled={isLoading}
-                  className="w-full bg-white/5 border border-white/10 text-white rounded-xl focus:bg-white/10 focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1] block p-4 outline-none transition-all placeholder:text-white/20 disabled:opacity-50"
+                  className="w-full bg-white/5 border border-white/10 text-white rounded-xl focus:bg-white/10 focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/10 focus:outline-none block p-4 outline-none transition-all duration-200 placeholder:text-white/20 disabled:opacity-50"
                   placeholder="ornek@sirket.com" />
               </div>
               <div>
@@ -341,14 +342,14 @@ export default function CreateProject() {
                   <span className="text-[10px] text-white/30 border border-white/10 px-2 py-0.5 rounded-full">Opsiyonel</span>
                 </label>
                 <input id="demoLink" type="url" name="demoLink" onChange={handleChange} maxLength={255} disabled={isLoading}
-                  className="w-full bg-white/5 border border-white/10 text-white rounded-xl focus:bg-white/10 focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1] block p-4 outline-none transition-all placeholder:text-white/20 disabled:opacity-50"
+                  className="w-full bg-white/5 border border-white/10 text-white rounded-xl focus:bg-white/10 focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/10 focus:outline-none block p-4 outline-none transition-all duration-200 placeholder:text-white/20 disabled:opacity-50"
                   placeholder="https://..." />
               </div>
             </div>
 
-            <div className="pt-6 border-t border-white/10">
+            <div className="create-submit-row flex justify-end pt-6 border-t border-white/10">
               <button type="submit" disabled={isLoading || isCreditChecking || isOutOfCredits}
-                className="create-submit w-full text-white font-bold text-lg py-5 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 hover:scale-[1.02] flex justify-center items-center gap-3 shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]"
+                className="create-submit text-white font-medium px-6 py-2.5 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed enabled:hover:shadow-lg enabled:hover:shadow-indigo-500/20 flex justify-center items-center gap-3"
                 style={{ backgroundColor: BRAND_COLOR }}
               >
                 {isCreditChecking ? (

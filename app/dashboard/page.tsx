@@ -3,9 +3,10 @@ import { authenticatedFetch } from "@/app/utils/authenticatedFetch";
 
 import { useEffect, useState, type CSSProperties } from "react";
 import { auth } from "@/firebase";
-import { onAuthStateChanged, signOut, User } from "firebase/auth";
+import { onAuthStateChanged, User } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Layers, Users, TrendingUp } from "lucide-react";
 import {
   AreaChart,
   Area,
@@ -287,6 +288,7 @@ export default function DashboardPage() {
 
   return (
     <div className="workspace-page min-h-screen bg-[#08090d] text-[#FAFAFA] font-sans relative pt-32 pb-20">
+      <div aria-hidden="true" className="page-top-light" />
       {/* Proje Silme Modalı */}
       {mounted &&
         projectToDelete &&
@@ -557,27 +559,10 @@ export default function DashboardPage() {
           </div>
           <div className="flex items-center gap-3 w-full md:w-auto flex-wrap">
             {remainingCredits !== null && (
-              <div className="workspace-credits px-4 py-2.5 border text-sm rounded-xl flex items-center gap-2">
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                >
-                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                </svg>
+              <div className="workspace-credits border border-white/10 bg-white/5 px-3 py-1 rounded-full text-xs text-zinc-300 flex items-center gap-2">
                 {remainingCredits} Kredi Kaldı
               </div>
             )}
-
-            <button
-              onClick={() => signOut(auth)}
-              className="px-5 py-2.5 bg-white/5 text-white/50 text-sm font-medium rounded-xl hover:bg-red-500/10 hover:text-red-400 border border-white/5 transition-all"
-            >
-              Çıkış Yap
-            </button>
             <Link
               href="/create"
               className="workspace-create px-5 py-2.5 text-sm font-semibold rounded-xl transition-all flex items-center gap-2"
@@ -626,29 +611,31 @@ export default function DashboardPage() {
         ) : (
           <div className="space-y-12">
             <div className="workspace-metrics grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div className="bg-[#0A0A0A] border border-white/10 rounded-2xl p-6 shadow-xl relative overflow-hidden backdrop-blur-xl">
-                <div className="absolute top-0 left-0 w-1 h-full bg-[#6366F1]"></div>
+              <div className="bg-zinc-900/40 border border-white/[0.08] rounded-2xl p-6 relative overflow-hidden backdrop-blur-sm">
+                <Layers aria-hidden="true" className="workspace-kpi-icon absolute top-6 right-6 w-4 h-4 text-zinc-500" />
                 <p className="text-white/50 text-xs font-bold uppercase tracking-wider mb-2">
                   Toplam sayfa
                 </p>
                 <h3 className="text-4xl font-heading font-extrabold">
                   {projects.length}
                 </h3>
+                <p className="workspace-kpi-note">Oluşturduğunuz sayfalar</p>
               </div>
 
-              <div className="bg-[#0A0A0A] border border-white/10 rounded-2xl p-6 shadow-xl relative overflow-hidden backdrop-blur-xl">
-                <div className="absolute top-0 left-0 w-1 h-full bg-green-500"></div>
+              <div className="bg-zinc-900/40 border border-white/[0.08] rounded-2xl p-6 relative overflow-hidden backdrop-blur-sm">
+                <Users aria-hidden="true" className="workspace-kpi-icon absolute top-6 right-6 w-4 h-4 text-zinc-500" />
                 <p className="text-white/50 text-xs font-bold uppercase tracking-wider mb-2">
                   Toplam Ziyaret
                 </p>
                 <h3 className="text-4xl font-heading font-extrabold text-green-400">
                   {totalViews}
                 </h3>
+                <p className="workspace-kpi-note">Tüm zamanların ziyaretleri</p>
               </div>
 
-              <div className="bg-[#0A0A0A] border border-white/10 rounded-2xl p-6 shadow-xl relative overflow-hidden backdrop-blur-xl sm:col-span-2 lg:col-span-1">
-                <div className="absolute top-0 left-0 w-1 h-full bg-amber-400"></div>
-                <div className="flex items-center justify-between">
+              <div className="bg-zinc-900/40 border border-white/[0.08] rounded-2xl p-6 relative overflow-hidden backdrop-blur-sm sm:col-span-2 lg:col-span-1">
+                <TrendingUp aria-hidden="true" className="workspace-kpi-icon absolute top-6 right-6 w-4 h-4 text-zinc-500" />
+                <div className="flex items-center justify-between gap-2 pr-7">
                   <p className="text-white/50 text-xs font-bold uppercase tracking-wider mb-2">
                     Dönüşüm Oranı
                   </p>
@@ -659,6 +646,7 @@ export default function DashboardPage() {
                 <h3 className="text-4xl font-heading font-extrabold text-amber-300">
                   %{conversionRate}
                 </h3>
+                <p className="workspace-kpi-note">Ziyaretlerden gelen kayıtlar</p>
               </div>
             </div>
 
@@ -700,7 +688,7 @@ export default function DashboardPage() {
                     </defs>
                     <CartesianGrid
                       strokeDasharray="3 3"
-                      stroke="rgba(255,255,255,0.05)"
+                      stroke="rgba(39,39,42,0.8)"
                       vertical={false}
                     />
                     <XAxis
@@ -817,7 +805,7 @@ export default function DashboardPage() {
                       <Link
                         href={`/${project.slug}`}
                         target="_blank"
-                        className="text-sm font-medium bg-white/5 hover:bg-white/10 px-4 py-2.5 rounded-xl transition-colors flex-1 text-center border border-white/5 group-hover:border-white/10"
+                        className="workspace-view-link w-full py-2 px-4 text-xs font-medium text-zinc-300 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] rounded-lg transition-colors flex-1 min-w-0 text-center"
                       >
                         Siteyi Görüntüle
                       </Link>
